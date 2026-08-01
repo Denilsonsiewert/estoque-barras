@@ -4,10 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Controle de Estoque IA</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf_plugin_autotable.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -18,7 +15,6 @@
     --success: #198754;
     --danger: #dc3545;
     --warning: #ffc107;
-    --info: #0dcaf0;
     --bg-main: #f0f2f5;
     --bg-card: #ffffff;
     --bg-header: #ffffff;
@@ -101,7 +97,7 @@ body {
 .page.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* CONFERÊNCIA - BOTÕES GRANDES */
+/* CONFERÊNCIA */
 .conferencia-wrapper { max-width: 900px; margin: 0 auto; }
 
 .tipo-selector {
@@ -142,11 +138,7 @@ body {
 .tipo-btn .label { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
 .tipo-btn .count { font-size: 0.85rem; color: var(--text-secondary); }
 
-/* LISTA DE MATERIAIS - OTIMIZADA PARA TOUCH */
-.materiais-lista {
-    display: none;
-    margin-top: 1.5rem;
-}
+.materiais-lista { display: none; margin-top: 1.5rem; }
 .materiais-lista.active { display: block; }
 .materiais-lista h3 {
     margin-bottom: 1rem;
@@ -225,22 +217,20 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.material-card .dimensoes {
+.material-card .dimensoes { font-size: 0.8rem; color: var(--text-secondary); }
+.material-card .qtd-badge {
+    background: var(--bg-main);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
     font-size: 0.8rem;
+    font-weight: 600;
     color: var(--text-secondary);
+    white-space: nowrap;
 }
-.material-card .arrow {
-    font-size: 1.3rem;
-    color: var(--text-secondary);
-}
+.material-card .arrow { font-size: 1.3rem; color: var(--text-secondary); }
 
 /* CÂMERA */
-.camera-section {
-    display: none;
-    grid-template-columns: 1fr 300px;
-    gap: 1rem;
-    align-items: start;
-}
+.camera-section { display: none; grid-template-columns: 1fr 300px; gap: 1rem; align-items: start; }
 .camera-section.active { display: grid; }
 
 .camera-wrapper {
@@ -279,7 +269,6 @@ body {
 .cam-btn:hover { background: var(--primary); }
 .cam-btn.active { background: var(--warning); color: #000; }
 
-/* Painel de Métricas */
 .metrics-panel {
     background: var(--bg-card);
     padding: 1.2rem;
@@ -304,6 +293,16 @@ body {
 .metric-value.success { color: var(--success); }
 .metric-value.danger { color: var(--danger); }
 .metric-value.zero { color: var(--text-secondary); }
+
+.info-box {
+    background: var(--bg-main);
+    padding: 0.6rem;
+    border-radius: 8px;
+    margin-bottom: 0.8rem;
+    font-size: 0.8rem;
+}
+.info-box .label { color: var(--text-secondary); font-size: 0.75rem; }
+.info-box .value { font-weight: 600; color: var(--text-primary); font-size: 0.85rem; }
 
 .action-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
 .action-buttons .btn { width: 100%; justify-content: center; padding: 0.85rem; font-size: 0.95rem; }
@@ -344,7 +343,7 @@ body {
 }
 .btn-icon:hover { background: var(--primary); border-color: var(--primary); color: white; }
 
-/* PÁGINAS DE LISTA */
+/* PÁGINA MATERIAIS */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -384,7 +383,6 @@ input:focus, select:focus { outline: none; border-color: var(--primary); }
     overflow-y: auto;
 }
 
-/* Tabelas */
 table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
 thead { background: var(--bg-main); position: sticky; top: 0; z-index: 2; }
 th { padding: 0.7rem; text-align: left; color: var(--text-secondary); font-weight: 600; border-bottom: 2px solid var(--border-color); font-size: 0.8rem; }
@@ -400,8 +398,6 @@ tbody tr:hover { background: var(--bg-main); }
 }
 .badge-success { background: rgba(25, 135, 84, 0.15); color: var(--success); }
 .badge-danger { background: rgba(220, 53, 69, 0.15); color: var(--danger); }
-.badge-warning { background: rgba(255, 193, 7, 0.15); color: var(--warning); }
-.badge-info { background: rgba(13, 202, 240, 0.15); color: var(--info); }
 .badge-cobre { background: rgba(184, 115, 51, 0.15); color: var(--cobre); }
 .badge-aluminio { background: rgba(127, 140, 141, 0.15); color: var(--aluminio); }
 
@@ -454,7 +450,6 @@ form { padding: 1.3rem; }
 .form-group input, .form-group select { width: 100%; }
 .form-actions { display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 1.3rem; }
 
-/* MODAL SENHA */
 .senha-modal .modal-content { max-width: 380px; text-align: center; }
 .senha-input {
     width: 100%;
@@ -497,29 +492,6 @@ form { padding: 1.3rem; }
 .setting-item label { color: var(--text-primary); font-size: 0.9rem; }
 .setting-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
 .setting-item input, .setting-item select { width: 180px; }
-
-/* LOADING */
-.loading-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(240, 242, 245, 0.95);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 1rem;
-}
-.loading-overlay.active { display: flex; }
-.spinner {
-    width: 50px; height: 50px;
-    border: 4px solid var(--border-color);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
 
 /* TOAST */
 .toast-container {
@@ -569,7 +541,6 @@ form { padding: 1.3rem; }
     th, td { padding: 0.5rem; }
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-main); }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
@@ -585,9 +556,8 @@ form { padding: 1.3rem; }
             <h1>Controle de Estoque <span>IA</span></h1>
         </div>
         <nav class="nav">
-            <button class="nav-btn active" data-page="conferencia"> Conferência</button>
-            <button class="nav-btn" data-page="materiais"> Materiais</button>
-            <button class="nav-btn" data-page="movimentacoes"> Movimentações</button>
+            <button class="nav-btn active" data-page="conferencia">📷 Conferência</button>
+            <button class="nav-btn" data-page="materiais">📦 Materiais</button>
         </nav>
         <div class="header-actions">
             <button class="btn-config" id="btn-config" title="Configurações">⚙️</button>
@@ -600,7 +570,6 @@ form { padding: 1.3rem; }
         <div id="page-conferencia" class="page active">
             <div class="conferencia-wrapper">
                 
-                <!-- Seleção de Tipo (BOTÕES) -->
                 <div class="tipo-selector" id="tipo-selector">
                     <h2>Selecione o Tipo de Material</h2>
                     <div class="tipo-buttons">
@@ -617,7 +586,6 @@ form { padding: 1.3rem; }
                     </div>
                 </div>
 
-                <!-- Lista de Materiais (TOUCH OTIMIZADO) -->
                 <div class="materiais-lista" id="materiais-lista">
                     <h3>
                         <span id="titulo-lista">Materiais</span>
@@ -627,14 +595,13 @@ form { padding: 1.3rem; }
                     <div class="materiais-grid" id="materiais-grid"></div>
                 </div>
 
-                <!-- Câmera e Métricas -->
                 <div class="camera-section" id="camera-section">
                     <div class="camera-wrapper">
                         <video id="video" autoplay playsinline muted></video>
                         <canvas id="overlay"></canvas>
                         <div class="camera-controls">
                             <button class="cam-btn" id="btn-flash" title="Flash">🔦</button>
-                            <button class="cam-btn" id="btn-zoom-in" title="Zoom +"></button>
+                            <button class="cam-btn" id="btn-zoom-in" title="Zoom +">🔍+</button>
                             <button class="cam-btn" id="btn-zoom-out" title="Zoom -">➖</button>
                             <button class="cam-btn" id="btn-freeze" title="Congelar">⏸️</button>
                         </div>
@@ -643,10 +610,11 @@ form { padding: 1.3rem; }
                     <div class="metrics-panel">
                         <h3>📊 Conferência</h3>
                         
-                        <div style="background: var(--bg-main); padding: 0.6rem; border-radius: 8px; margin-bottom: 0.8rem; font-size: 0.8rem;">
-                            <div style="color: var(--text-secondary);">Material:</div>
-                            <div style="font-weight: 600; color: var(--text-primary); font-size: 0.85rem;" id="conf-material-nome">-</div>
-                            <div style="color: var(--text-secondary); font-size: 0.75rem;" id="conf-material-dim">-</div>
+                        <div class="info-box">
+                            <div class="label">Material:</div>
+                            <div class="value" id="conf-material-nome">-</div>
+                            <div class="label" style="margin-top:0.3rem;">Código / Dimensão:</div>
+                            <div class="value" id="conf-material-dim">-</div>
                         </div>
                         
                         <div class="metric-item">
@@ -671,7 +639,7 @@ form { padding: 1.3rem; }
                         </div>
                         
                         <div class="action-buttons">
-                            <button id="btn-parar" class="btn btn-secondary">️ Parar</button>
+                            <button id="btn-parar" class="btn btn-secondary">⏹️ Parar</button>
                             <button id="btn-salvar" class="btn btn-success" disabled>💾 Salvar Conferência</button>
                             <button id="btn-voltar-selecao" class="btn btn-danger">← Voltar à Seleção</button>
                         </div>
@@ -697,36 +665,8 @@ form { padding: 1.3rem; }
             <div class="table-container">
                 <table id="table-materiais">
                     <thead>
-                        <tr><th>Código</th><th>Descrição</th><th>Tipo</th><th>Material</th>
+                        <tr><th>Código</th><th>Descrição</th><th>Dim.</th><th>Material</th>
                         <th>Qtd</th><th>Status</th><th>Ações</th></tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- MOVIMENTAÇÕES -->
-        <div id="page-movimentacoes" class="page">
-            <div class="page-header">
-                <h2>Histórico de Movimentações</h2>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button id="btn-export-excel" class="btn btn-success">📊 Excel</button>
-                    <button id="btn-export-pdf" class="btn btn-danger">📄 PDF</button>
-                </div>
-            </div>
-            <div class="filters">
-                <input type="date" id="filter-data-inicio">
-                <input type="date" id="filter-data-fim">
-                <select id="filter-tipo-mov">
-                    <option value="">Todos</option>
-                    <option value="entrada">Entrada</option>
-                    <option value="saida">Saída</option>
-                </select>
-            </div>
-            <div class="table-container">
-                <table id="table-historico">
-                    <thead>
-                        <tr><th>Data</th><th>Tipo</th><th>Material</th><th>Qtd</th><th>Obs.</th></tr>
                     </thead>
                     <tbody></tbody>
                 </table>
@@ -772,9 +712,10 @@ form { padding: 1.3rem; }
                         <label>Modo Demo (sem API)</label>
                         <input type="checkbox" id="config-demo-mode" checked>
                     </div>
-                    <div class="setting-item">
-                        <label style="color: var(--danger);">Limpar Todos os Dados</label>
-                        <button class="btn btn-danger" id="btn-limpar-dados" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Limpar</button>
+                    <div class="setting-item" style="flex-direction: column; align-items: stretch; gap: 0.5rem;">
+                        <label style="color: var(--warning); font-weight: 600;">🔄 Zerar Quantidades</label>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);">Zera apenas as quantidades de todas as barras. Descrições, códigos e itens são mantidos.</span>
+                        <button class="btn btn-warning" id="btn-zerar-quantidades" style="margin-top: 0.3rem;">🔄 Zerar Todas as Quantidades</button>
                     </div>
                 </div>
             </div>
@@ -830,10 +771,6 @@ form { padding: 1.3rem; }
         </div>
     </div>
 
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="spinner"></div>
-        <p>Carregando...</p>
-    </div>
     <div class="toast-container" id="toast-container"></div>
 </div>
 
@@ -961,7 +898,7 @@ const SheetsAPI = {
             MATERIAIS_DATABASE[tipo].forEach(m => {
                 defaultData.push({
                     id: Utils.uuid(), codigo: m.codigo, descricao: m.descricao, dimensoes: m.dimensoes,
-                    tipo: 'barra', material: tipo, quantidade: Math.floor(Math.random() * 200),
+                    tipo: 'barra', material: tipo, quantidade: 0,
                     minimo: 20, dataCadastro: Utils.now().full, status: 'ativo'
                 });
             });
@@ -969,10 +906,8 @@ const SheetsAPI = {
         localStorage.setItem('materiais', JSON.stringify(defaultData));
         return defaultData;
     },
-    async getMovimentacoes() { return JSON.parse(localStorage.getItem('movimentacoes') || '[]'); },
-    async getConferencias() { return JSON.parse(localStorage.getItem('conferencias') || '[]'); },
     async save(data, type) {
-        const key = type === 'conferencia' ? 'conferencias' : type === 'movimentacao' ? 'movimentacoes' : 'materiais';
+        const key = type === 'conferencia' ? 'conferencias' : 'materiais';
         const stored = JSON.parse(localStorage.getItem(key) || '[]');
         const idx = stored.findIndex(x => x.id === data.id);
         if (idx >= 0) stored[idx] = data; else stored.unshift(data);
@@ -980,10 +915,9 @@ const SheetsAPI = {
         return { success: true };
     },
     async update(id, updates) {
-        const key = 'materiais';
-        const stored = JSON.parse(localStorage.getItem(key) || '[]');
+        const stored = JSON.parse(localStorage.getItem('materiais') || '[]');
         const idx = stored.findIndex(x => x.id === id);
-        if (idx >= 0) { stored[idx] = { ...stored[idx], ...updates }; localStorage.setItem(key, JSON.stringify(stored)); }
+        if (idx >= 0) { stored[idx] = { ...stored[idx], ...updates }; localStorage.setItem('materiais', JSON.stringify(stored)); }
         return { success: true };
     },
     async delete(id) {
@@ -991,6 +925,12 @@ const SheetsAPI = {
         const filtered = stored.filter(x => x.id !== id);
         localStorage.setItem('materiais', JSON.stringify(filtered));
         return { success: true };
+    },
+    async zerarQuantidades() {
+        const stored = JSON.parse(localStorage.getItem('materiais') || '[]');
+        stored.forEach(m => { m.quantidade = 0; });
+        localStorage.setItem('materiais', JSON.stringify(stored));
+        return { success: true, count: stored.length };
     }
 };
 
@@ -1168,7 +1108,7 @@ const Vision = {
         const diff = detections.length - registrada;
         const diffEl = document.getElementById('diferenca');
         diffEl.textContent = (diff > 0 ? '+' : '') + diff;
-        diffEl.className = 'metric-value ' + (diff === 0 ? 'zero' : diff > 0 ? 'danger' : 'success');
+        diffEl.className = 'metric-value ' + (diff === 0 ? 'zero' : diff > 0 ? 'success' : 'danger');
     },
     
     updateStableCount() {
@@ -1187,22 +1127,16 @@ const Conference = {
     selectedMaterial: null,
     
     init() {
-        // Atualizar contadores
         document.getElementById('count-cobre').textContent = MATERIAIS_DATABASE.cobre.length + ' itens';
         document.getElementById('count-aluminio').textContent = MATERIAIS_DATABASE.aluminio.length + ' itens';
         
-        // Botões de tipo
         document.querySelectorAll('.tipo-btn').forEach(btn => {
             btn.addEventListener('click', () => this.selectTipo(btn.dataset.tipo));
         });
         
-        // Voltar tipo
         document.getElementById('btn-voltar-tipo').addEventListener('click', () => this.backToTipo());
-        
-        // Busca
         document.getElementById('material-search').addEventListener('input', (e) => this.renderMateriais(e.target.value));
         
-        // Ações câmera
         document.getElementById('btn-parar').addEventListener('click', () => this.stop());
         document.getElementById('btn-salvar').addEventListener('click', () => this.save());
         document.getElementById('btn-voltar-selecao').addEventListener('click', () => this.backToTipo());
@@ -1254,7 +1188,7 @@ const Conference = {
                 <div class="codigo">${m.codigo}</div>
                 <div class="info">
                     <div class="descricao">${m.descricao}</div>
-                    <div class="dimensoes"> ${m.dimensoes}</div>
+                    <div class="dimensoes">📐 ${m.dimensoes}</div>
                 </div>
                 <div class="arrow">›</div>
             </div>
@@ -1271,20 +1205,17 @@ const Conference = {
         
         this.selectedMaterial = { ...material, material: this.selectedTipo };
         
-        // Buscar quantidade registrada
         const materiais = await SheetsAPI.getMateriais();
         const matData = materiais.find(m => m.codigo === codigo);
         const qtdRegistrada = matData ? matData.quantidade : 0;
         
-        // Mostrar info no painel
         document.getElementById('conf-material-nome').textContent = material.descricao;
-        document.getElementById('conf-material-dim').textContent = `Código: ${material.codigo} | ${material.dimensoes}`;
+        document.getElementById('conf-material-dim').textContent = `${material.codigo} | ${material.dimensoes}`;
         document.getElementById('qtd-registrada').textContent = qtdRegistrada;
         document.getElementById('qtd-detectada').textContent = '0';
         document.getElementById('diferenca').textContent = '0';
         document.getElementById('btn-salvar').disabled = true;
         
-        // Abrir câmera
         document.getElementById('materiais-lista').classList.remove('active');
         document.getElementById('camera-section').classList.add('active');
         
@@ -1300,40 +1231,30 @@ const Conference = {
     async save() {
         const detectada = Vision.getCount();
         const registrada = parseInt(document.getElementById('qtd-registrada').textContent) || 0;
-        const diferenca = detectada - registrada;
-        const precisao = registrada > 0 ? Math.max(0, 100 - Math.abs(diferenca / registrada * 100)) : 100;
+        
+        // SEMPRE SOMAR - nunca remover
+        // A quantidade detectada é ADICIONADA ao estoque existente
+        const novaQuantidade = registrada + detectada;
+        
+        const materiais = await SheetsAPI.getMateriais();
+        const matData = materiais.find(m => m.codigo === this.selectedMaterial.codigo);
+        if (matData) {
+            matData.quantidade = novaQuantidade;
+            await SheetsAPI.save(matData, 'material');
+        }
         
         const conferencia = {
             id: Utils.uuid(), data: Utils.now().date, hora: Utils.now().time,
             material: this.selectedMaterial.codigo, descricao: this.selectedMaterial.descricao,
             dimensoes: this.selectedMaterial.dimensoes, tipoMaterial: this.selectedTipo,
-            quantidadeDetectada: detectada, quantidadeInformada: registrada,
-            diferenca: diferenca, precisaoIA: precisao, usuario: 'Admin'
+            quantidadeDetectada: detectada, quantidadeAntes: registrada,
+            quantidadeDepois: novaQuantidade, adicionado: detectada,
+            usuario: 'Admin'
         };
         
         await SheetsAPI.save(conferencia, 'conferencia');
         
-        // Atualizar estoque se houver diferença
-        if (diferenca !== 0) {
-            const materiais = await SheetsAPI.getMateriais();
-            const matData = materiais.find(m => m.codigo === this.selectedMaterial.codigo);
-            if (matData) {
-                matData.quantidade = detectada;
-                await SheetsAPI.save(matData, 'material');
-            }
-            
-            const mov = {
-                id: Utils.uuid(), data: Utils.now().date, hora: Utils.now().time,
-                usuario: 'Admin', tipo: diferenca > 0 ? 'entrada' : 'saida',
-                material: this.selectedMaterial.codigo, descricao: this.selectedMaterial.descricao,
-                quantidade: Math.abs(diferenca), quantidadeAntes: registrada,
-                quantidadeDepois: detectada, origem: 'conferencia-ia',
-                observacao: `Ajuste por conferência IA. Dif: ${diferenca}`
-            };
-            await SheetsAPI.save(mov, 'movimentacao');
-        }
-        
-        Toast.success('Conferência salva com sucesso!');
+        Toast.success(`Conferência salva! +${detectada} barras adicionadas. Total: ${novaQuantidade}`);
         this.backToTipo();
     }
 };
@@ -1352,16 +1273,16 @@ const Materials = {
         });
         const tbody = document.querySelector('#table-materiais tbody');
         tbody.innerHTML = filtered.map(m => {
-            const status = (m.quantidade||0) <= (m.minimo||0) ? 'danger' : 'success';
+            const status = (m.quantidade||0) <= 0 ? 'danger' : 'success';
             return `<tr>
                 <td><strong>${m.codigo||'-'}</strong></td>
                 <td>${m.descricao||'-'}</td>
-                <td>${m.tipo||'-'}</td>
+                <td>${m.dimensoes||'-'}</td>
                 <td><span class="badge badge-${m.material}">${m.material==='cobre'?'Cobre':'Alumínio'}</span></td>
                 <td><strong>${m.quantidade||0}</strong></td>
-                <td><span class="badge badge-${status}">${status==='success'?'OK':'Baixo'}</span></td>
+                <td><span class="badge badge-${status}">${(m.quantidade||0) > 0 ? 'OK' : 'Zerado'}</span></td>
                 <td>
-                    <button class="btn-icon" onclick="Materials.edit('${m.id}')" title="Editar">✏️</button>
+                    <button class="btn-icon" onclick="Materials.edit('${m.id}')" title="Editar">️</button>
                     <button class="btn-icon" onclick="Materials.remove('${m.id}')" title="Excluir">🗑️</button>
                 </td>
             </tr>`;
@@ -1387,56 +1308,6 @@ const Materials = {
     }
 };
 
-/* ============ MOVIMENTAÇÕES ============ */
-const Movements = {
-    data: [],
-    async load() { this.data = await SheetsAPI.getMovimentacoes(); this.render(); },
-    render() {
-        const inicio = document.getElementById('filter-data-inicio').value;
-        const fim = document.getElementById('filter-data-fim').value;
-        const tipo = document.getElementById('filter-tipo-mov').value;
-        const filtered = this.data.filter(m => {
-            if (inicio && m.data < inicio) return false;
-            if (fim && m.data > fim) return false;
-            if (tipo && m.tipo !== tipo) return false;
-            return true;
-        });
-        const tbody = document.querySelector('#table-historico tbody');
-        tbody.innerHTML = filtered.map(m => `
-            <tr>
-                <td>${m.data||'-'}</td>
-                <td><span class="badge badge-${m.tipo==='entrada'?'success':'danger'}">${m.tipo}</span></td>
-                <td><span class="badge badge-info">${m.codigo||m.material||'-'}</span></td>
-                <td><strong>${m.quantidade||0}</strong></td>
-                <td style="font-size:0.8rem;">${m.observacao||'-'}</td>
-            </tr>
-        `).join('') || '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-secondary)">Nenhuma movimentação</td></tr>';
-    },
-    exportExcel() {
-        if (this.data.length === 0) { Toast.warning('Sem dados'); return; }
-        const ws = XLSX.utils.json_to_sheet(this.data.map(m => ({
-            Data: m.data, Hora: m.hora, Tipo: m.tipo, Material: m.codigo || m.material,
-            Descricao: m.descricao, Quantidade: m.quantidade, Antes: m.quantidadeAntes,
-            Depois: m.quantidadeDepois, Observacao: m.observacao
-        })));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Movimentacoes');
-        XLSX.writeFile(wb, `movimentacoes_${Utils.now().date}.xlsx`);
-        Toast.success('Excel exportado');
-    },
-    exportPDF() {
-        if (this.data.length === 0) { Toast.warning('Sem dados'); return; }
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text('Relatório de Movimentações', 14, 15);
-        doc.autoTable({ startY: 25, head: [['Data','Tipo','Material','Qtd','Obs']], 
-            body: this.data.map(m => [m.data, m.tipo, m.codigo||m.material, m.quantidade, (m.observacao||'').substring(0,30)]), 
-            theme: 'grid', styles: {fontSize:8} });
-        doc.save(`movimentacoes_${Utils.now().date}.pdf`);
-        Toast.success('PDF exportado');
-    }
-};
-
 /* ============ APP ============ */
 const App = {
     init() {
@@ -1444,7 +1315,6 @@ const App = {
         this.setupNavigation();
         Conference.init();
         this.setupMaterials();
-        this.setupMovements();
         this.setupConfig();
         this.setupSenha();
     },
@@ -1458,7 +1328,6 @@ const App = {
                 const page = btn.dataset.page;
                 document.getElementById(`page-${page}`).classList.add('active');
                 if (page === 'materiais') await Materials.load();
-                else if (page === 'movimentacoes') await Movements.load();
             });
         });
     },
@@ -1508,12 +1377,10 @@ const App = {
             Toast.success('Configurações salvas!');
         });
         
-        document.getElementById('btn-limpar-dados').addEventListener('click', () => {
-            if (confirm('ATENÇÃO: Isso apagará TODOS os dados (materiais, movimentações e conferências). Deseja continuar?')) {
-                localStorage.removeItem('materiais');
-                localStorage.removeItem('movimentacoes');
-                localStorage.removeItem('conferencias');
-                Toast.success('Dados limpos!');
+        document.getElementById('btn-zerar-quantidades').addEventListener('click', async () => {
+            if (confirm('⚠️ ATENÇÃO: Isso irá ZERAR a quantidade de TODAS as barras.\n\nAs descrições, códigos e itens serão mantidos.\n\nDeseja continuar?')) {
+                const result = await SheetsAPI.zerarQuantidades();
+                Toast.success(`Quantidades zeradas! (${result.count} itens mantidos)`);
             }
         });
     },
@@ -1544,14 +1411,6 @@ const App = {
             this.closeModal('modal-material');
             await Materials.load();
         });
-    },
-    
-    setupMovements() {
-        document.getElementById('filter-data-inicio').addEventListener('change', () => Movements.render());
-        document.getElementById('filter-data-fim').addEventListener('change', () => Movements.render());
-        document.getElementById('filter-tipo-mov').addEventListener('change', () => Movements.render());
-        document.getElementById('btn-export-excel').addEventListener('click', () => Movements.exportExcel());
-        document.getElementById('btn-export-pdf').addEventListener('click', () => Movements.exportPDF());
     },
     
     closeModal(id) { document.getElementById(id).classList.remove('active'); }
