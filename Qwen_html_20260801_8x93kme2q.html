@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Controle de Estoque IA</title>
+
+<!-- Bibliotecas externas -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.16.3/dist/ort.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf_plugin_autotable.min.js"></script>
+
+<style>
+/* ============ RESET E VARIÁVEIS ============ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --primary: #0d6efd;
+    --primary-dark: #0a58ca;
+    --secondary: #6c757d;
+    --success: #198754;
+    --danger: #dc3545;
+    --warning: #ffc107;
+    --info: #0dcaf0;
+    --dark-bg: #0f1419;
+    --dark-card: #1a2028;
+    --dark-card-2: #232b36;
+    --dark-border: #2d3748;
+    --text-light: #f8f9fa;
+    --text-muted: #a0aec0;
+    --cobre: #cd7f32;
+    --aluminio: #b8c5d6;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+    --radius: 8px;
+    --radius-lg: 12px;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--dark-bg);
+    color: var(--text-light);
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* ============ LAYOUT ============ */
+.app-container { display: flex; flex-direction: column; min-height: 100vh; }
+
+.header {
+    background: linear-gradient(135deg, var(--dark-card) 0%, var(--dark-card-2) 100%);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 2px solid var(--primary);
+}
+
+.logo { display: flex; align-items: center; gap: 0.75rem; }
+.logo-icon {
+    width: 40px; height: 40px;
+    background: var(--primary);
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+}
+.logo h1 { font-size: 1.3rem; color: var(--text-light); font-weight: 600; }
+.logo span { color: var(--primary); }
+
+.nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.nav-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+.nav-btn:hover { background: var(--dark-card-2); color: var(--text-light); }
+.nav-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.user-info { display: flex; align-items: center; gap: 0.75rem; }
+#user-name { color: var(--text-muted); font-size: 0.9rem; }
+
+.main-content { flex: 1; padding: 2rem; max-width: 1600px; margin: 0 auto; width: 100%; }
+
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ============ CARDS E MÉTRICAS ============ */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: var(--dark-card);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--dark-border);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.card h3 { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
+.metric { font-size: 2.5rem; font-weight: 700; color: var(--text-light); }
+.metric.success { color: var(--success); }
+.metric.warning { color: var(--warning); }
+.metric.danger { color: var(--danger); }
+.metric.info { color: var(--info); }
+
+.charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-card {
+    background: var(--dark-card);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--dark-border);
+}
+.chart-card h3 { margin-bottom: 1rem; color: var(--text-muted); font-size: 1rem; }
+.chart-card canvas { max-height: 300px; }
+
+.tables-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.table-card {
+    background: var(--dark-card);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--dark-border);
+    overflow: hidden;
+}
+.table-card h3 { margin-bottom: 1rem; color: var(--text-muted); font-size: 1rem; }
+
+/* ============ TABELAS ============ */
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+thead { background: var(--dark-card-2); }
+th { padding: 0.75rem; text-align: left; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; border-bottom: 2px solid var(--dark-border); }
+td { padding: 0.75rem; border-bottom: 1px solid var(--dark-border); color: var(--text-light); }
+tbody tr { transition: background 0.15s; }
+tbody tr:hover { background: var(--dark-card-2); }
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.badge-success { background: rgba(25, 135, 84, 0.2); color: var(--success); }
+.badge-danger { background: rgba(220, 53, 69, 0.2); color: var(--danger); }
+.badge-warning { background: rgba(255, 193, 7, 0.2); color: var(--warning); }
+.badge-info { background: rgba(13, 202, 240, 0.2); color: var(--info); }
+.badge-cobre { background: rgba(205, 127, 50, 0.2); color: var(--cobre); }
+.badge-aluminio { background: rgba(184, 197, 214, 0.2); color: var(--aluminio); }
+
+/* ============ BOTÕES ============ */
+.btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+.btn-secondary { background: var(--secondary); color: white; }
+.btn-secondary:hover:not(:disabled) { background: #5a6268; }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover:not(:disabled) { background: #146c43; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover:not(:disabled) { background: #b02a37; }
+.btn-warning { background: var(--warning); color: #000; }
+.btn-icon {
+    background: var(--dark-card-2);
+    border: 1px solid var(--dark-border);
+    color: var(--text-light);
+    width: 40px; height: 40px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+}
+.btn-icon:hover { background: var(--primary); border-color: var(--primary); }
+
+/* ============ CONFERÊNCIA ============ */
+.conferencia-container { max-width: 1400px; margin: 0 auto; }
+
+.material-selector { text-align: center; padding: 3rem 1rem; }
+.material-selector h2 { margin-bottom: 2rem; font-size: 1.8rem; }
+.material-buttons { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; }
+.material-btn {
+    background: var(--dark-card);
+    border: 2px solid var(--dark-border);
+    color: var(--text-light);
+    padding: 2rem 3rem;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+.material-btn:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.material-btn[data-material="cobre"]:hover { border-color: var(--cobre); background: rgba(205, 127, 50, 0.1); }
+.material-btn[data-material="aluminio"]:hover { border-color: var(--aluminio); background: rgba(184, 197, 214, 0.1); }
+.material-btn .icon { font-size: 4rem; }
+
+.camera-container { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+.camera-wrapper {
+    position: relative;
+    background: #000;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    box-shadow: var(--shadow-lg);
+}
+#video { width: 100%; height: 100%; object-fit: cover; display: block; }
+#overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+
+.camera-controls {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    backdrop-filter: blur(10px);
+}
+
+.detection-info { display: flex; flex-direction: column; gap: 1rem; }
+.info-card {
+    background: var(--dark-card);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--dark-border);
+}
+.info-card h4 { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+.big-number { font-size: 2.5rem; font-weight: 700; color: var(--primary); line-height: 1; }
+.big-number.positive { color: var(--success); }
+.big-number.negative { color: var(--danger); }
+.big-number.zero { color: var(--text-muted); }
+
+.status-indicator { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; }
+.status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--secondary);
+    animation: pulse 1.5s infinite;
+}
+.status-dot.active { background: var(--success); }
+.status-dot.loading { background: var(--warning); }
+.status-dot.error { background: var(--danger); }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.action-buttons { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem; grid-column: 1 / -1; }
+.action-buttons .btn { flex: 1; min-width: 150px; padding: 0.9rem; font-size: 1rem; }
+
+/* ============ PÁGINAS DE LISTA ============ */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.page-header h2 { font-size: 1.5rem; }
+
+.filters {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    background: var(--dark-card);
+    padding: 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--dark-border);
+}
+
+input[type="text"], input[type="number"], input[type="date"], select {
+    background: var(--dark-card-2);
+    border: 1px solid var(--dark-border);
+    color: var(--text-light);
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+}
+input:focus, select:focus { outline: none; border-color: var(--primary); }
+
+.table-container {
+    background: var(--dark-card);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--dark-border);
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* ============ CONFIGURAÇÕES ============ */
+.settings-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
+}
+.setting-group {
+    background: var(--dark-card);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--dark-border);
+}
+.setting-group h3 { margin-bottom: 1.25rem; color: var(--primary); font-size: 1.1rem; }
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--dark-border);
+}
+.setting-item:last-child { border-bottom: none; }
+.setting-item label { color: var(--text-light); font-size: 0.95rem; }
+.setting-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+.setting-item input, .setting-item select { width: 200px; }
+
+/* ============ MODAL ============ */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    backdrop-filter: blur(4px);
+}
+.modal.active { display: flex; }
+.modal-content {
+    background: var(--dark-card);
+    border-radius: var(--radius-lg);
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid var(--dark-border);
+    box-shadow: var(--shadow-lg);
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--dark-border);
+}
+.modal-header h2 { font-size: 1.25rem; }
+.btn-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+.btn-close:hover { background: var(--dark-card-2); color: var(--text-light); }
+
+form { padding: 1.5rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.4rem; color: var(--text-muted); font-size: 0.85rem; font-weight: 500; }
+.form-group input, .form-group select { width: 100%; }
+.form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+
+/* ============ LOADING ============ */
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(15, 20, 25, 0.95);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 1rem;
+    backdrop-filter: blur(8px);
+}
+.loading-overlay.active { display: flex; }
+.spinner {
+    width: 60px; height: 60px;
+    border: 4px solid var(--dark-border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============ TOAST ============ */
+.toast-container {
+    position: fixed;
+    top: 1rem; right: 1rem;
+    z-index: 3000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.toast {
+    background: var(--dark-card);
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    border-left: 4px solid var(--primary);
+    min-width: 280px;
+    animation: slideIn 0.3s ease;
+}
+.toast.success { border-left-color: var(--success); }
+.toast.error { border-left-color: var(--danger); }
+.toast.warning { border-left-color: var(--warning); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* ============ RESPONSIVO ============ */
+@media (max-width: 900px) {
+    .header { flex-direction: column; gap: 1rem; padding: 1rem; }
+    .nav { width: 100%; overflow-x: auto; }
+    .camera-container { grid-template-columns: 1fr; }
+    .main-content { padding: 1rem; }
+    .metric { font-size: 2rem; }
+    .big-number { font-size: 2rem; }
+}
+
+@media (max-width: 600px) {
+    .material-buttons { flex-direction: column; }
+    .material-btn { width: 100%; }
+    .action-buttons .btn { min-width: 100%; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--dark-bg); }
+::-webkit-scrollbar-thumb { background: var(--dark-border); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">🏭</div>
+            <h1>Controle de Estoque <span>IA</span></h1>
+        </div>
+        <nav class="nav">
+            <button class="nav-btn active" data-page="dashboard">📊 Dashboard</button>
+            <button class="nav-btn" data-page="conferencia">📷 Conferência</button>
+            <button class="nav-btn" data-page="materiais">📦 Materiais</button>
+            <button class="nav-btn" data-page="movimentacoes">📋 Movimentações</button>
+            <button class="nav-btn" data-page="configuracoes">⚙️ Configurações</button>
+        </nav>
+        <div class="user-info">
+            <span id="user-name">Admin</span>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="main-content">
+        
+        <!-- DASHBOARD -->
+        <div id="page-dashboard" class="page active">
+            <div class="dashboard-grid">
+                <div class="card"><h3>Total em Estoque</h3><div class="metric" id="total-estoque">0</div></div>
+                <div class="card"><h3>Barras de Cobre</h3><div class="metric" id="total-cobre" style="color: var(--cobre);">0</div></div>
+                <div class="card"><h3>Barras de Alumínio</h3><div class="metric" id="total-aluminio" style="color: var(--aluminio);">0</div></div>
+                <div class="card"><h3>Precisão Média IA</h3><div class="metric success" id="precisao-ia">0%</div></div>
+                <div class="card"><h3>Conferências Hoje</h3><div class="metric info" id="conf-hoje">0</div></div>
+                <div class="card"><h3>Tempo Médio Conferência</h3><div class="metric" id="tempo-medio">0s</div></div>
+            </div>
+            <div class="charts-container">
+                <div class="chart-card"><h3>Estoque por Material</h3><canvas id="chart-estoque"></canvas></div>
+                <div class="chart-card"><h3>Movimentações (Últimos 7 dias)</h3><canvas id="chart-movimentacoes"></canvas></div>
+            </div>
+            <div class="tables-container">
+                <div class="table-card">
+                    <h3>Últimas Movimentações</h3>
+                    <table id="table-movimentacoes">
+                        <thead><tr><th>Data</th><th>Tipo</th><th>Material</th><th>Qtd</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="table-card">
+                    <h3>Últimas Conferências</h3>
+                    <table id="table-conferencias">
+                        <thead><tr><th>Data</th><th>Material</th><th>Detectado</th><th>Registrado</th><th>Dif.</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONFERÊNCIA -->
+        <div id="page-conferencia" class="page">
+            <div class="conferencia-container">
+                <div class="material-selector" id="material-selector">
+                    <h2>Selecione o Material para Conferência</h2>
+                    <div class="material-buttons">
+                        <button class="material-btn" data-material="cobre">
+                            <span class="icon">🟤</span>
+                            <span>Barras de Cobre</span>
+                        </button>
+                        <button class="material-btn" data-material="aluminio">
+                            <span class="icon">⚪</span>
+                            <span>Barras de Alumínio</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="camera-container" id="camera-container" style="display: none;">
+                    <div class="camera-wrapper">
+                        <video id="video" autoplay playsinline muted></video>
+                        <canvas id="overlay"></canvas>
+                        <div class="camera-controls">
+                            <button class="btn-icon" id="btn-flash" title="Flash">🔦</button>
+                            <button class="btn-icon" id="btn-zoom-in" title="Zoom +">🔍+</button>
+                            <button class="btn-icon" id="btn-zoom-out" title="Zoom -">🔍-</button>
+                            <button class="btn-icon" id="btn-freeze" title="Congelar">⏸️</button>
+                            <button class="btn-icon" id="btn-capture" title="Capturar">📸</button>
+                        </div>
+                    </div>
+                    <div class="detection-info">
+                        <div class="info-card"><h4>Material Selecionado</h4><div class="big-number" id="material-nome" style="font-size: 1.3rem;">-</div></div>
+                        <div class="info-card"><h4>Quantidade Detectada</h4><div class="big-number" id="qtd-detectada">0</div></div>
+                        <div class="info-card"><h4>Quantidade Registrada</h4><div class="big-number" id="qtd-registrada">0</div></div>
+                        <div class="info-card"><h4>Diferença</h4><div class="big-number zero" id="diferenca">0</div></div>
+                        <div class="info-card"><h4>FPS</h4><div class="metric" id="fps">0</div></div>
+                        <div class="info-card"><h4>Confiança Média</h4><div class="metric" id="confianca">0%</div></div>
+                        <div class="info-card"><h4>Status IA</h4>
+                            <div class="status-indicator" id="status-ia">
+                                <span class="status-dot"></span>
+                                <span class="status-text">Aguardando</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="btn-iniciar" class="btn btn-primary">▶️ Iniciar Detecção</button>
+                        <button id="btn-parar" class="btn btn-secondary" disabled>⏹️ Parar</button>
+                        <button id="btn-salvar" class="btn btn-success" disabled>💾 Salvar Conferência</button>
+                        <button id="btn-voltar" class="btn btn-danger">← Voltar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MATERIAIS -->
+        <div id="page-materiais" class="page">
+            <div class="page-header">
+                <h2>Cadastro de Materiais</h2>
+                <button id="btn-novo-material" class="btn btn-primary">+ Novo Material</button>
+            </div>
+            <div class="filters">
+                <input type="text" id="search-material" placeholder="🔍 Pesquisar código ou descrição..." style="flex: 1; min-width: 200px;">
+                <select id="filter-tipo">
+                    <option value="">Todos os Materiais</option>
+                    <option value="cobre">Cobre</option>
+                    <option value="aluminio">Alumínio</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table id="table-materiais">
+                    <thead>
+                        <tr>
+                            <th>Código</th><th>Descrição</th><th>Tipo</th><th>Material</th>
+                            <th>Comp.</th><th>Peso</th><th>Qtd Atual</th><th>Qtd Mín.</th>
+                            <th>Local</th><th>Status</th><th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- MOVIMENTAÇÕES -->
+        <div id="page-movimentacoes" class="page">
+            <div class="page-header">
+                <h2>Histórico de Movimentações</h2>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="btn-export-excel" class="btn btn-success">📊 Excel</button>
+                    <button id="btn-export-pdf" class="btn btn-danger">📄 PDF</button>
+                </div>
+            </div>
+            <div class="filters">
+                <input type="date" id="filter-data-inicio">
+                <input type="date" id="filter-data-fim">
+                <select id="filter-tipo-mov">
+                    <option value="">Todos os Tipos</option>
+                    <option value="entrada">Entrada</option>
+                    <option value="saida">Saída</option>
+                    <option value="conferencia">Conferência</option>
+                </select>
+                <select id="filter-material-mov">
+                    <option value="">Todos os Materiais</option>
+                    <option value="cobre">Cobre</option>
+                    <option value="aluminio">Alumínio</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table id="table-historico">
+                    <thead>
+                        <tr>
+                            <th>Data</th><th>Hora</th><th>Usuário</th><th>Tipo</th>
+                            <th>Material</th><th>Qtd</th><th>Antes</th><th>Depois</th><th>Obs.</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CONFIGURAÇÕES -->
+        <div id="page-configuracoes" class="page">
+            <div class="page-header"><h2>Configurações do Sistema</h2></div>
+            <div class="settings-container">
+                <div class="setting-group">
+                    <h3>🤖 Inteligência Artificial</h3>
+                    <div class="setting-item">
+                        <label>Modelo IA</label>
+                        <select id="config-modelo-ia">
+                            <option value="yolov8n">YOLOv8 Nano (Rápido)</option>
+                            <option value="yolov8s">YOLOv8 Small (Balanceado)</option>
+                            <option value="yolov8m">YOLOv8 Medium (Preciso)</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>Confiança Mínima (%)</label>
+                        <input type="number" id="config-confianca" min="0" max="100" value="50">
+                    </div>
+                    <div class="setting-item">
+                        <label>URL API Google Apps Script</label>
+                        <input type="text" id="config-api-url" placeholder="https://script.google.com/..." style="width: 100%;">
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <h3>📷 Câmera</h3>
+                    <div class="setting-item">
+                        <label>Resolução</label>
+                        <select id="config-resolucao">
+                            <option value="640x480">640x480 (Rápido)</option>
+                            <option value="1280x720" selected>1280x720 (HD)</option>
+                            <option value="1920x1080">1920x1080 (Full HD)</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>Ativar Flash</label>
+                        <input type="checkbox" id="config-flash">
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <h3>🎨 Interface</h3>
+                    <div class="setting-item">
+                        <label>Modo Escuro</label>
+                        <input type="checkbox" id="config-dark-mode" checked>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <h3>💾 Dados</h3>
+                    <div class="setting-item">
+                        <label>Modo Demo (sem API)</label>
+                        <input type="checkbox" id="config-demo-mode" checked>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <button id="btn-salvar-config" class="btn btn-primary">💾 Salvar Configurações</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL MATERIAL -->
+    <div id="modal-material" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Novo Material</h2>
+                <button class="btn-close" onclick="App.closeModal()">&times;</button>
+            </div>
+            <form id="form-material">
+                <input type="hidden" id="input-id">
+                <div class="form-group"><label>Código *</label><input type="text" id="input-codigo" required></div>
+                <div class="form-group"><label>Descrição *</label><input type="text" id="input-descricao" required></div>
+                <div class="form-group"><label>Tipo</label>
+                    <select id="input-tipo"><option value="barra">Barra</option><option value="chapa">Chapa</option><option value="perfil">Perfil</option></select>
+                </div>
+                <div class="form-group"><label>Material *</label>
+                    <select id="input-material" required><option value="cobre">Cobre</option><option value="aluminio">Alumínio</option></select>
+                </div>
+                <div class="form-group"><label>Comprimento (mm)</label><input type="number" id="input-comprimento" value="3000"></div>
+                <div class="form-group"><label>Peso (kg)</label><input type="number" step="0.01" id="input-peso" value="10"></div>
+                <div class="form-group"><label>Quantidade Atual</label><input type="number" id="input-quantidade" value="0"></div>
+                <div class="form-group"><label>Quantidade Mínima</label><input type="number" id="input-minimo" value="10"></div>
+                <div class="form-group"><label>Localização</label><input type="text" id="input-localizacao" value="Depósito A"></div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="App.closeModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOADING -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loading-text">Carregando...</p>
+    </div>
+
+    <!-- TOASTS -->
+    <div class="toast-container" id="toast-container"></div>
+</div>
+
+<script>
+/* ============================================================
+   SISTEMA DE CONTROLE DE ESTOQUE COM IA - ARQUIVO ÚNICO
+   ============================================================ */
+
+/* ============ CONFIGURAÇÃO GLOBAL ============ */
+const Config = {
+    apiUrl: localStorage.getItem('apiUrl') || '',
+    demoMode: localStorage.getItem('demoMode') !== 'false',
+    confidence: parseFloat(localStorage.getItem('confidence') || '0.5'),
+    model: localStorage.getItem('model') || 'yolov8n',
+    resolution: localStorage.getItem('resolution') || '1280x720',
+    darkMode: localStorage.getItem('darkMode') !== 'false',
+    flash: localStorage.getItem('flash') === 'true',
+    
+    save() {
+        localStorage.setItem('apiUrl', this.apiUrl);
+        localStorage.setItem('demoMode', this.demoMode);
+        localStorage.setItem('confidence', this.confidence);
+        localStorage.setItem('model', this.model);
+        localStorage.setItem('resolution', this.resolution);
+        localStorage.setItem('darkMode', this.darkMode);
+        localStorage.setItem('flash', this.flash);
+    },
+    
+    load() {
+        document.getElementById('config-api-url').value = this.apiUrl;
+        document.getElementById('config-confianca').value = this.confidence * 100;
+        document.getElementById('config-modelo-ia').value = this.model;
+        document.getElementById('config-resolucao').value = this.resolution;
+        document.getElementById('config-dark-mode').checked = this.darkMode;
+        document.getElementById('config-flash').checked = this.flash;
+        document.getElementById('config-demo-mode').checked = this.demoMode;
+    }
+};
+
+/* ============ UTILITÁRIOS ============ */
+const Utils = {
+    uuid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0;
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    },
+    now() {
+        const d = new Date();
+        return {
+            date: d.toISOString().split('T')[0],
+            time: d.toTimeString().split(' ')[0],
+            full: d.toLocaleString('pt-BR')
+        };
+    },
+    formatNumber(n) { return new Intl.NumberFormat('pt-BR').format(n); },
+    formatCurrency(n) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n); }
+};
+
+/* ============ TOAST ============ */
+const Toast = {
+    show(message, type = 'info', duration = 3000) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = 'slideIn 0.3s ease reverse';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    },
+    success(msg) { this.show(msg, 'success'); },
+    error(msg) { this.show(msg, 'error', 5000); },
+    warning(msg) { this.show(msg, 'warning'); },
+    info(msg) { this.show(msg, 'info'); }
+};
+
+/* ============ LOADING ============ */
+const Loading = {
+    show(text = 'Carregando...') {
+        document.getElementById('loading-text').textContent = text;
+        document.getElementById('loading-overlay').classList.add('active');
+    },
+    hide() { document.getElementById('loading-overlay').classList.remove('active'); }
+};
+
+/* ============ GOOGLE SHEETS API ============ */
+const SheetsAPI = {
+    async request(endpoint, method = 'GET', data = null) {
+        if (Config.demoMode || !Config.apiUrl) {
+            return this.demoHandler(endpoint, method, data);
+        }
+        
+        try {
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' }
+            };
+            if (data && method !== 'GET') options.body = JSON.stringify(data);
+            
+            const url = `${Config.apiUrl}?action=${endpoint}`;
+            const response = await fetch(url, options);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            console.error('API Error:', error);
+            Toast.error('Erro ao comunicar com API. Usando modo demo.');
+            return this.demoHandler(endpoint, method, data);
+        }
+    },
+    
+    demoHandler(endpoint, method, data) {
+        const storage = {
+            materiais: JSON.parse(localStorage.getItem('demo_materiais') || '[]'),
+            movimentacoes: JSON.parse(localStorage.getItem('demo_movimentacoes') || '[]'),
+            conferencias: JSON.parse(localStorage.getItem('demo_conferencias') || '[]')
+        };
+        
+        // Dados iniciais
+        if (storage.materiais.length === 0) {
+            storage.materiais = [
+                { id: Utils.uuid(), codigo: 'CU-001', descricao: 'Barra de Cobre 10mm', tipo: 'barra', material: 'cobre', comprimento: 3000, peso: 15.5, quantidade: 120, minimo: 20, localizacao: 'Depósito A', dataCadastro: Utils.now().full, status: 'ativo' },
+                { id: Utils.uuid(), codigo: 'CU-002', descricao: 'Barra de Cobre 15mm', tipo: 'barra', material: 'cobre', comprimento: 3000, peso: 22.3, quantidade: 85, minimo: 15, localizacao: 'Depósito A', dataCadastro: Utils.now().full, status: 'ativo' },
+                { id: Utils.uuid(), codigo: 'AL-001', descricao: 'Barra de Alumínio 20mm', tipo: 'barra', material: 'aluminio', comprimento: 3000, peso: 8.2, quantidade: 200, minimo: 30, localizacao: 'Depósito B', dataCadastro: Utils.now().full, status: 'ativo' },
+                { id: Utils.uuid(), codigo: 'AL-002', descricao: 'Barra de Alumínio 25mm', tipo: 'barra', material: 'aluminio', comprimento: 3000, peso: 12.5, quantidade: 15, minimo: 25, localizacao: 'Depósito B', dataCadastro: Utils.now().full, status: 'alerta' }
+            ];
+            localStorage.setItem('demo_materiais', JSON.stringify(storage.materiais));
+        }
+        
+        switch (endpoint) {
+            case 'materiais': return storage.materiais;
+            case 'estoque': return storage.materiais;
+            case 'movimentacoes': return storage.movimentacoes;
+            case 'conferencias': return storage.conferencias;
+            case 'post_conferencia':
+                storage.conferencias.unshift(data);
+                localStorage.setItem('demo_conferencias', JSON.stringify(storage.conferencias));
+                return { success: true, id: data.id };
+            case 'post_movimentacao':
+                storage.movimentacoes.unshift(data);
+                localStorage.setItem('demo_movimentacoes', JSON.stringify(storage.movimentacoes));
+                return { success: true, id: data.id };
+            case 'post_material':
+                storage.materiais.push(data);
+                localStorage.setItem('demo_materiais', JSON.stringify(storage.materiais));
+                return { success: true, id: data.id };
+            case 'put_material':
+                const idx = storage.materiais.findIndex(m => m.id === data.id);
+                if (idx >= 0) storage.materiais[idx] = { ...storage.materiais[idx], ...data };
+                localStorage.setItem('demo_materiais', JSON.stringify(storage.materiais));
+                return { success: true };
+            case 'delete_material':
+                storage.materiais = storage.materiais.filter(m => m.id !== data.id);
+                localStorage.setItem('demo_materiais', JSON.stringify(storage.materiais));
+                return { success: true };
+            default: return [];
+        }
+    },
+    
+    async getMateriais() { return await this.request('materiais'); },
+    async getMovimentacoes() { return await this.request('movimentacoes'); },
+    async getConferencias() { return await this.request('conferencias'); },
+    async saveConferencia(data) { return await this.request('post_conferencia', 'POST', data); },
+    async saveMovimentacao(data) { return await this.request('post_movimentacao', 'POST', data); },
+    async saveMaterial(data) { return await this.request('post_material', 'POST', data); },
+    async updateMaterial(data) { return await this.request('put_material', 'PUT', data); },
+    async deleteMaterial(id) { return await this.request('delete_material', 'DELETE', { id }); }
+};
+
+/* ============ CÂMERA ============ */
+const Camera = {
+    video: null,
+    stream: null,
+    track: null,
+    constraints: {},
+    zoom: 1,
+    flashOn: false,
+    
+    init() {
+        this.video = document.getElementById('video');
+    },
+    
+    async start() {
+        try {
+            const [w, h] = Config.resolution.split('x').map(Number);
+            this.constraints = {
+                video: {
+                    width: { ideal: w },
+                    height: { ideal: h },
+                    facingMode: 'environment',
+                    autoFocus: true,
+                    focusMode: 'continuous',
+                    exposureMode: 'continuous',
+                    whiteBalanceMode: 'continuous'
+                },
+                audio: false
+            };
+            
+            this.stream = await navigator.mediaDevices.getUserMedia(this.constraints);
+            this.video.srcObject = this.stream;
+            this.track = this.stream.getVideoTracks()[0];
+            
+            await new Promise(resolve => {
+                this.video.onloadedmetadata = () => {
+                    this.video.play();
+                    resolve();
+                };
+            });
+            
+            this.setupOverlay();
+            Toast.success('Câmera iniciada');
+            return true;
+        } catch (error) {
+            console.error('Camera error:', error);
+            Toast.error('Erro ao acessar câmera: ' + error.message);
+            return false;
+        }
+    },
+    
+    setupOverlay() {
+        const overlay = document.getElementById('overlay');
+        overlay.width = this.video.videoWidth;
+        overlay.height = this.video.videoHeight;
+    },
+    
+    stop() {
+        if (this.stream) {
+            this.stream.getTracks().forEach(t => t.stop());
+            this.stream = null;
+        }
+        this.video.srcObject = null;
+    },
+    
+    async toggleFlash() {
+        if (!this.track) return;
+        try {
+            const capabilities = this.track.getCapabilities();
+            if (capabilities.torch) {
+                this.flashOn = !this.flashOn;
+                await this.track.applyConstraints({ advanced: [{ torch: this.flashOn }] });
+                Toast.info(this.flashOn ? 'Flash ligado' : 'Flash desligado');
+            } else {
+                Toast.warning('Flash não disponível neste dispositivo');
+            }
+        } catch (e) {
+            Toast.error('Erro ao controlar flash');
+        }
+    },
+    
+    zoomIn() {
+        this.zoom = Math.min(this.zoom + 0.2, 3);
+        this.applyZoom();
+    },
+    
+    zoomOut() {
+        this.zoom = Math.max(this.zoom - 0.2, 1);
+        this.applyZoom();
+    },
+    
+    async applyZoom() {
+        if (!this.track) return;
+        try {
+            const capabilities = this.track.getCapabilities();
+            if (capabilities.zoom) {
+                const max = capabilities.zoom.max;
+                const min = capabilities.zoom.min;
+                const z = min + (max - min) * ((this.zoom - 1) / 2);
+                await this.track.applyConstraints({ advanced: [{ zoom: z }] });
+            }
+        } catch (e) { console.warn('Zoom não suportado'); }
+    },
+    
+    freeze() {
+        if (this.video.paused) {
+            this.video.play();
+            Toast.info('Vídeo retomado');
+        } else {
+            this.video.pause();
+            Toast.info('Vídeo congelado');
+        }
+    },
+    
+    capture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = this.video.videoWidth;
+        canvas.height = this.video.videoHeight;
+        canvas.getContext('2d').drawImage(this.video, 0, 0);
+        const link = document.createElement('a');
+        link.download = `captura_${Date.now()}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+        Toast.success('Imagem capturada');
+    }
+};
+
+/* ============ VISÃO COMPUTACIONAL (IA) ============ */
+const Vision = {
+    session: null,
+    isRunning: false,
+    animationId: null,
+    lastDetections: [],
+    stableCount: 0,
+    lastCount: 0,
+    fpsCounter: { frames: 0, lastTime: performance.now(), fps: 0 },
+    avgConfidence: 0,
+    confidenceBuffer: [],
+    startTime: 0,
+    
+    async loadModel() {
+        try {
+            Loading.show('Carregando modelo IA...');
+            const modelUrl = 'https://huggingface.co/Xenova/yolov8n/resolve/main/model.onnx';
+            
+            ort.env.wasm.numThreads = 4;
+            ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.16.3/dist/';
+            
+            this.session = await ort.InferenceSession.create(modelUrl, {
+                executionProviders: ['wasm'],
+                graphOptimizationLevel: 'all'
+            });
+            
+            Loading.hide();
+            Toast.success('Modelo IA carregado com sucesso');
+            return true;
+        } catch (error) {
+            console.error('Model load error:', error);
+            Loading.hide();
+            Toast.error('Erro ao carregar modelo IA. Usando detector alternativo.');
+            this.session = null;
+            return false;
+        }
+    },
+    
+    async startDetection(materialType) {
+        this.materialType = materialType;
+        this.isRunning = true;
+        this.startTime = performance.now();
+        this.confidenceBuffer = [];
+        this.stableCount = 0;
+        this.lastCount = 0;
+        
+        this.setStatus('active', 'Detectando...');
+        this.detectLoop();
+    },
+    
+    stopDetection() {
+        this.isRunning = false;
+        if (this.animationId) cancelAnimationFrame(this.animationId);
+        this.setStatus('', 'Parado');
+        this.clearOverlay();
+    },
+    
+    async detectLoop() {
+        if (!this.isRunning) return;
+        
+        const start = performance.now();
+        
+        try {
+            let detections = [];
+            if (this.session) {
+                detections = await this.runYOLO();
+            } else {
+                detections = this.fallbackDetector();
+            }
+            
+            this.lastDetections = detections;
+            this.drawDetections(detections);
+            this.updateMetrics(detections);
+            this.updateStableCount(detections.length);
+            
+        } catch (error) {
+            console.error('Detection error:', error);
+        }
+        
+        const elapsed = performance.now() - start;
+        const delay = Math.max(0, 33 - elapsed);
+        this.animationId = setTimeout(() => this.detectLoop(), delay);
+    },
+    
+    async runYOLO() {
+        const video = Camera.video;
+        if (video.readyState < 2) return [];
+        
+        const inputSize = 640;
+        const canvas = document.createElement('canvas');
+        canvas.width = inputSize;
+        canvas.height = inputSize;
+        const ctx = canvas.getContext('2d');
+        
+        const scale = Math.min(inputSize / video.videoWidth, inputSize / video.videoHeight);
+        const w = video.videoWidth * scale;
+        const h = video.videoHeight * scale;
+        const x = (inputSize - w) / 2;
+        const y = (inputSize - h) / 2;
+        
+        ctx.fillStyle = '#808080';
+        ctx.fillRect(0, 0, inputSize, inputSize);
+        ctx.drawImage(video, x, y, w, h);
+        
+        const imageData = ctx.getImageData(0, 0, inputSize, inputSize);
+        const input = this.preprocess(imageData, inputSize);
+        
+        const feeds = {};
+        feeds[this.session.inputNames[0]] = new ort.Tensor('float32', input, [1, 3, inputSize, inputSize]);
+        
+        const results = await this.session.run(feeds);
+        const output = results[this.session.outputNames[0]].data;
+        
+        return this.postProcess(output, inputSize, video.videoWidth, video.videoHeight, x, y, scale);
+    },
+    
+    preprocess(imageData, size) {
+        const data = imageData.data;
+        const input = new Float32Array(3 * size * size);
+        for (let i = 0; i < size * size; i++) {
+            const idx = i * 4;
+            input[i] = data[idx] / 255;
+            input[i + size * size] = data[idx + 1] / 255;
+            input[i + 2 * size * size] = data[idx + 2] / 255;
+        }
+        return input;
+    },
+    
+    postProcess(output, inputSize, vw, vh, ox, oy, scale) {
+        const detections = [];
+        const numDetections = 8400;
+        const numClasses = 80;
+        const confidence = Config.confidence;
+        
+        for (let i = 0; i < numDetections; i++) {
+            let maxScore = -Infinity;
+            let maxClass = 0;
+            
+            for (let j = 0; j < numClasses; j++) {
+                const score = output[i * (numClasses + 4) + j + 4];
+                if (score > maxScore) {
+                    maxScore = score;
+                    maxClass = j;
+                }
+            }
+            
+            if (maxScore > confidence) {
+                const cx = output[i * (numClasses + 4)];
+                const cy = output[i * (numClasses + 4) + 1];
+                const w = output[i * (numClasses + 4) + 2];
+                const h = output[i * (numClasses + 4) + 3];
+                
+                const x1 = (cx - w / 2 - ox) / scale;
+                const y1 = (cy - h / 2 - oy) / scale;
+                const bw = w / scale;
+                const bh = h / scale;
+                
+                detections.push({
+                    x: x1, y: y1, w: bw, h: bh,
+                    confidence: maxScore,
+                    classId: maxClass
+                });
+            }
+        }
+        
+        return this.nms(detections, 0.4);
+    },
+    
+    nms(detections, threshold) {
+        detections.sort((a, b) => b.confidence - a.confidence);
+        const result = [];
+        const used = new Set();
+        
+        for (let i = 0; i < detections.length; i++) {
+            if (used.has(i)) continue;
+            result.push(detections[i]);
+            for (let j = i + 1; j < detections.length; j++) {
+                if (used.has(j)) continue;
+                if (this.iou(detections[i], detections[j]) > threshold) used.add(j);
+            }
+        }
+        return result;
+    },
+    
+    iou(a, b) {
+        const x1 = Math.max(a.x, b.x);
+        const y1 = Math.max(a.y, b.y);
+        const x2 = Math.min(a.x + a.w, b.x + b.w);
+        const y2 = Math.min(a.y + a.h, b.y + b.h);
+        const inter = Math.max(0, x2 - x1) * Math.max(0, y2 - y1);
+        const union = a.w * a.h + b.w * b.h - inter;
+        return inter / union;
+    },
+    
+    fallbackDetector() {
+        // Detector alternativo baseado em análise de cores para barras metálicas
+        const video = Camera.video;
+        if (video.readyState < 2) return [];
+        
+        const canvas = document.createElement('canvas');
+        const scale = 0.25;
+        canvas.width = video.videoWidth * scale;
+        canvas.height = video.videoHeight * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        
+        const detections = [];
+        const blockSize = 20;
+        const isCopper = this.materialType === 'cobre';
+        
+        for (let by = 0; by < canvas.height; by += blockSize) {
+            for (let bx = 0; bx < canvas.width; bx += blockSize) {
+                let r = 0, g = 0, b = 0, count = 0;
+                
+                for (let y = by; y < Math.min(by + blockSize, canvas.height); y += 2) {
+                    for (let x = bx; x < Math.min(bx + blockSize, canvas.width); x += 2) {
+                        const idx = (y * canvas.width + x) * 4;
+                        r += data[idx]; g += data[idx + 1]; b += data[idx + 2];
+                        count++;
+                    }
+                }
+                
+                r /= count; g /= count; b /= count;
+                
+                let match = false;
+                if (isCopper) {
+                    match = r > 150 && g > 80 && g < 160 && b < 100 && r > g * 1.3;
+                } else {
+                    match = r > 150 && g > 150 && b > 150 && Math.abs(r - g) < 30 && Math.abs(g - b) < 30;
+                }
+                
+                if (match) {
+                    detections.push({
+                        x: bx / scale, y: by / scale,
+                        w: blockSize / scale, h: blockSize / scale,
+                        confidence: 0.75, classId: 0
+                    });
+                }
+            }
+        }
+        
+        return this.mergeBlocks(detections);
+    },
+    
+    mergeBlocks(detections) {
+        if (detections.length === 0) return [];
+        const merged = [];
+        const used = new Set();
+        
+        for (let i = 0; i < detections.length; i++) {
+            if (used.has(i)) continue;
+            let minX = detections[i].x, minY = detections[i].y;
+            let maxX = detections[i].x + detections[i].w;
+            let maxY = detections[i].y + detections[i].h;
+            
+            for (let j = i + 1; j < detections.length; j++) {
+                if (used.has(j)) continue;
+                const d = detections[j];
+                if (Math.abs(d.x - minX) < 60 || Math.abs((d.x + d.w) - maxX) < 60) {
+                    if (Math.abs(d.y - minY) < 60 || Math.abs((d.y + d.h) - maxY) < 60) {
+                        minX = Math.min(minX, d.x);
+                        minY = Math.min(minY, d.y);
+                        maxX = Math.max(maxX, d.x + d.w);
+                        maxY = Math.max(maxY, d.y + d.h);
+                        used.add(j);
+                    }
+                }
+            }
+            
+            merged.push({
+                x: minX, y: minY,
+                w: maxX - minX, h: maxY - minY,
+                confidence: 0.75, classId: 0
+            });
+            used.add(i);
+        }
+        
+        return merged;
+    },
+    
+    drawDetections(detections) {
+        const overlay = document.getElementById('overlay');
+        const video = Camera.video;
+        overlay.width = video.videoWidth;
+        overlay.height = video.videoHeight;
+        
+        const ctx = overlay.getContext('2d');
+        ctx.clearRect(0, 0, overlay.width, overlay.height);
+        
+        const color = this.materialType === 'cobre' ? '#cd7f32' : '#b8c5d6';
+        
+        detections.forEach((d, i) => {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(d.x, d.y, d.w, d.h);
+            
+            ctx.fillStyle = color;
+            ctx.fillRect(d.x, d.y - 25, 80, 25);
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText(`#${i + 1} ${(d.confidence * 100).toFixed(0)}%`, d.x + 5, d.y - 7);
+        });
+        
+        // ROI
+        ctx.strokeStyle = '#0d6efd';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([10, 5]);
+        const margin = 50;
+        ctx.strokeRect(margin, margin, overlay.width - margin * 2, overlay.height - margin * 2);
+        ctx.setLineDash([]);
+    },
+    
+    clearOverlay() {
+        const overlay = document.getElementById('overlay');
+        overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
+    },
+    
+    updateMetrics(detections) {
+        this.fpsCounter.frames++;
+        const now = performance.now();
+        if (now - this.fpsCounter.lastTime >= 1000) {
+            this.fpsCounter.fps = this.fpsCounter.frames;
+            this.fpsCounter.frames = 0;
+            this.fpsCounter.lastTime = now;
+            document.getElementById('fps').textContent = this.fpsCounter.fps;
+        }
+        
+        if (detections.length > 0) {
+            const avg = detections.reduce((s, d) => s + d.confidence, 0) / detections.length;
+            this.confidenceBuffer.push(avg);
+            if (this.confidenceBuffer.length > 30) this.confidenceBuffer.shift();
+            this.avgConfidence = this.confidenceBuffer.reduce((s, v) => s + v, 0) / this.confidenceBuffer.length;
+            document.getElementById('confianca').textContent = (this.avgConfidence * 100).toFixed(1) + '%';
+        }
+        
+        document.getElementById('qtd-detectada').textContent = detections.length;
+    },
+    
+    updateStableCount(count) {
+        if (count === this.lastCount) {
+            this.stableCount++;
+        } else {
+            this.stableCount = 0;
+            this.lastCount = count;
+        }
+        
+        if (this.stableCount > 10) {
+            document.getElementById('btn-salvar').disabled = false;
+        }
+    },
+    
+    setStatus(type, text) {
+        const dot = document.querySelector('#status-ia .status-dot');
+        const txt = document.querySelector('#status-ia .status-text');
+        dot.className = 'status-dot ' + type;
+        txt.textContent = text;
+    },
+    
+    getStableCount() { return this.lastCount; },
+    getAvgConfidence() { return this.avgConfidence; },
+    getElapsedTime() { return ((performance.now() - this.startTime) / 1000).toFixed(1); }
+};
+
+/* ============ DASHBOARD ============ */
+const Dashboard = {
+    charts: {},
+    
+    async render() {
+        const materiais = await SheetsAPI.getMateriais();
+        const movimentacoes = await SheetsAPI.getMovimentacoes();
+        const conferencias = await SheetsAPI.getConferencias();
+        
+        this.renderMetrics(materiais, conferencias);
+        this.renderCharts(materiais, movimentacoes);
+        this.renderTables(movimentacoes, conferencias);
+    },
+    
+    renderMetrics(materiais, conferencias) {
+        const total = materiais.reduce((s, m) => s + (m.quantidade || 0), 0);
+        const cobre = materiais.filter(m => m.material === 'cobre').reduce((s, m) => s + (m.quantidade || 0), 0);
+        const aluminio = materiais.filter(m => m.material === 'aluminio').reduce((s, m) => s + (m.quantidade || 0), 0);
+        
+        document.getElementById('total-estoque').textContent = Utils.formatNumber(total);
+        document.getElementById('total-cobre').textContent = Utils.formatNumber(cobre);
+        document.getElementById('total-aluminio').textContent = Utils.formatNumber(aluminio);
+        
+        const hoje = Utils.now().date;
+        const confHoje = conferencias.filter(c => c.data === hoje).length;
+        document.getElementById('conf-hoje').textContent = confHoje;
+        
+        if (conferencias.length > 0) {
+            const avgPrec = conferencias.reduce((s, c) => s + (c.precisaoIA || 0), 0) / conferencias.length;
+            document.getElementById('precisao-ia').textContent = avgPrec.toFixed(1) + '%';
+            
+            const avgTempo = conferencias.reduce((s, c) => s + (c.tempoConferencia || 0), 0) / conferencias.length;
+            document.getElementById('tempo-medio').textContent = avgTempo.toFixed(1) + 's';
+        }
+    },
+    
+    renderCharts(materiais, movimentacoes) {
+        const cobre = materiais.filter(m => m.material === 'cobre').reduce((s, m) => s + (m.quantidade || 0), 0);
+        const aluminio = materiais.filter(m => m.material === 'aluminio').reduce((s, m) => s + (m.quantidade || 0), 0);
+        
+        if (this.charts.estoque) this.charts.estoque.destroy();
+        this.charts.estoque = new Chart(document.getElementById('chart-estoque'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Cobre', 'Alumínio'],
+                datasets: [{
+                    data: [cobre, aluminio],
+                    backgroundColor: ['#cd7f32', '#b8c5d6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { position: 'bottom', labels: { color: '#a0aec0' } } }
+            }
+        });
+        
+        const last7 = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            last7.push(d.toISOString().split('T')[0]);
+        }
+        
+        const entradas = last7.map(date => movimentacoes.filter(m => m.tipo === 'entrada' && m.data === date).reduce((s, m) => s + (m.quantidade || 0), 0));
+        const saidas = last7.map(date => movimentacoes.filter(m => m.tipo === 'saida' && m.data === date).reduce((s, m) => s + (m.quantidade || 0), 0));
+        
+        if (this.charts.mov) this.charts.mov.destroy();
+        this.charts.mov = new Chart(document.getElementById('chart-movimentacoes'), {
+            type: 'bar',
+            data: {
+                labels: last7.map(d => new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })),
+                datasets: [
+                    { label: 'Entradas', data: entradas, backgroundColor: '#198754' },
+                    { label: 'Saídas', data: saidas, backgroundColor: '#dc3545' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { labels: { color: '#a0aec0' } } },
+                scales: {
+                    x: { ticks: { color: '#a0aec0' }, grid: { color: '#2d3748' } },
+                    y: { ticks: { color: '#a0aec0' }, grid: { color: '#2d3748' } }
+                }
+            }
+        });
+    },
+    
+    renderTables(movimentacoes, conferencias) {
+        const tbodyMov = document.querySelector('#table-movimentacoes tbody');
+        tbodyMov.innerHTML = movimentacoes.slice(0, 10).map(m => `
+            <tr>
+                <td>${m.data || '-'}</td>
+                <td><span class="badge badge-${m.tipo === 'entrada' ? 'success' : m.tipo === 'saida' ? 'danger' : 'info'}">${m.tipo || '-'}</span></td>
+                <td><span class="badge badge-${m.material}">${m.material || '-'}</span></td>
+                <td>${m.quantidade || 0}</td>
+            </tr>
+        `).join('') || '<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Nenhuma movimentação</td></tr>';
+        
+        const tbodyConf = document.querySelector('#table-conferencias tbody');
+        tbodyConf.innerHTML = conferencias.slice(0, 10).map(c => {
+            const diff = (c.quantidadeDetectada || 0) - (c.quantidadeInformada || 0);
+            const cls = diff === 0 ? 'success' : diff > 0 ? 'warning' : 'danger';
+            return `
+                <tr>
+                    <td>${c.data || '-'}</td>
+                    <td><span class="badge badge-${c.material}">${c.material || '-'}</span></td>
+                    <td>${c.quantidadeDetectada || 0}</td>
+                    <td>${c.quantidadeInformada || 0}</td>
+                    <td><span class="badge badge-${cls}">${diff > 0 ? '+' : ''}${diff}</span></td>
+                </tr>
+            `;
+        }).join('') || '<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Nenhuma conferência</td></tr>';
+    }
+};
+
+/* ============ MATERIAIS ============ */
+const Materials = {
+    data: [],
+    
+    async load() {
+        this.data = await SheetsAPI.getMateriais();
+        this.render();
+    },
+    
+    render() {
+        const search = document.getElementById('search-material').value.toLowerCase();
+        const filter = document.getElementById('filter-tipo').value;
+        
+        const filtered = this.data.filter(m => {
+            const matchSearch = !search || (m.codigo || '').toLowerCase().includes(search) || (m.descricao || '').toLowerCase().includes(search);
+            const matchFilter = !filter || m.material === filter;
+            return matchSearch && matchFilter;
+        });
+        
+        const tbody = document.querySelector('#table-materiais tbody');
+        tbody.innerHTML = filtered.map(m => {
+            const status = (m.quantidade || 0) <= (m.minimo || 0) ? 'alerta' : 'ativo';
+            const statusBadge = status === 'alerta' ? 'danger' : 'success';
+            return `
+                <tr>
+                    <td><strong>${m.codigo || '-'}</strong></td>
+                    <td>${m.descricao || '-'}</td>
+                    <td>${m.tipo || '-'}</td>
+                    <td><span class="badge badge-${m.material}">${m.material === 'cobre' ? 'Cobre' : 'Alumínio'}</span></td>
+                    <td>${m.comprimento || 0}mm</td>
+                    <td>${m.peso || 0}kg</td>
+                    <td><strong>${m.quantidade || 0}</strong></td>
+                    <td>${m.minimo || 0}</td>
+                    <td>${m.localizacao || '-'}</td>
+                    <td><span class="badge badge-${statusBadge}">${status}</span></td>
+                    <td>
+                        <button class="btn-icon" onclick="Materials.edit('${m.id}')" title="Editar">✏️</button>
+                        <button class="btn-icon" onclick="Materials.remove('${m.id}')" title="Excluir">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        }).join('') || '<tr><td colspan="11" style="text-align:center; padding: 2rem; color: var(--text-muted);">Nenhum material cadastrado</td></tr>';
+    },
+    
+    openModal(material = null) {
+        document.getElementById('modal-title').textContent = material ? 'Editar Material' : 'Novo Material';
+        document.getElementById('input-id').value = material?.id || '';
+        document.getElementById('input-codigo').value = material?.codigo || '';
+        document.getElementById('input-descricao').value = material?.descricao || '';
+        document.getElementById('input-tipo').value = material?.tipo || 'barra';
+        document.getElementById('input-material').value = material?.material || 'cobre';
+        document.getElementById('input-comprimento').value = material?.comprimento || 3000;
+        document.getElementById('input-peso').value = material?.peso || 10;
+        document.getElementById('input-quantidade').value = material?.quantidade || 0;
+        document.getElementById('input-minimo').value = material?.minimo || 10;
+        document.getElementById('input-localizacao').value = material?.localizacao || 'Depósito A';
+        document.getElementById('modal-material').classList.add('active');
+    },
+    
+    edit(id) {
+        const m = this.data.find(x => x.id === id);
+        if (m) this.openModal(m);
+    },
+    
+    async remove(id) {
+        if (!confirm('Deseja realmente excluir este material?')) return;
+        await SheetsAPI.deleteMaterial(id);
+        Toast.success('Material excluído');
+        await this.load();
+    },
+    
+    async save(data) {
+        if (data.id) {
+            await SheetsAPI.updateMaterial(data);
+            Toast.success('Material atualizado');
+        } else {
+            data.id = Utils.uuid();
+            data.dataCadastro = Utils.now().full;
+            data.status = 'ativo';
+            await SheetsAPI.saveMaterial(data);
+            Toast.success('Material cadastrado');
+        }
+        await this.load();
+    }
+};
+
+/* ============ MOVIMENTAÇÕES ============ */
+const Movements = {
+    data: [],
+    
+    async load() {
+        this.data = await SheetsAPI.getMovimentacoes();
+        this.render();
+    },
+    
+    render() {
+        const inicio = document.getElementById('filter-data-inicio').value;
+        const fim = document.getElementById('filter-data-fim').value;
+        const tipo = document.getElementById('filter-tipo-mov').value;
+        const material = document.getElementById('filter-material-mov').value;
+        
+        const filtered = this.data.filter(m => {
+            if (inicio && m.data < inicio) return false;
+            if (fim && m.data > fim) return false;
+            if (tipo && m.tipo !== tipo) return false;
+            if (material && m.material !== material) return false;
+            return true;
+        });
+        
+        const tbody = document.querySelector('#table-historico tbody');
+        tbody.innerHTML = filtered.map(m => `
+            <tr>
+                <td>${m.data || '-'}</td>
+                <td>${m.hora || '-'}</td>
+                <td>${m.usuario || 'Admin'}</td>
+                <td><span class="badge badge-${m.tipo === 'entrada' ? 'success' : m.tipo === 'saida' ? 'danger' : 'info'}">${m.tipo}</span></td>
+                <td><span class="badge badge-${m.material}">${m.material === 'cobre' ? 'Cobre' : 'Alumínio'}</span></td>
+                <td><strong>${m.quantidade || 0}</strong></td>
+                <td>${m.quantidadeAntes || 0}</td>
+                <td>${m.quantidadeDepois || 0}</td>
+                <td>${m.observacao || '-'}</td>
+            </tr>
+        `).join('') || '<tr><td colspan="9" style="text-align:center; padding: 2rem; color: var(--text-muted);">Nenhuma movimentação</td></tr>';
+    },
+    
+    exportExcel() {
+        if (this.data.length === 0) { Toast.warning('Sem dados para exportar'); return; }
+        const ws = XLSX.utils.json_to_sheet(this.data.map(m => ({
+            Data: m.data, Hora: m.hora, Usuario: m.usuario, Tipo: m.tipo,
+            Material: m.material, Quantidade: m.quantidade, Antes: m.quantidadeAntes,
+            Depois: m.quantidadeDepois, Observacao: m.observacao
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Movimentacoes');
+        XLSX.writeFile(wb, `movimentacoes_${Utils.now().date}.xlsx`);
+        Toast.success('Excel exportado');
+    },
+    
+    exportPDF() {
+        if (this.data.length === 0) { Toast.warning('Sem dados para exportar'); return; }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text('Relatório de Movimentações', 14, 15);
+        doc.autoTable({
+            startY: 25,
+            head: [['Data', 'Hora', 'Tipo', 'Material', 'Qtd']],
+            body: this.data.map(m => [m.data, m.hora, m.tipo, m.material, m.quantidade]),
+            theme: 'grid',
+            styles: { fontSize: 8 }
+        });
+        doc.save(`movimentacoes_${Utils.now().date}.pdf`);
+        Toast.success('PDF exportado');
+    }
+};
+
+/* ============ CONFERÊNCIA ============ */
+const Conference = {
+    materialType: null,
+    materialData: null,
+    
+    async selectMaterial(type) {
+        this.materialType = type;
+        const materiais = await SheetsAPI.getMateriais();
+        this.materialData = materiais.filter(m => m.material === type);
+        
+        const total = this.materialData.reduce((s, m) => s + (m.quantidade || 0), 0);
+        document.getElementById('material-nome').textContent = type === 'cobre' ? 'Barras de Cobre' : 'Barras de Alumínio';
+        document.getElementById('qtd-registrada').textContent = total;
+        
+        document.getElementById('material-selector').style.display = 'none';
+        document.getElementById('camera-container').style.display = 'grid';
+        
+        Camera.init();
+        await Camera.start();
+        
+        if (!Vision.session) {
+            await Vision.loadModel();
+        }
+    },
+    
+    async start() {
+        document.getElementById('btn-iniciar').disabled = true;
+        document.getElementById('btn-parar').disabled = false;
+        document.getElementById('btn-salvar').disabled = true;
+        await Vision.startDetection(this.materialType);
+    },
+    
+    stop() {
+        Vision.stopDetection();
+        document.getElementById('btn-iniciar').disabled = false;
+        document.getElementById('btn-parar').disabled = true;
+    },
+    
+    async save() {
+        const detectada = Vision.getStableCount();
+        const registrada = parseInt(document.getElementById('qtd-registrada').textContent);
+        const diferenca = detectada - registrada;
+        const precisao = registrada > 0 ? Math.max(0, 100 - Math.abs(diferenca / registrada * 100)) : 100;
+        const tempo = Vision.getElapsedTime();
+        
+        const conferencia = {
+            id: Utils.uuid(),
+            data: Utils.now().date,
+            hora: Utils.now().time,
+            material: this.materialType,
+            quantidadeDetectada: detectada,
+            quantidadeInformada: registrada,
+            diferenca: diferenca,
+            precisaoIA: precisao,
+            tempoConferencia: parseFloat(tempo),
+            imagem: null,
+            usuario: 'Admin'
+        };
+        
+        await SheetsAPI.saveConferencia(conferencia);
+        
+        if (diferenca !== 0) {
+            const mov = {
+                id: Utils.uuid(),
+                data: Utils.now().date,
+                hora: Utils.now().time,
+                usuario: 'Admin',
+                tipo: diferenca > 0 ? 'entrada' : 'saida',
+                material: this.materialType,
+                quantidade: Math.abs(diferenca),
+                quantidadeAntes: registrada,
+                quantidadeDepois: detectada,
+                origem: 'conferencia-ia',
+                observacao: `Ajuste automático por conferência IA. Diferença: ${diferenca}`
+            };
+            await SheetsAPI.saveMovimentacao(mov);
+        }
+        
+        Toast.success('Conferência salva com sucesso');
+        this.back();
+    },
+    
+    back() {
+        Vision.stopDetection();
+        Camera.stop();
+        document.getElementById('material-selector').style.display = 'block';
+        document.getElementById('camera-container').style.display = 'none';
+        document.getElementById('qtd-detectada').textContent = '0';
+        document.getElementById('btn-iniciar').disabled = false;
+        document.getElementById('btn-parar').disabled = true;
+        document.getElementById('btn-salvar').disabled = true;
+    }
+};
+
+/* ============ APP CONTROLLER ============ */
+const App = {
+    init() {
+        this.setupNavigation();
+        this.setupConference();
+        this.setupMaterials();
+        this.setupMovements();
+        this.setupSettings();
+        this.setupCameraControls();
+        Config.load();
+        Dashboard.render();
+        
+        Toast.info('Sistema iniciado - Modo Demo ativo');
+    },
+    
+    setupNavigation() {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                const page = btn.dataset.page;
+                document.getElementById(`page-${page}`).classList.add('active');
+                
+                if (page === 'dashboard') await Dashboard.render();
+                else if (page === 'materiais') await Materials.load();
+                else if (page === 'movimentacoes') await Movements.load();
+            });
+        });
+    },
+    
+    setupConference() {
+        document.querySelectorAll('.material-btn').forEach(btn => {
+            btn.addEventListener('click', () => Conference.selectMaterial(btn.dataset.material));
+        });
+        document.getElementById('btn-iniciar').addEventListener('click', () => Conference.start());
+        document.getElementById('btn-parar').addEventListener('click', () => Conference.stop());
+        document.getElementById('btn-salvar').addEventListener('click', () => Conference.save());
+        document.getElementById('btn-voltar').addEventListener('click', () => Conference.back());
+    },
+    
+    setupCameraControls() {
+        document.getElementById('btn-flash').addEventListener('click', () => Camera.toggleFlash());
+        document.getElementById('btn-zoom-in').addEventListener('click', () => Camera.zoomIn());
+        document.getElementById('btn-zoom-out').addEventListener('click', () => Camera.zoomOut());
+        document.getElementById('btn-freeze').addEventListener('click', () => Camera.freeze());
+        document.getElementById('btn-capture').addEventListener('click', () => Camera.capture());
+    },
+    
+    setupMaterials() {
+        document.getElementById('btn-novo-material').addEventListener('click', () => Materials.openModal());
+        document.getElementById('search-material').addEventListener('input', () => Materials.render());
+        document.getElementById('filter-tipo').addEventListener('change', () => Materials.render());
+        
+        document.getElementById('form-material').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                id: document.getElementById('input-id').value,
+                codigo: document.getElementById('input-codigo').value,
+                descricao: document.getElementById('input-descricao').value,
+                tipo: document.getElementById('input-tipo').value,
+                material: document.getElementById('input-material').value,
+                comprimento: parseInt(document.getElementById('input-comprimento').value),
+                peso: parseFloat(document.getElementById('input-peso').value),
+                quantidade: parseInt(document.getElementById('input-quantidade').value),
+                minimo: parseInt(document.getElementById('input-minimo').value),
+                localizacao: document.getElementById('input-localizacao').value
+            };
+            await Materials.save(data);
+            this.closeModal();
+        });
+    },
+    
+    setupMovements() {
+        document.getElementById('filter-data-inicio').addEventListener('change', () => Movements.render());
+        document.getElementById('filter-data-fim').addEventListener('change', () => Movements.render());
+        document.getElementById('filter-tipo-mov').addEventListener('change', () => Movements.render());
+        document.getElementById('filter-material-mov').addEventListener('change', () => Movements.render());
+        document.getElementById('btn-export-excel').addEventListener('click', () => Movements.exportExcel());
+        document.getElementById('btn-export-pdf').addEventListener('click', () => Movements.exportPDF());
+    },
+    
+    setupSettings() {
+        document.getElementById('btn-salvar-config').addEventListener('click', () => {
+            Config.apiUrl = document.getElementById('config-api-url').value;
+            Config.confidence = parseInt(document.getElementById('config-confianca').value) / 100;
+            Config.model = document.getElementById('config-modelo-ia').value;
+            Config.resolution = document.getElementById('config-resolucao').value;
+            Config.darkMode = document.getElementById('config-dark-mode').checked;
+            Config.flash = document.getElementById('config-flash').checked;
+            Config.demoMode = document.getElementById('config-demo-mode').checked;
+            Config.save();
+            Toast.success('Configurações salvas');
+        });
+    },
+    
+    closeModal() { document.getElementById('modal-material').classList.remove('active'); }
+};
+
+/* ============ INICIALIZAÇÃO ============ */
+window.addEventListener('DOMContentLoaded', () => App.init());
+
+// Expor funções globais necessárias
+window.Materials = Materials;
+window.App = App;
+</script>
+
+</body>
+</html>
