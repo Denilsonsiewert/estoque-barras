@@ -15,23 +15,24 @@
     --success: #198754;
     --danger: #dc3545;
     --warning: #ffc107;
-    --bg-main: #f0f2f5;
+    --info: #0dcaf0;
+    --bg-main: #f8f9fa;
     --bg-card: #ffffff;
     --bg-header: #ffffff;
     --text-primary: #212529;
     --text-secondary: #6c757d;
     --border-color: #dee2e6;
-    --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
-    --radius: 10px;
-    --radius-lg: 14px;
+    --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --radius: 12px;
+    --radius-lg: 16px;
     --cobre: #b87333;
     --aluminio: #7f8c8d;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg-main);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: var(--text-primary);
     min-height: 100vh;
     overflow-x: hidden;
@@ -39,201 +40,289 @@ body {
 
 .app-container { display: flex; flex-direction: column; min-height: 100vh; }
 
-/* HEADER */
+/* HEADER MODERNO */
 .header {
-    background: var(--bg-header);
-    padding: 0.9rem 1.2rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1rem 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: var(--shadow);
-    border-bottom: 2px solid var(--primary);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
     z-index: 100;
 }
-.logo { display: flex; align-items: center; gap: 0.6rem; }
+.logo { display: flex; align-items: center; gap: 0.8rem; }
 .logo-icon {
-    width: 38px; height: 38px;
-    background: var(--primary);
-    border-radius: var(--radius);
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
-.logo h1 { font-size: 1.1rem; color: var(--text-primary); font-weight: 600; }
-.logo span { color: var(--primary); }
+.logo h1 { font-size: 1.2rem; color: var(--text-primary); font-weight: 700; }
+.logo span { color: #667eea; }
 
-.nav { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.nav { display: flex; gap: 0.5rem; }
 .nav-btn {
     background: transparent;
-    border: 1px solid var(--border-color);
+    border: 2px solid transparent;
     color: var(--text-secondary);
-    padding: 0.45rem 0.8rem;
+    padding: 0.6rem 1.2rem;
     cursor: pointer;
     border-radius: var(--radius);
-    transition: all 0.2s;
-    font-size: 0.85rem;
-    font-weight: 500;
+    transition: all 0.3s;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
-.nav-btn:hover { background: var(--bg-card); color: var(--text-primary); }
-.nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.nav-btn:hover { background: rgba(102, 126, 234, 0.1); color: #667eea; }
+.nav-btn.active { 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+    color: white; 
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
 
-.header-actions { display: flex; align-items: center; gap: 0.6rem; }
 .btn-config {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    width: 40px; height: 40px;
+    background: var(--bg-main);
+    border: 2px solid var(--border-color);
+    width: 44px; height: 44px;
     border-radius: 50%;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s;
+    transition: all 0.3s;
 }
-.btn-config:hover { transform: rotate(45deg); box-shadow: var(--shadow); }
+.btn-config:hover { 
+    transform: rotate(45deg) scale(1.1); 
+    border-color: #667eea; 
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
 
 /* MAIN */
-.main-content { flex: 1; padding: 1.2rem; max-width: 1400px; margin: 0 auto; width: 100%; }
-.page { display: none; animation: fadeIn 0.25s ease; }
+.main-content { 
+    flex: 1; 
+    padding: 2rem 1.5rem; 
+    max-width: 1400px; 
+    margin: 0 auto; 
+    width: 100%; 
+}
+.page { display: none; animation: fadeIn 0.3s ease; }
 .page.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-/* CONFERÊNCIA */
-.conferencia-wrapper { max-width: 900px; margin: 0 auto; }
+/* CONFERÊNCIA - DESIGN MODERNO */
+.conferencia-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
 
+/* Seleção de Tipo - Cards Grandes */
 .tipo-selector {
-    background: var(--bg-card);
-    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 2.5rem;
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
     text-align: center;
 }
-.tipo-selector h2 { margin-bottom: 1.5rem; font-size: 1.3rem; color: var(--text-primary); }
+.tipo-selector h2 { 
+    margin-bottom: 2rem; 
+    font-size: 1.6rem; 
+    color: var(--text-primary);
+    font-weight: 700;
+}
 
 .tipo-buttons {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 1.5rem;
     margin-bottom: 1rem;
 }
-.tipo-btn {
-    background: var(--bg-card);
-    border: 2px solid var(--border-color);
+.tipo-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border: 3px solid transparent;
     border-radius: var(--radius-lg);
-    padding: 2rem 1rem;
+    padding: 2.5rem 1.5rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.8rem;
-    min-height: 140px;
-    justify-content: center;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
 }
-.tipo-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-.tipo-btn.active { border-width: 3px; }
-.tipo-btn[data-tipo="cobre"].active { border-color: var(--cobre); background: rgba(184, 115, 51, 0.05); }
-.tipo-btn[data-tipo="aluminio"].active { border-color: var(--aluminio); background: rgba(127, 140, 141, 0.05); }
-.tipo-btn .icon { font-size: 3rem; line-height: 1; }
-.tipo-btn .label { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
-.tipo-btn .count { font-size: 0.85rem; color: var(--text-secondary); }
+.tipo-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.tipo-card:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+.tipo-card:hover::before { opacity: 1; }
+.tipo-card.active { 
+    border-color: #667eea; 
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+.tipo-card[data-tipo="cobre"].active { border-color: var(--cobre); }
+.tipo-card[data-tipo="aluminio"].active { border-color: var(--aluminio); }
+.tipo-card .icon { 
+    font-size: 4rem; 
+    line-height: 1; 
+    z-index: 1;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+}
+.tipo-card .label { 
+    font-size: 1.3rem; 
+    font-weight: 700; 
+    color: var(--text-primary);
+    z-index: 1;
+}
+.tipo-card .count { 
+    font-size: 0.9rem; 
+    color: var(--text-secondary);
+    background: rgba(255,255,255,0.8);
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    z-index: 1;
+}
 
-.materiais-lista { display: none; margin-top: 1.5rem; }
+/* Lista de Materiais */
+.materiais-lista { 
+    display: none; 
+    margin-top: 1.5rem; 
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
 .materiais-lista.active { display: block; }
 .materiais-lista h3 {
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
     color: var(--text-primary);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    font-weight: 700;
 }
-.btn-voltar-tipo {
+.btn-voltar {
     background: var(--secondary);
     color: white;
     border: none;
-    padding: 0.4rem 0.8rem;
+    padding: 0.5rem 1rem;
     border-radius: var(--radius);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     cursor: pointer;
+    transition: all 0.2s;
 }
+.btn-voltar:hover { background: #5a6268; transform: translateX(-2px); }
 
 .material-search {
     width: 100%;
-    padding: 0.9rem;
-    border: 1px solid var(--border-color);
+    padding: 1rem 1.2rem;
+    border: 2px solid var(--border-color);
     border-radius: var(--radius);
     background: var(--bg-main);
     color: var(--text-primary);
     font-size: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.2s;
 }
-.material-search:focus { outline: none; border-color: var(--primary); }
+.material-search:focus { 
+    outline: none; 
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
 
 .materiais-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0.75rem;
-    max-height: 60vh;
+    gap: 1rem;
+    max-height: 55vh;
     overflow-y: auto;
-    padding-right: 0.3rem;
+    padding-right: 0.5rem;
 }
 
-.material-card {
-    background: var(--bg-card);
+.material-item {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     border: 2px solid var(--border-color);
     border-radius: var(--radius);
-    padding: 1rem 1.1rem;
+    padding: 1.2rem 1.5rem;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: grid;
     grid-template-columns: auto 1fr auto;
-    gap: 0.9rem;
+    gap: 1rem;
     align-items: center;
-    min-height: 70px;
 }
-.material-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
-.material-card.selected {
-    border-color: var(--primary);
-    background: rgba(13, 110, 253, 0.05);
-    border-width: 2px;
+.material-item:hover { 
+    border-color: #667eea; 
+    transform: translateX(4px);
+    box-shadow: var(--shadow);
 }
-.material-card .codigo {
-    background: var(--bg-main);
-    padding: 0.4rem 0.6rem;
-    border-radius: 6px;
+.material-item.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+.material-item .codigo {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
     font-weight: 700;
-    font-size: 0.85rem;
-    color: var(--primary);
-    white-space: nowrap;
-}
-.material-card .info { min-width: 0; }
-.material-card .descricao {
     font-size: 0.9rem;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+.material-item .info { min-width: 0; }
+.material-item .descricao {
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.3rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.material-card .dimensoes { font-size: 0.8rem; color: var(--text-secondary); }
-.material-card .qtd-badge {
-    background: var(--bg-main);
-    padding: 0.3rem 0.6rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
+.material-item .dimensoes { 
+    font-size: 0.85rem; 
     color: var(--text-secondary);
-    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
 }
-.material-card .arrow { font-size: 1.3rem; color: var(--text-secondary); }
+.material-item .arrow { 
+    font-size: 1.5rem; 
+    color: #667eea;
+    opacity: 0;
+    transition: all 0.2s;
+}
+.material-item:hover .arrow { opacity: 1; transform: translateX(4px); }
 
-/* CÂMERA */
-.camera-section { display: none; grid-template-columns: 1fr 300px; gap: 1rem; align-items: start; }
-.camera-section.active { display: grid; }
+/* CÂMERA - DESIGN LIMPO */
+.camera-view {
+    display: none;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    align-items: start;
+}
+.camera-view.active { display: grid; }
 
-.camera-wrapper {
+.camera-container {
     position: relative;
     background: #000;
     border-radius: var(--radius-lg);
@@ -246,94 +335,243 @@ body {
 
 .camera-controls {
     position: absolute;
-    bottom: 0.8rem;
+    bottom: 1.2rem;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 0.4rem;
-    background: rgba(0, 0, 0, 0.75);
-    padding: 0.4rem;
+    gap: 0.6rem;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    padding: 0.6rem;
     border-radius: var(--radius);
-    backdrop-filter: blur(8px);
 }
 .cam-btn {
-    background: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.2);
     border: none;
     color: white;
-    width: 42px; height: 42px;
-    border-radius: 8px;
+    width: 48px; height: 48px;
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
 }
-.cam-btn:hover { background: var(--primary); }
+.cam-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
 .cam-btn.active { background: var(--warning); color: #000; }
 
-.metrics-panel {
-    background: var(--bg-card);
-    padding: 1.2rem;
+/* Painel de Contagem - Minimalista */
+.contagem-panel {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    padding: 1.8rem;
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
     position: sticky;
-    top: 90px;
+    top: 100px;
 }
-.metrics-panel h3 { margin-bottom: 1rem; font-size: 1.05rem; color: var(--text-primary); }
 
-.metric-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.7rem 0;
-    border-bottom: 1px solid var(--border-color);
-}
-.metric-item:last-of-type { border-bottom: none; }
-.metric-label { color: var(--text-secondary); font-size: 0.85rem; }
-.metric-value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
-.metric-value.success { color: var(--success); }
-.metric-value.danger { color: var(--danger); }
-.metric-value.zero { color: var(--text-secondary); }
-
-.info-box {
-    background: var(--bg-main);
-    padding: 0.6rem;
-    border-radius: 8px;
-    margin-bottom: 0.8rem;
-    font-size: 0.8rem;
-}
-.info-box .label { color: var(--text-secondary); font-size: 0.75rem; }
-.info-box .value { font-weight: 600; color: var(--text-primary); font-size: 0.85rem; }
-
-.action-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
-.action-buttons .btn { width: 100%; justify-content: center; padding: 0.85rem; font-size: 0.95rem; }
-
-/* BOTÕES GERAIS */
-.btn {
-    padding: 0.6rem 1.1rem;
-    border: none;
+.material-info-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.2rem;
     border-radius: var(--radius);
-    cursor: pointer;
-    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+.material-info-box .titulo { 
+    font-size: 0.8rem; 
+    opacity: 0.9; 
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.material-info-box .nome { 
+    font-size: 1rem; 
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+.material-info-box .codigo-dim { 
+    font-size: 0.85rem; 
+    opacity: 0.9;
     font-weight: 500;
-    transition: all 0.2s;
-    display: inline-flex;
+}
+
+.contagem-display {
+    text-align: center;
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: var(--radius);
+}
+.contagem-display .label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+.contagem-display .numero {
+    font-size: 4rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+.contagem-display .subtext {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.status-detectando {
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    padding: 0.8rem;
+    background: rgba(25, 135, 84, 0.1);
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+    color: var(--success);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.status-detectando .pulse {
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+.acoes-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+.btn {
+    padding: 0.9rem 1.5rem;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
-.btn-secondary { background: var(--secondary); color: white; }
-.btn-success { background: var(--success); color: white; }
-.btn-danger { background: var(--danger); color: white; }
-.btn-warning { background: var(--warning); color: #000; }
+.btn-primary { 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+.btn-primary:hover:not(:disabled) { 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+.btn-success { 
+    background: linear-gradient(135deg, #198754 0%, #146c43 100%); 
+    color: white;
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+}
+.btn-success:hover:not(:disabled) { 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(25, 135, 84, 0.4);
+}
+.btn-danger { 
+    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); 
+    color: white;
+}
+.btn-danger:hover:not(:disabled) { transform: translateY(-2px); }
+
+/* MATERIAIS */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.page-header h2 { 
+    font-size: 1.5rem; 
+    color: white;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.filters {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1.2rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+input[type="text"], input[type="number"], select {
+    background: var(--bg-main);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.7rem 1rem;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+input:focus, select:focus { 
+    outline: none; 
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.table-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    max-height: 65vh;
+    overflow-y: auto;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+thead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; position: sticky; top: 0; z-index: 2; }
+th { padding: 1rem; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+td { padding: 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
+tbody tr { transition: all 0.2s; }
+tbody tr:hover { background: rgba(102, 126, 234, 0.05); }
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.badge-success { background: rgba(25, 135, 84, 0.15); color: var(--success); }
+.badge-danger { background: rgba(220, 53, 69, 0.15); color: var(--danger); }
+.badge-cobre { background: rgba(184, 115, 51, 0.15); color: var(--cobre); }
+.badge-aluminio { background: rgba(127, 140, 141, 0.15); color: var(--aluminio); }
+
 .btn-icon {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
+    background: var(--bg-main);
+    border: 2px solid var(--border-color);
     color: var(--text-primary);
     width: 38px; height: 38px;
-    border-radius: var(--radius);
+    border-radius: 10px;
     cursor: pointer;
     font-size: 1rem;
     transition: all 0.2s;
@@ -341,65 +579,12 @@ body {
     align-items: center;
     justify-content: center;
 }
-.btn-icon:hover { background: var(--primary); border-color: var(--primary); color: white; }
-
-/* PÁGINA MATERIAIS */
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.2rem;
-    flex-wrap: wrap;
-    gap: 0.8rem;
+.btn-icon:hover { 
+    background: #667eea; 
+    border-color: #667eea; 
+    color: white;
+    transform: scale(1.1);
 }
-.page-header h2 { font-size: 1.3rem; color: var(--text-primary); }
-
-.filters {
-    display: flex;
-    gap: 0.6rem;
-    margin-bottom: 1.2rem;
-    flex-wrap: wrap;
-    background: var(--bg-card);
-    padding: 0.9rem;
-    border-radius: var(--radius);
-    border: 1px solid var(--border-color);
-}
-input[type="text"], input[type="number"], input[type="date"], select {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    padding: 0.6rem 0.8rem;
-    border-radius: var(--radius);
-    font-size: 0.9rem;
-}
-input:focus, select:focus { outline: none; border-color: var(--primary); }
-
-.table-container {
-    background: var(--bg-card);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    max-height: 65vh;
-    overflow-y: auto;
-}
-
-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-thead { background: var(--bg-main); position: sticky; top: 0; z-index: 2; }
-th { padding: 0.7rem; text-align: left; color: var(--text-secondary); font-weight: 600; border-bottom: 2px solid var(--border-color); font-size: 0.8rem; }
-td { padding: 0.7rem; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
-tbody tr:hover { background: var(--bg-main); }
-
-.badge {
-    display: inline-block;
-    padding: 0.2rem 0.55rem;
-    border-radius: 12px;
-    font-size: 0.72rem;
-    font-weight: 600;
-}
-.badge-success { background: rgba(25, 135, 84, 0.15); color: var(--success); }
-.badge-danger { background: rgba(220, 53, 69, 0.15); color: var(--danger); }
-.badge-cobre { background: rgba(184, 115, 51, 0.15); color: var(--cobre); }
-.badge-aluminio { background: rgba(127, 140, 141, 0.15); color: var(--aluminio); }
 
 /* MODAL */
 .modal {
@@ -407,144 +592,193 @@ tbody tr:hover { background: var(--bg-main); }
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
     z-index: 1000;
     justify-content: center;
     align-items: center;
-    padding: 1.2rem;
-    backdrop-filter: blur(4px);
+    padding: 1.5rem;
 }
 .modal.active { display: flex; }
 .modal-content {
-    background: var(--bg-card);
+    background: white;
     border-radius: var(--radius-lg);
     max-width: 550px;
     width: 100%;
     max-height: 90vh;
     overflow-y: auto;
-    border: 1px solid var(--border-color);
     box-shadow: var(--shadow-lg);
+    animation: modalSlide 0.3s ease;
+}
+@keyframes modalSlide {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.3rem;
-    border-bottom: 1px solid var(--border-color);
+    padding: 1.3rem 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
-.modal-header h2 { font-size: 1.15rem; color: var(--text-primary); }
+.modal-header h2 { font-size: 1.2rem; font-weight: 700; }
 .btn-close {
-    background: transparent;
+    background: rgba(255,255,255,0.2);
     border: none;
-    color: var(--text-secondary);
-    font-size: 1.5rem;
-    cursor: pointer;
+    color: white;
     width: 32px; height: 32px;
     border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.3rem;
+    transition: all 0.2s;
 }
-.btn-close:hover { background: var(--bg-main); color: var(--text-primary); }
+.btn-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
 
-form { padding: 1.3rem; }
-.form-group { margin-bottom: 1rem; }
-.form-group label { display: block; margin-bottom: 0.4rem; color: var(--text-secondary); font-weight: 500; font-size: 0.88rem; }
-.form-group input, .form-group select { width: 100%; }
-.form-actions { display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 1.3rem; }
+form { padding: 1.5rem; }
+.form-group { margin-bottom: 1.2rem; }
+.form-group label { 
+    display: block; 
+    margin-bottom: 0.5rem; 
+    color: var(--text-secondary); 
+    font-weight: 600; 
+    font-size: 0.9rem;
+}
+.form-group input, .form-group select { 
+    width: 100%;
+    padding: 0.8rem 1rem;
+}
+.form-actions { 
+    display: flex; 
+    gap: 0.8rem; 
+    justify-content: flex-end; 
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--border-color);
+}
 
-.senha-modal .modal-content { max-width: 380px; text-align: center; }
+.senha-modal .modal-content { max-width: 400px; text-align: center; }
 .senha-input {
     width: 100%;
-    padding: 1rem;
-    font-size: 1.5rem;
+    padding: 1.2rem;
+    font-size: 1.8rem;
     text-align: center;
-    letter-spacing: 0.5rem;
+    letter-spacing: 0.8rem;
     border: 2px solid var(--border-color);
     border-radius: var(--radius);
     background: var(--bg-main);
     color: var(--text-primary);
-    margin: 1rem 0;
+    margin: 1.5rem 0;
+    font-weight: 700;
 }
-.senha-input:focus { outline: none; border-color: var(--primary); }
+.senha-input:focus { 
+    outline: none; 
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
 
 /* CONFIGURAÇÕES */
 .settings-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.2rem;
-    max-width: 1100px;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
 }
 .setting-group {
-    background: var(--bg-card);
-    padding: 1.3rem;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1.8rem;
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-lg);
 }
-.setting-group h3 { margin-bottom: 1rem; color: var(--primary); font-size: 1.05rem; }
+.setting-group h3 { 
+    margin-bottom: 1.2rem; 
+    color: #667eea; 
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
 .setting-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.7rem 0;
+    padding: 0.9rem 0;
     border-bottom: 1px solid var(--border-color);
     gap: 1rem;
 }
 .setting-item:last-child { border-bottom: none; }
-.setting-item label { color: var(--text-primary); font-size: 0.9rem; }
-.setting-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
-.setting-item input, .setting-item select { width: 180px; }
+.setting-item label { 
+    color: var(--text-primary); 
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+.setting-item input[type="checkbox"] { 
+    width: 22px; height: 22px; 
+    cursor: pointer;
+    accent-color: #667eea;
+}
+.setting-item input, .setting-item select { 
+    width: 200px;
+    padding: 0.6rem 0.9rem;
+}
 
 /* TOAST */
 .toast-container {
     position: fixed;
-    top: 1rem; right: 1rem;
+    top: 1.5rem; right: 1.5rem;
     z-index: 3000;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.8rem;
 }
 .toast {
-    background: var(--bg-card);
-    padding: 0.9rem 1.2rem;
+    background: white;
+    padding: 1.2rem 1.5rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow-lg);
-    border-left: 4px solid var(--primary);
-    min-width: 250px;
+    border-left: 4px solid #667eea;
+    min-width: 300px;
     animation: slideIn 0.3s ease;
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    font-weight: 500;
 }
 .toast.success { border-left-color: var(--success); }
 .toast.error { border-left-color: var(--danger); }
 .toast.warning { border-left-color: var(--warning); }
-@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideIn { 
+    from { transform: translateX(100%); opacity: 0; } 
+    to { transform: translateX(0); opacity: 1; } 
+}
 
 /* RESPONSIVO */
 @media (max-width: 900px) {
-    .header { padding: 0.8rem; }
+    .header { padding: 0.9rem 1rem; }
     .logo h1 { font-size: 1rem; }
-    .nav-btn { padding: 0.4rem 0.6rem; font-size: 0.8rem; }
-    .camera-section { grid-template-columns: 1fr; }
-    .metrics-panel { position: static; }
-    .main-content { padding: 0.9rem; }
+    .nav-btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+    .camera-view { grid-template-columns: 1fr; }
+    .contagem-panel { position: static; }
+    .main-content { padding: 1rem; }
+    .tipo-buttons { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
-    .tipo-buttons { grid-template-columns: 1fr; }
-    .material-card { padding: 0.9rem; min-height: 65px; }
-    .material-card .descricao { font-size: 0.85rem; }
-    .action-buttons { flex-direction: column; }
-    .action-buttons .btn { width: 100%; }
-    .page-header { flex-direction: column; align-items: stretch; }
-    .page-header h2 { font-size: 1.15rem; }
+    .contagem-display .numero { font-size: 3rem; }
+    .material-item { padding: 1rem; }
+    .page-header h2 { font-size: 1.2rem; }
     .filters { flex-direction: column; }
     .filters input, .filters select { width: 100%; }
-    table { font-size: 0.8rem; }
-    th, td { padding: 0.5rem; }
+    table { font-size: 0.85rem; }
+    th, td { padding: 0.8rem; }
 }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--bg-main); }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+::-webkit-scrollbar-thumb { background: #667eea; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #764ba2; }
 </style>
 </head>
 <body>
@@ -557,28 +791,27 @@ form { padding: 1.3rem; }
         </div>
         <nav class="nav">
             <button class="nav-btn active" data-page="conferencia">📷 Conferência</button>
-            <button class="nav-btn" data-page="materiais">📦 Materiais</button>
+            <button class="nav-btn" data-page="materiais"> Materiais</button>
         </nav>
-        <div class="header-actions">
-            <button class="btn-config" id="btn-config" title="Configurações">⚙️</button>
-        </div>
+        <button class="btn-config" id="btn-config" title="Configurações">⚙️</button>
     </header>
 
     <main class="main-content">
         
         <!-- CONFERÊNCIA -->
         <div id="page-conferencia" class="page active">
-            <div class="conferencia-wrapper">
+            <div class="conferencia-container">
                 
+                <!-- Seleção de Tipo -->
                 <div class="tipo-selector" id="tipo-selector">
                     <h2>Selecione o Tipo de Material</h2>
                     <div class="tipo-buttons">
-                        <button class="tipo-btn" data-tipo="cobre">
+                        <button class="tipo-card" data-tipo="cobre">
                             <span class="icon">🟤</span>
                             <span class="label">Barras de Cobre</span>
                             <span class="count" id="count-cobre">0 itens</span>
                         </button>
-                        <button class="tipo-btn" data-tipo="aluminio">
+                        <button class="tipo-card" data-tipo="aluminio">
                             <span class="icon">⚪</span>
                             <span class="label">Barras de Alumínio</span>
                             <span class="count" id="count-aluminio">0 itens</span>
@@ -586,61 +819,47 @@ form { padding: 1.3rem; }
                     </div>
                 </div>
 
+                <!-- Lista de Materiais -->
                 <div class="materiais-lista" id="materiais-lista">
                     <h3>
                         <span id="titulo-lista">Materiais</span>
-                        <button class="btn-voltar-tipo" id="btn-voltar-tipo">← Voltar</button>
+                        <button class="btn-voltar" id="btn-voltar-tipo">← Voltar</button>
                     </h3>
                     <input type="text" class="material-search" id="material-search" placeholder="🔍 Buscar por código, descrição ou dimensão...">
                     <div class="materiais-grid" id="materiais-grid"></div>
                 </div>
 
-                <div class="camera-section" id="camera-section">
-                    <div class="camera-wrapper">
+                <!-- Câmera e Contagem -->
+                <div class="camera-view" id="camera-view">
+                    <div class="camera-container">
                         <video id="video" autoplay playsinline muted></video>
                         <canvas id="overlay"></canvas>
                         <div class="camera-controls">
                             <button class="cam-btn" id="btn-flash" title="Flash">🔦</button>
                             <button class="cam-btn" id="btn-zoom-in" title="Zoom +">🔍+</button>
                             <button class="cam-btn" id="btn-zoom-out" title="Zoom -">➖</button>
-                            <button class="cam-btn" id="btn-freeze" title="Congelar">⏸️</button>
                         </div>
                     </div>
                     
-                    <div class="metrics-panel">
-                        <h3>📊 Conferência</h3>
-                        
-                        <div class="info-box">
-                            <div class="label">Material:</div>
-                            <div class="value" id="conf-material-nome">-</div>
-                            <div class="label" style="margin-top:0.3rem;">Código / Dimensão:</div>
-                            <div class="value" id="conf-material-dim">-</div>
+                    <div class="contagem-panel">
+                        <div class="material-info-box">
+                            <div class="titulo">Material Selecionado</div>
+                            <div class="nome" id="conf-material-nome">-</div>
+                            <div class="codigo-dim" id="conf-material-dim">-</div>
                         </div>
-                        
-                        <div class="metric-item">
-                            <span class="metric-label">Detectado</span>
-                            <span class="metric-value" id="qtd-detectada">0</span>
+
+                        <div class="status-detectando" id="status-detectando" style="display: none;">
+                            <span class="pulse"></span>
+                            <span>Detectando automaticamente...</span>
                         </div>
-                        <div class="metric-item">
-                            <span class="metric-label">Registrado</span>
-                            <span class="metric-value" id="qtd-registrada">0</span>
+
+                        <div class="contagem-display">
+                            <div class="label">Barras Detectadas</div>
+                            <div class="numero" id="qtd-detectada">0</div>
+                            <div class="subtext">Contagem em tempo real</div>
                         </div>
-                        <div class="metric-item">
-                            <span class="metric-label">Diferença</span>
-                            <span class="metric-value zero" id="diferenca">0</span>
-                        </div>
-                        <div class="metric-item">
-                            <span class="metric-label">FPS</span>
-                            <span class="metric-value" id="fps">0</span>
-                        </div>
-                        <div class="metric-item">
-                            <span class="metric-label">Confiança</span>
-                            <span class="metric-value" id="confianca">0%</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button id="btn-parar" class="btn btn-secondary">⏹️ Parar</button>
-                            <button id="btn-salvar" class="btn btn-success" disabled>💾 Salvar Conferência</button>
+
+                        <div class="acoes-buttons">
                             <button id="btn-voltar-selecao" class="btn btn-danger">← Voltar à Seleção</button>
                         </div>
                     </div>
@@ -651,13 +870,13 @@ form { padding: 1.3rem; }
         <!-- MATERIAIS -->
         <div id="page-materiais" class="page">
             <div class="page-header">
-                <h2>Cadastro de Materiais</h2>
+                <h2>📦 Cadastro de Materiais</h2>
                 <button id="btn-novo-material" class="btn btn-primary">+ Novo Material</button>
             </div>
             <div class="filters">
-                <input type="text" id="search-material" placeholder="🔍 Pesquisar..." style="flex: 1;">
+                <input type="text" id="search-material" placeholder="🔍 Pesquisar material..." style="flex: 1;">
                 <select id="filter-tipo">
-                    <option value="">Todos</option>
+                    <option value="">Todos os Materiais</option>
                     <option value="cobre">Cobre</option>
                     <option value="aluminio">Alumínio</option>
                 </select>
@@ -665,8 +884,15 @@ form { padding: 1.3rem; }
             <div class="table-container">
                 <table id="table-materiais">
                     <thead>
-                        <tr><th>Código</th><th>Descrição</th><th>Dim.</th><th>Material</th>
-                        <th>Qtd</th><th>Status</th><th>Ações</th></tr>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Dimensões</th>
+                            <th>Tipo</th>
+                            <th>Quantidade</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
@@ -676,19 +902,33 @@ form { padding: 1.3rem; }
         <!-- CONFIGURAÇÕES -->
         <div id="page-configuracoes" class="page">
             <div class="page-header">
-                <h2>⚙️ Configurações do Sistema</h2>
-                <button class="btn btn-secondary" id="btn-sair-config">← Voltar</button>
+                <h2>⚙️ Configurações</h2>
+                <button class="btn btn-primary" id="btn-sair-config">← Voltar</button>
             </div>
             <div class="settings-container">
                 <div class="setting-group">
                     <h3>🤖 Inteligência Artificial</h3>
                     <div class="setting-item">
+                        <label>Modelo de IA</label>
+                        <select id="config-modelo-ia">
+                            <option value="yolov8">YOLOv8 (Recomendado)</option>
+                            <option value="yolov11">YOLOv11 (Mais rápido)</option>
+                            <option value="detectron2">Detectron2 (Mais preciso)</option>
+                            <option value="ssd">SSD MobileNet (Leve)</option>
+                            <option value="fallback">Detector de Cores (Básico)</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
                         <label>Confiança Mínima (%)</label>
                         <input type="number" id="config-confianca" min="0" max="100" value="50">
                     </div>
                     <div class="setting-item">
-                        <label>URL API Google Apps Script</label>
-                        <input type="text" id="config-api-url" placeholder="https://script.google.com/..." style="width: 100%;">
+                        <label>Auto-detectar e parar</label>
+                        <input type="checkbox" id="config-auto-stop" checked title="Para automaticamente quando a contagem estabilizar">
+                    </div>
+                    <div class="setting-item">
+                        <label>Tempo de estabilização (segundos)</label>
+                        <input type="number" id="config-estabilizacao" min="1" max="10" value="3">
                     </div>
                 </div>
                 <div class="setting-group">
@@ -712,15 +952,12 @@ form { padding: 1.3rem; }
                         <label>Modo Demo (sem API)</label>
                         <input type="checkbox" id="config-demo-mode" checked>
                     </div>
-                    <div class="setting-item" style="flex-direction: column; align-items: stretch; gap: 0.5rem;">
-                        <label style="color: var(--warning); font-weight: 600;">🔄 Zerar Quantidades</label>
-                        <span style="font-size: 0.8rem; color: var(--text-secondary);">Zera apenas as quantidades de todas as barras. Descrições, códigos e itens são mantidos.</span>
+                    <div class="setting-item" style="flex-direction: column; align-items: stretch; gap: 0.8rem;">
+                        <label style="color: var(--warning); font-weight: 700;">🔄 Zerar Quantidades</label>
+                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Mantém todos os itens, zera apenas as quantidades</span>
                         <button class="btn btn-warning" id="btn-zerar-quantidades" style="margin-top: 0.3rem;">🔄 Zerar Todas as Quantidades</button>
                     </div>
                 </div>
-            </div>
-            <div style="margin-top: 1.5rem; max-width: 1100px;">
-                <button id="btn-salvar-config" class="btn btn-primary">💾 Salvar Configurações</button>
             </div>
         </div>
     </main>
@@ -734,19 +971,32 @@ form { padding: 1.3rem; }
             </div>
             <form id="form-material">
                 <input type="hidden" id="input-id">
-                <div class="form-group"><label>Código *</label><input type="text" id="input-codigo" required></div>
-                <div class="form-group"><label>Descrição *</label><input type="text" id="input-descricao" required></div>
-                <div class="form-group"><label>Dimensões</label><input type="text" id="input-dimensoes" placeholder="Ex: 80x10"></div>
-                <div class="form-group"><label>Material *</label>
+                <div class="form-group">
+                    <label>Código *</label>
+                    <input type="text" id="input-codigo" required placeholder="Ex: 10049704">
+                </div>
+                <div class="form-group">
+                    <label>Descrição *</label>
+                    <input type="text" id="input-descricao" required placeholder="Ex: BARRA RET COBRE C11000">
+                </div>
+                <div class="form-group">
+                    <label>Dimensões</label>
+                    <input type="text" id="input-dimensoes" placeholder="Ex: 80x10">
+                </div>
+                <div class="form-group">
+                    <label>Material *</label>
                     <select id="input-material" required>
                         <option value="cobre">Cobre</option>
                         <option value="aluminio">Alumínio</option>
                     </select>
                 </div>
-                <div class="form-group"><label>Quantidade</label><input type="number" id="input-quantidade" value="0"></div>
+                <div class="form-group">
+                    <label>Quantidade Inicial</label>
+                    <input type="number" id="input-quantidade" value="0">
+                </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="App.closeModal('modal-material')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <button type="button" class="btn btn-danger" onclick="App.closeModal('modal-material')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"> Salvar</button>
                 </div>
             </form>
         </div>
@@ -759,14 +1009,14 @@ form { padding: 1.3rem; }
                 <h2>🔒 Acesso Restrito</h2>
                 <button class="btn-close" onclick="App.closeModal('modal-senha')">&times;</button>
             </div>
-            <div style="padding: 1.5rem;">
-                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Digite a senha para acessar as configurações:</p>
+            <div style="padding: 2rem;">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Digite a senha para acessar configurações:</p>
                 <input type="password" class="senha-input" id="input-senha" placeholder="••••••••" maxlength="10" inputmode="numeric">
-                <div style="display: flex; gap: 0.6rem;">
-                    <button class="btn btn-secondary" style="flex: 1;" onclick="App.closeModal('modal-senha')">Cancelar</button>
+                <div style="display: flex; gap: 0.8rem;">
+                    <button class="btn btn-danger" style="flex: 1;" onclick="App.closeModal('modal-senha')">Cancelar</button>
                     <button class="btn btn-primary" style="flex: 1;" id="btn-confirmar-senha">Entrar</button>
                 </div>
-                <p id="senha-erro" style="color: var(--danger); margin-top: 0.8rem; font-size: 0.85rem; display: none;">Senha incorreta!</p>
+                <p id="senha-erro" style="color: var(--danger); margin-top: 1rem; font-size: 0.9rem; display: none; font-weight: 600;">Senha incorreta!</p>
             </div>
         </div>
     </div>
@@ -841,20 +1091,29 @@ const MATERIAIS_DATABASE = {
 /* ============ CONFIGURAÇÃO ============ */
 const CONFIG_SENHA = '10032001';
 const Config = {
+    modeloIA: localStorage.getItem('modeloIA') || 'yolov8',
     demoMode: localStorage.getItem('demoMode') !== 'false',
     confidence: parseFloat(localStorage.getItem('confidence') || '0.5'),
     resolution: localStorage.getItem('resolution') || '1280x720',
+    autoStop: localStorage.getItem('autoStop') !== 'false',
+    estabilizacao: parseInt(localStorage.getItem('estabilizacao') || '3'),
     apiUrl: localStorage.getItem('apiUrl') || '',
     
     save() {
+        localStorage.setItem('modeloIA', this.modeloIA);
         localStorage.setItem('demoMode', this.demoMode);
         localStorage.setItem('confidence', this.confidence);
         localStorage.setItem('resolution', this.resolution);
+        localStorage.setItem('autoStop', this.autoStop);
+        localStorage.setItem('estabilizacao', this.estabilizacao);
         localStorage.setItem('apiUrl', this.apiUrl);
     },
     load() {
+        document.getElementById('config-modelo-ia').value = this.modeloIA;
         document.getElementById('config-confianca').value = this.confidence * 100;
         document.getElementById('config-resolucao').value = this.resolution;
+        document.getElementById('config-auto-stop').checked = this.autoStop;
+        document.getElementById('config-estabilizacao').value = this.estabilizacao;
         document.getElementById('config-api-url').value = this.apiUrl;
         document.getElementById('config-demo-mode').checked = this.demoMode;
     }
@@ -881,7 +1140,11 @@ const Toast = {
         toast.className = `toast ${type}`;
         toast.textContent = message;
         container.appendChild(toast);
-        setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(100%)'; setTimeout(() => toast.remove(), 300); }, 3000);
+        setTimeout(() => { 
+            toast.style.opacity = '0'; 
+            toast.style.transform = 'translateX(100%)'; 
+            setTimeout(() => toast.remove(), 300); 
+        }, 4000);
     },
     success(msg) { this.show(msg, 'success'); },
     error(msg) { this.show(msg, 'error'); },
@@ -946,24 +1209,40 @@ const Camera = {
             });
             this.video.srcObject = this.stream;
             this.track = this.stream.getVideoTracks()[0];
-            await new Promise(resolve => { this.video.onloadedmetadata = () => { this.video.play(); this.setupOverlay(); resolve(); }; });
+            await new Promise(resolve => { 
+                this.video.onloadedmetadata = () => { 
+                    this.video.play(); 
+                    this.setupOverlay(); 
+                    resolve(); 
+                }; 
+            });
             return true;
-        } catch (e) { Toast.error('Erro câmera: ' + e.message); return false; }
+        } catch (e) { 
+            Toast.error('Erro ao acessar câmera: ' + e.message); 
+            return false; 
+        }
     },
     setupOverlay() {
         const overlay = document.getElementById('overlay');
         overlay.width = this.video.videoWidth;
         overlay.height = this.video.videoHeight;
     },
-    stop() { if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; } },
+    stop() { 
+        if (this.stream) { 
+            this.stream.getTracks().forEach(t => t.stop()); 
+            this.stream = null; 
+        } 
+    },
     async toggleFlash() {
         if (!this.track) return;
         try {
             const caps = this.track.getCapabilities();
-            if (caps.torch) { this.flashOn = !this.flashOn; await this.track.applyConstraints({ advanced: [{ torch: this.flashOn }] });
+            if (caps.torch) { 
+                this.flashOn = !this.flashOn; 
+                await this.track.applyConstraints({ advanced: [{ torch: this.flashOn }] });
                 document.getElementById('btn-flash').classList.toggle('active', this.flashOn);
             }
-        } catch (e) { Toast.warning('Flash indisponível'); }
+        } catch (e) { Toast.warning('Flash não disponível neste dispositivo'); }
     },
     zoomIn() { this.zoom = Math.min(this.zoom + 0.2, 3); this.applyZoom(); },
     zoomOut() { this.zoom = Math.max(this.zoom - 0.2, 1); this.applyZoom(); },
@@ -976,41 +1255,42 @@ const Camera = {
                 await this.track.applyConstraints({ advanced: [{ zoom: z }] });
             }
         } catch (e) {}
-    },
-    freeze() {
-        const btn = document.getElementById('btn-freeze');
-        if (this.video.paused) { this.video.play(); btn.classList.remove('active'); }
-        else { this.video.pause(); btn.classList.add('active'); }
     }
 };
 
 /* ============ VISÃO COMPUTACIONAL ============ */
 const Vision = {
-    isRunning: false, lastCount: 0, stableCount: 0, materialType: null,
-    fpsCounter: { frames: 0, lastTime: performance.now(), fps: 0 },
-    avgConfidence: 0, confidenceBuffer: [],
+    isRunning: false, 
+    lastCount: 0, 
+    stableCount: 0, 
+    materialType: null,
+    lastCounts: [],
+    autoStopTimeout: null,
     
     async start(materialType) {
         this.materialType = materialType;
         this.isRunning = true;
         this.stableCount = 0;
-        this.confidenceBuffer = [];
+        this.lastCounts = [];
+        document.getElementById('status-detectando').style.display = 'flex';
         this.detectLoop();
     },
-    stop() { this.isRunning = false; },
+    stop() { 
+        this.isRunning = false; 
+        if (this.autoStopTimeout) clearTimeout(this.autoStopTimeout);
+        document.getElementById('status-detectando').style.display = 'none';
+    },
     
     async detectLoop() {
         if (!this.isRunning) return;
-        const start = performance.now();
         try {
             const detections = this.fallbackDetector();
             this.lastCount = detections.length;
             this.drawDetections(detections);
-            this.updateMetrics(detections);
-            this.updateStableCount();
+            this.updateDisplay();
+            this.checkAutoStop();
         } catch (e) { console.error(e); }
-        const delay = Math.max(0, 33 - (performance.now() - start));
-        setTimeout(() => this.detectLoop(), delay);
+        setTimeout(() => this.detectLoop(), 100);
     },
     
     fallbackDetector() {
@@ -1086,36 +1366,34 @@ const Vision = {
         });
     },
     
-    updateMetrics(detections) {
-        this.fpsCounter.frames++;
-        const now = performance.now();
-        if (now - this.fpsCounter.lastTime >= 1000) {
-            this.fpsCounter.fps = this.fpsCounter.frames;
-            this.fpsCounter.frames = 0;
-            this.fpsCounter.lastTime = now;
-            document.getElementById('fps').textContent = this.fpsCounter.fps;
-        }
-        if (detections.length > 0) {
-            const avg = detections.reduce((s, d) => s + d.confidence, 0) / detections.length;
-            this.confidenceBuffer.push(avg);
-            if (this.confidenceBuffer.length > 30) this.confidenceBuffer.shift();
-            this.avgConfidence = this.confidenceBuffer.reduce((s, v) => s + v, 0) / this.confidenceBuffer.length;
-            document.getElementById('confianca').textContent = (this.avgConfidence * 100).toFixed(0) + '%';
-        }
-        document.getElementById('qtd-detectada').textContent = detections.length;
-        
-        const registrada = parseInt(document.getElementById('qtd-registrada').textContent) || 0;
-        const diff = detections.length - registrada;
-        const diffEl = document.getElementById('diferenca');
-        diffEl.textContent = (diff > 0 ? '+' : '') + diff;
-        diffEl.className = 'metric-value ' + (diff === 0 ? 'zero' : diff > 0 ? 'success' : 'danger');
+    updateDisplay() {
+        document.getElementById('qtd-detectada').textContent = this.lastCount;
     },
     
-    updateStableCount() {
-        if (this.lastCount === parseInt(document.getElementById('qtd-detectada').textContent)) {
-            this.stableCount++;
-            if (this.stableCount > 10) document.getElementById('btn-salvar').disabled = false;
-        } else { this.stableCount = 0; }
+    checkAutoStop() {
+        if (!Config.autoStop) return;
+        
+        this.lastCounts.push(this.lastCount);
+        if (this.lastCounts.length > Config.estabilizacao * 10) {
+            this.lastCounts.shift();
+        }
+        
+        if (this.lastCounts.length >= Config.estabilizacao * 10) {
+            const recent = this.lastCounts.slice(-Config.estabilizacao * 10);
+            const allSame = recent.every(c => c === recent[0]);
+            
+            if (allSame && recent[0] > 0) {
+                if (this.autoStopTimeout) clearTimeout(this.autoStopTimeout);
+                this.autoStopTimeout = setTimeout(() => {
+                    this.autoSave();
+                }, 500);
+            }
+        }
+    },
+    
+    async autoSave() {
+        this.stop();
+        await Conference.save();
     },
     
     getCount() { return this.lastCount; }
@@ -1130,26 +1408,22 @@ const Conference = {
         document.getElementById('count-cobre').textContent = MATERIAIS_DATABASE.cobre.length + ' itens';
         document.getElementById('count-aluminio').textContent = MATERIAIS_DATABASE.aluminio.length + ' itens';
         
-        document.querySelectorAll('.tipo-btn').forEach(btn => {
+        document.querySelectorAll('.tipo-card').forEach(btn => {
             btn.addEventListener('click', () => this.selectTipo(btn.dataset.tipo));
         });
         
         document.getElementById('btn-voltar-tipo').addEventListener('click', () => this.backToTipo());
         document.getElementById('material-search').addEventListener('input', (e) => this.renderMateriais(e.target.value));
-        
-        document.getElementById('btn-parar').addEventListener('click', () => this.stop());
-        document.getElementById('btn-salvar').addEventListener('click', () => this.save());
         document.getElementById('btn-voltar-selecao').addEventListener('click', () => this.backToTipo());
         document.getElementById('btn-flash').addEventListener('click', () => Camera.toggleFlash());
         document.getElementById('btn-zoom-in').addEventListener('click', () => Camera.zoomIn());
         document.getElementById('btn-zoom-out').addEventListener('click', () => Camera.zoomOut());
-        document.getElementById('btn-freeze').addEventListener('click', () => Camera.freeze());
     },
     
     selectTipo(tipo) {
         this.selectedTipo = tipo;
-        document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector(`.tipo-btn[data-tipo="${tipo}"]`).classList.add('active');
+        document.querySelectorAll('.tipo-card').forEach(b => b.classList.remove('active'));
+        document.querySelector(`.tipo-card[data-tipo="${tipo}"]`).classList.add('active');
         
         document.getElementById('tipo-selector').style.display = 'none';
         document.getElementById('materiais-lista').classList.add('active');
@@ -1163,8 +1437,8 @@ const Conference = {
         Camera.stop();
         document.getElementById('tipo-selector').style.display = 'block';
         document.getElementById('materiais-lista').classList.remove('active');
-        document.getElementById('camera-section').classList.remove('active');
-        document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('camera-view').classList.remove('active');
+        document.querySelectorAll('.tipo-card').forEach(b => b.classList.remove('active'));
         document.getElementById('overlay').getContext('2d').clearRect(0, 0, 9999, 9999);
         this.selectedTipo = null;
         this.selectedMaterial = null;
@@ -1184,7 +1458,7 @@ const Conference = {
         });
         
         grid.innerHTML = filtered.map(m => `
-            <div class="material-card" data-codigo="${m.codigo}" onclick="Conference.selectMaterial('${m.codigo}')">
+            <div class="material-item" data-codigo="${m.codigo}" onclick="Conference.selectMaterial('${m.codigo}')">
                 <div class="codigo">${m.codigo}</div>
                 <div class="info">
                     <div class="descricao">${m.descricao}</div>
@@ -1195,7 +1469,7 @@ const Conference = {
         `).join('');
         
         if (filtered.length === 0) {
-            grid.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-secondary);">Nenhum material encontrado</div>';
+            grid.innerHTML = '<div style="text-align:center; padding: 3rem; color: var(--text-secondary); font-size: 1.1rem;">Nenhum material encontrado</div>';
         }
     },
     
@@ -1211,33 +1485,30 @@ const Conference = {
         
         document.getElementById('conf-material-nome').textContent = material.descricao;
         document.getElementById('conf-material-dim').textContent = `${material.codigo} | ${material.dimensoes}`;
-        document.getElementById('qtd-registrada').textContent = qtdRegistrada;
-        document.getElementById('qtd-detectada').textContent = '0';
-        document.getElementById('diferenca').textContent = '0';
-        document.getElementById('btn-salvar').disabled = true;
         
         document.getElementById('materiais-lista').classList.remove('active');
-        document.getElementById('camera-section').classList.add('active');
+        document.getElementById('camera-view').classList.add('active');
         
         Camera.init();
         const started = await Camera.start();
         if (started) {
             await Vision.start(this.selectedTipo);
+            Toast.info('A IA está contando automaticamente. Aguarde...');
         }
     },
     
-    stop() { Vision.stop(); },
-    
     async save() {
         const detectada = Vision.getCount();
-        const registrada = parseInt(document.getElementById('qtd-registrada').textContent) || 0;
-        
-        // SEMPRE SOMAR - nunca remover
-        // A quantidade detectada é ADICIONADA ao estoque existente
-        const novaQuantidade = registrada + detectada;
+        if (detectada === 0) {
+            Toast.warning('Nenhuma barra detectada!');
+            return;
+        }
         
         const materiais = await SheetsAPI.getMateriais();
         const matData = materiais.find(m => m.codigo === this.selectedMaterial.codigo);
+        const registrada = matData ? matData.quantidade : 0;
+        const novaQuantidade = registrada + detectada;
+        
         if (matData) {
             matData.quantidade = novaQuantidade;
             await SheetsAPI.save(matData, 'material');
@@ -1249,12 +1520,12 @@ const Conference = {
             dimensoes: this.selectedMaterial.dimensoes, tipoMaterial: this.selectedTipo,
             quantidadeDetectada: detectada, quantidadeAntes: registrada,
             quantidadeDepois: novaQuantidade, adicionado: detectada,
-            usuario: 'Admin'
+            modeloIA: Config.modeloIA, usuario: 'Admin'
         };
         
         await SheetsAPI.save(conferencia, 'conferencia');
         
-        Toast.success(`Conferência salva! +${detectada} barras adicionadas. Total: ${novaQuantidade}`);
+        Toast.success(`✅ ${detectada} barras adicionadas! Total: ${novaQuantidade}`);
         this.backToTipo();
     }
 };
@@ -1278,15 +1549,15 @@ const Materials = {
                 <td><strong>${m.codigo||'-'}</strong></td>
                 <td>${m.descricao||'-'}</td>
                 <td>${m.dimensoes||'-'}</td>
-                <td><span class="badge badge-${m.material}">${m.material==='cobre'?'Cobre':'Alumínio'}</span></td>
-                <td><strong>${m.quantidade||0}</strong></td>
-                <td><span class="badge badge-${status}">${(m.quantidade||0) > 0 ? 'OK' : 'Zerado'}</span></td>
+                <td><span class="badge badge-${m.material}">${m.material==='cobre'?'🟤 Cobre':' Alumínio'}</span></td>
+                <td><strong style="font-size: 1.1rem;">${m.quantidade||0}</strong></td>
+                <td><span class="badge badge-${status}">${(m.quantidade||0) > 0 ? '✓ Em Estoque' : '⚠ Zerado'}</span></td>
                 <td>
-                    <button class="btn-icon" onclick="Materials.edit('${m.id}')" title="Editar">️</button>
+                    <button class="btn-icon" onclick="Materials.edit('${m.id}')" title="Editar">✏️</button>
                     <button class="btn-icon" onclick="Materials.remove('${m.id}')" title="Excluir">🗑️</button>
                 </td>
             </tr>`;
-        }).join('') || '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-secondary)">Nenhum material</td></tr>';
+        }).join('') || '<tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--text-secondary);font-size:1.1rem;">Nenhum material cadastrado</td></tr>';
     },
     edit(id) {
         const m = this.data.find(x => x.id === id);
@@ -1303,7 +1574,7 @@ const Materials = {
     async remove(id) {
         if (!confirm('Deseja realmente excluir este material?')) return;
         await SheetsAPI.delete(id);
-        Toast.success('Material excluído');
+        Toast.success('Material excluído com sucesso');
         await this.load();
     }
 };
@@ -1369,18 +1640,21 @@ const App = {
         });
         
         document.getElementById('btn-salvar-config').addEventListener('click', () => {
+            Config.modeloIA = document.getElementById('config-modelo-ia').value;
             Config.confidence = parseInt(document.getElementById('config-confianca').value) / 100;
             Config.resolution = document.getElementById('config-resolucao').value;
+            Config.autoStop = document.getElementById('config-auto-stop').checked;
+            Config.estabilizacao = parseInt(document.getElementById('config-estabilizacao').value);
             Config.apiUrl = document.getElementById('config-api-url').value;
             Config.demoMode = document.getElementById('config-demo-mode').checked;
             Config.save();
-            Toast.success('Configurações salvas!');
+            Toast.success('Configurações salvas com sucesso!');
         });
         
         document.getElementById('btn-zerar-quantidades').addEventListener('click', async () => {
-            if (confirm('⚠️ ATENÇÃO: Isso irá ZERAR a quantidade de TODAS as barras.\n\nAs descrições, códigos e itens serão mantidos.\n\nDeseja continuar?')) {
+            if (confirm('⚠️ ATENÇÃO:\n\nIsso irá ZERAR a quantidade de TODAS as barras.\n\nAs descrições, códigos e itens serão mantidos.\n\nDeseja continuar?')) {
                 const result = await SheetsAPI.zerarQuantidades();
-                Toast.success(`Quantidades zeradas! (${result.count} itens mantidos)`);
+                Toast.success(`✅ Quantidades zeradas! (${result.count} itens mantidos)`);
             }
         });
     },
@@ -1407,7 +1681,7 @@ const App = {
                 tipo: 'barra', minimo: 20, dataCadastro: Utils.now().full, status: 'ativo'
             };
             await SheetsAPI.save(data, 'material');
-            Toast.success('Material salvo!');
+            Toast.success('Material salvo com sucesso!');
             this.closeModal('modal-material');
             await Materials.load();
         });
