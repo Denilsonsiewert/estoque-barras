@@ -3,36 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Controle de Estoque IA</title>
+<title>Controle de Estoque IA - WEG</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf_plugin_autotable.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 :root {
-    --primary: #0d6efd;
-    --primary-dark: #0a58ca;
-    --secondary: #6c757d;
-    --success: #198754;
+    --weg-blue: #0055a4;
+    --weg-blue-dark: #003d7a;
+    --weg-blue-light: #0077d4;
+    --weg-green: #00a650;
+    --weg-green-dark: #008f44;
+    --weg-green-light: #00c961;
     --danger: #dc3545;
     --warning: #ffc107;
-    --info: #0dcaf0;
-    --bg-main: #f8f9fa;
+    --info: #17a2b8;
+    --bg-main: #f5f7fa;
     --bg-card: #ffffff;
     --bg-header: #ffffff;
     --text-primary: #212529;
     --text-secondary: #6c757d;
     --border-color: #dee2e6;
-    --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-    --radius: 12px;
-    --radius-lg: 16px;
-    --cobre: #b87333;
-    --aluminio: #7f8c8d;
+    --shadow: 0 2px 12px rgba(0, 85, 164, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 85, 164, 0.12);
+    --radius: 8px;
+    --radius-lg: 12px;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-main);
     color: var(--text-primary);
     min-height: 100vh;
     overflow-x: hidden;
@@ -40,112 +42,99 @@ body {
 
 .app-container { display: flex; flex-direction: column; min-height: 100vh; }
 
-/* HEADER MODERNO */
+/* HEADER WEG */
 .header {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: var(--bg-header);
     padding: 1rem 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-bottom: 4px solid var(--weg-blue);
     position: sticky;
     top: 0;
     z-index: 100;
 }
 .logo { display: flex; align-items: center; gap: 0.8rem; }
 .logo-icon {
-    width: 42px; height: 42px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px;
+    width: 45px; height: 45px;
+    background: linear-gradient(135deg, var(--weg-blue) 0%, var(--weg-blue-dark) 100%);
+    border-radius: var(--radius);
     display: flex; align-items: center; justify-content: center;
     font-size: 1.5rem;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(0, 85, 164, 0.3);
 }
-.logo h1 { font-size: 1.2rem; color: var(--text-primary); font-weight: 700; }
-.logo span { color: #667eea; }
+.logo h1 { font-size: 1.2rem; color: var(--weg-blue); font-weight: 700; }
 
 .nav { display: flex; gap: 0.5rem; }
 .nav-btn {
     background: transparent;
-    border: 2px solid transparent;
-    color: var(--text-secondary);
+    border: 2px solid var(--weg-blue);
+    color: var(--weg-blue);
     padding: 0.6rem 1.2rem;
     cursor: pointer;
     border-radius: var(--radius);
     transition: all 0.3s;
     font-size: 0.9rem;
     font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
 }
-.nav-btn:hover { background: rgba(102, 126, 234, 0.1); color: #667eea; }
+.nav-btn:hover { 
+    background: rgba(0, 85, 164, 0.1); 
+    transform: translateY(-2px);
+}
 .nav-btn.active { 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-    color: white; 
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    background: var(--weg-blue); 
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 85, 164, 0.3);
 }
 
+.header-actions { display: flex; align-items: center; gap: 0.8rem; }
 .btn-config {
-    background: var(--bg-main);
-    border: 2px solid var(--border-color);
+    background: var(--weg-blue);
+    border: none;
     width: 44px; height: 44px;
     border-radius: 50%;
     cursor: pointer;
     font-size: 1.3rem;
-    display: flex; align-items: center; justify-content: center;
+    color: white;
     transition: all 0.3s;
+    display: flex; align-items: center; justify-content: center;
 }
 .btn-config:hover { 
     transform: rotate(45deg) scale(1.1); 
-    border-color: #667eea; 
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    background: var(--weg-blue-dark);
+    box-shadow: 0 4px 12px rgba(0, 85, 164, 0.4);
 }
 
 /* MAIN */
-.main-content { 
-    flex: 1; 
-    padding: 2rem 1.5rem; 
-    max-width: 1400px; 
-    margin: 0 auto; 
-    width: 100%; 
-}
+.main-content { flex: 1; padding: 2rem 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; }
 .page { display: none; animation: fadeIn 0.3s ease; }
 .page.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-/* CONFERÊNCIA - DESIGN MODERNO */
-.conferencia-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
+/* CONFERÊNCIA */
+.conferencia-container { max-width: 1200px; margin: 0 auto; }
 
-/* Seleção de Tipo - Cards Grandes */
 .tipo-selector {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: var(--bg-card);
     padding: 2.5rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     text-align: center;
+    border: 2px solid var(--border-color);
 }
-.tipo-selector h2 { 
-    margin-bottom: 2rem; 
-    font-size: 1.6rem; 
-    color: var(--text-primary);
-    font-weight: 700;
-}
+.tipo-selector h2 { margin-bottom: 2rem; font-size: 1.5rem; color: var(--weg-blue); font-weight: 700; }
 
 .tipo-buttons {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
-    margin-bottom: 1rem;
 }
 .tipo-card {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    border: 3px solid transparent;
+    background: var(--bg-card);
+    border: 3px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 2.5rem 1.5rem;
     cursor: pointer;
@@ -161,71 +150,63 @@ body {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(0, 85, 164, 0.05) 0%, rgba(0, 166, 80, 0.05) 100%);
     opacity: 0;
     transition: opacity 0.3s;
 }
 .tipo-card:hover { 
     transform: translateY(-5px); 
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--weg-blue);
 }
 .tipo-card:hover::before { opacity: 1; }
 .tipo-card.active { 
-    border-color: #667eea; 
-    transform: scale(1.02);
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    border-color: var(--weg-blue);
+    background: rgba(0, 85, 164, 0.05);
+    box-shadow: 0 8px 24px rgba(0, 85, 164, 0.2);
 }
-.tipo-card[data-tipo="cobre"].active { border-color: var(--cobre); }
-.tipo-card[data-tipo="aluminio"].active { border-color: var(--aluminio); }
-.tipo-card .icon { 
-    font-size: 4rem; 
-    line-height: 1; 
-    z-index: 1;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
-}
-.tipo-card .label { 
-    font-size: 1.3rem; 
-    font-weight: 700; 
-    color: var(--text-primary);
-    z-index: 1;
-}
+.tipo-card .icon { font-size: 4rem; line-height: 1; z-index: 1; }
+.tipo-card .label { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); z-index: 1; }
 .tipo-card .count { 
     font-size: 0.9rem; 
-    color: var(--text-secondary);
-    background: rgba(255,255,255,0.8);
-    padding: 0.3rem 0.8rem;
-    border-radius: 20px;
+    color: var(--text-secondary); 
+    background: var(--bg-main); 
+    padding: 0.3rem 0.8rem; 
+    border-radius: 20px; 
     z-index: 1;
+    font-weight: 600;
 }
 
 /* Lista de Materiais */
 .materiais-lista { 
     display: none; 
     margin-top: 1.5rem; 
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: var(--bg-card);
     padding: 2rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
+    border: 2px solid var(--border-color);
 }
-.materiais-lista.active { display: block; }
+.materiais-lista.active { display: block; animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+
 .materiais-lista h3 {
     margin-bottom: 1.5rem;
     font-size: 1.3rem;
-    color: var(--text-primary);
+    color: var(--weg-blue);
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-weight: 700;
 }
 .btn-voltar {
-    background: var(--secondary);
+    background: var(--text-secondary);
     color: white;
     border: none;
     padding: 0.5rem 1rem;
     border-radius: var(--radius);
-    font-size: 0.9rem;
     cursor: pointer;
+    font-size: 0.9rem;
     transition: all 0.2s;
 }
 .btn-voltar:hover { background: #5a6268; transform: translateX(-2px); }
@@ -235,16 +216,14 @@ body {
     padding: 1rem 1.2rem;
     border: 2px solid var(--border-color);
     border-radius: var(--radius);
-    background: var(--bg-main);
-    color: var(--text-primary);
     font-size: 1rem;
     margin-bottom: 1.5rem;
     transition: all 0.2s;
 }
 .material-search:focus { 
     outline: none; 
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    border-color: var(--weg-blue);
+    box-shadow: 0 0 0 4px rgba(0, 85, 164, 0.1);
 }
 
 .materiais-grid {
@@ -257,7 +236,7 @@ body {
 }
 
 .material-item {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    background: var(--bg-card);
     border: 2px solid var(--border-color);
     border-radius: var(--radius);
     padding: 1.2rem 1.5rem;
@@ -269,33 +248,27 @@ body {
     align-items: center;
 }
 .material-item:hover { 
-    border-color: #667eea; 
+    border-color: var(--weg-blue); 
     transform: translateX(4px);
     box-shadow: var(--shadow);
 }
-.material-item.selected {
-    border-color: #667eea;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-}
 .material-item .codigo {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--weg-blue) 0%, var(--weg-blue-dark) 100%);
     color: white;
     padding: 0.5rem 0.8rem;
-    border-radius: 8px;
+    border-radius: var(--radius);
     font-weight: 700;
     font-size: 0.9rem;
     white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 85, 164, 0.3);
 }
 .material-item .info { min-width: 0; }
-.material-item .descricao {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.3rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.material-item .descricao { 
+    font-size: 0.95rem; 
+    font-weight: 600; 
+    margin-bottom: 0.3rem; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
     white-space: nowrap;
 }
 .material-item .dimensoes { 
@@ -307,20 +280,20 @@ body {
 }
 .material-item .arrow { 
     font-size: 1.5rem; 
-    color: #667eea;
+    color: var(--weg-blue);
     opacity: 0;
     transition: all 0.2s;
 }
 .material-item:hover .arrow { opacity: 1; transform: translateX(4px); }
 
-/* CÂMERA - DESIGN LIMPO */
+/* CÂMERA */
 .camera-view {
     display: none;
     grid-template-columns: 1fr 320px;
     gap: 1.5rem;
     align-items: start;
 }
-.camera-view.active { display: grid; }
+.camera-view.active { display: grid; animation: fadeIn 0.3s ease; }
 
 .camera-container {
     position: relative;
@@ -335,48 +308,48 @@ body {
 
 .camera-controls {
     position: absolute;
-    bottom: 1.2rem;
+    bottom: 1rem;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 0.6rem;
-    background: rgba(0, 0, 0, 0.6);
+    gap: 0.5rem;
+    background: rgba(0,0,0,0.7);
     backdrop-filter: blur(10px);
-    padding: 0.6rem;
+    padding: 0.5rem;
     border-radius: var(--radius);
 }
 .cam-btn {
     background: rgba(255,255,255,0.2);
     border: none;
     color: white;
-    width: 48px; height: 48px;
-    border-radius: 12px;
+    width: 45px; height: 45px;
+    border-radius: var(--radius);
     cursor: pointer;
     font-size: 1.2rem;
     transition: all 0.2s;
     display: flex; align-items: center; justify-content: center;
 }
-.cam-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
+.cam-btn:hover { background: var(--weg-blue); transform: scale(1.1); }
 .cam-btn.active { background: var(--warning); color: #000; }
 
-/* Painel de Contagem - Minimalista */
+/* Painel de Contagem */
 .contagem-panel {
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(10px);
-    padding: 1.8rem;
+    background: var(--bg-card);
+    padding: 1.5rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
+    border: 2px solid var(--border-color);
     position: sticky;
     top: 100px;
 }
 
 .material-info-box {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--weg-blue) 0%, var(--weg-blue-dark) 100%);
     color: white;
     padding: 1.2rem;
     border-radius: var(--radius);
     margin-bottom: 1.5rem;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 85, 164, 0.3);
 }
 .material-info-box .titulo { 
     font-size: 0.8rem; 
@@ -397,52 +370,22 @@ body {
     font-weight: 500;
 }
 
-.contagem-display {
-    text-align: center;
-    margin: 1.5rem 0;
-    padding: 1.5rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: var(--radius);
-}
-.contagem-display .label {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
-}
-.contagem-display .numero {
-    font-size: 4rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1;
-}
-.contagem-display .subtext {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-top: 0.5rem;
-}
-
 .status-detectando {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     padding: 0.8rem;
-    background: rgba(25, 135, 84, 0.1);
+    background: rgba(0, 166, 80, 0.1);
     border-radius: var(--radius);
     margin-bottom: 1.5rem;
-    color: var(--success);
+    color: var(--weg-green);
     font-weight: 600;
     font-size: 0.9rem;
 }
 .status-detectando .pulse {
-    width: 8px;
-    height: 8px;
-    background: var(--success);
+    width: 8px; height: 8px;
+    background: var(--weg-green);
     border-radius: 50%;
     animation: pulse 1.5s infinite;
 }
@@ -451,11 +394,37 @@ body {
     50% { opacity: 0.5; transform: scale(1.3); }
 }
 
-.acoes-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
+.contagem-display {
+    text-align: center;
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    background: var(--bg-main);
+    border-radius: var(--radius);
+    border: 2px solid var(--border-color);
 }
+.contagem-display .label { 
+    font-size: 0.85rem; 
+    color: var(--text-secondary); 
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.contagem-display .numero {
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--weg-blue);
+    line-height: 1;
+    text-shadow: 0 2px 8px rgba(0, 85, 164, 0.2);
+}
+.contagem-display .subtext { 
+    font-size: 0.9rem; 
+    color: var(--text-secondary); 
+    margin-top: 0.5rem;
+}
+
+.acoes-buttons { display: flex; flex-direction: column; gap: 0.8rem; }
+
+/* BOTÕES GERAIS */
 .btn {
     padding: 0.9rem 1.5rem;
     border: none;
@@ -464,37 +433,77 @@ body {
     font-size: 0.95rem;
     font-weight: 600;
     transition: all 0.3s;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-primary { 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+    background: var(--weg-blue); 
     color: white;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 85, 164, 0.3);
 }
 .btn-primary:hover:not(:disabled) { 
+    background: var(--weg-blue-dark);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 16px rgba(0, 85, 164, 0.4);
 }
 .btn-success { 
-    background: linear-gradient(135deg, #198754 0%, #146c43 100%); 
+    background: var(--weg-green); 
     color: white;
-    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 166, 80, 0.3);
 }
 .btn-success:hover:not(:disabled) { 
+    background: var(--weg-green-dark);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(25, 135, 84, 0.4);
 }
 .btn-danger { 
-    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); 
+    background: var(--danger); 
     color: white;
 }
-.btn-danger:hover:not(:disabled) { transform: translateY(-2px); }
+.btn-danger:hover:not(:disabled) { 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+.btn-warning { 
+    background: var(--warning); 
+    color: #000;
+}
+.btn-warning:hover:not(:disabled) { 
+    transform: translateY(-2px);
+}
+.btn-secondary {
+    background: var(--text-secondary);
+    color: white;
+}
+.btn-secondary:hover:not(:disabled) {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
 
-/* MATERIAIS */
+.btn-icon {
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    width: 38px; height: 38px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.3rem;
+}
+.btn-icon:hover { 
+    background: var(--weg-blue); 
+    border-color: var(--weg-blue); 
+    color: white;
+    transform: scale(1.1);
+}
+
+/* PÁGINA MATERIAIS */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -503,25 +512,20 @@ body {
     flex-wrap: wrap;
     gap: 1rem;
 }
-.page-header h2 { 
-    font-size: 1.5rem; 
-    color: white;
-    font-weight: 700;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
+.page-header h2 { font-size: 1.5rem; color: var(--weg-blue); font-weight: 700; }
 
 .filters {
     display: flex;
     gap: 0.8rem;
     margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--bg-card);
     padding: 1.2rem;
     border-radius: var(--radius-lg);
+    border: 2px solid var(--border-color);
     box-shadow: var(--shadow);
 }
-input[type="text"], input[type="number"], select {
-    background: var(--bg-main);
+input[type="text"], input[type="number"], input[type="date"], select {
+    background: var(--bg-card);
     border: 2px solid var(--border-color);
     color: var(--text-primary);
     padding: 0.7rem 1rem;
@@ -531,25 +535,32 @@ input[type="text"], input[type="number"], select {
 }
 input:focus, select:focus { 
     outline: none; 
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    border-color: var(--weg-blue);
+    box-shadow: 0 0 0 4px rgba(0, 85, 164, 0.1);
 }
 
 .table-container {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--bg-card);
     border-radius: var(--radius-lg);
     overflow: hidden;
     box-shadow: var(--shadow-lg);
+    border: 2px solid var(--border-color);
     max-height: 65vh;
     overflow-y: auto;
 }
 
 table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-thead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; position: sticky; top: 0; z-index: 2; }
+thead { 
+    background: linear-gradient(135deg, var(--weg-blue) 0%, var(--weg-blue-dark) 100%); 
+    color: white; 
+    position: sticky; 
+    top: 0; 
+    z-index: 2;
+}
 th { padding: 1rem; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
 td { padding: 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
 tbody tr { transition: all 0.2s; }
-tbody tr:hover { background: rgba(102, 126, 234, 0.05); }
+tbody tr:hover { background: rgba(0, 85, 164, 0.05); }
 
 .badge {
     display: inline-flex;
@@ -561,30 +572,12 @@ tbody tr:hover { background: rgba(102, 126, 234, 0.05); }
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
-.badge-success { background: rgba(25, 135, 84, 0.15); color: var(--success); }
+.badge-success { background: rgba(0, 166, 80, 0.15); color: var(--weg-green); }
 .badge-danger { background: rgba(220, 53, 69, 0.15); color: var(--danger); }
-.badge-cobre { background: rgba(184, 115, 51, 0.15); color: var(--cobre); }
-.badge-aluminio { background: rgba(127, 140, 141, 0.15); color: var(--aluminio); }
-
-.btn-icon {
-    background: var(--bg-main);
-    border: 2px solid var(--border-color);
-    color: var(--text-primary);
-    width: 38px; height: 38px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-.btn-icon:hover { 
-    background: #667eea; 
-    border-color: #667eea; 
-    color: white;
-    transform: scale(1.1);
-}
+.badge-warning { background: rgba(255, 193, 7, 0.15); color: #856404; }
+.badge-info { background: rgba(23, 162, 184, 0.15); color: var(--info); }
+.badge-cobre { background: rgba(184, 115, 51, 0.15); color: #b87333; }
+.badge-aluminio { background: rgba(127, 140, 141, 0.15); color: #7f8c8d; }
 
 /* MODAL */
 .modal {
@@ -599,7 +592,7 @@ tbody tr:hover { background: rgba(102, 126, 234, 0.05); }
     align-items: center;
     padding: 1.5rem;
 }
-.modal.active { display: flex; }
+.modal.active { display: flex; animation: fadeIn 0.2s ease; }
 .modal-content {
     background: white;
     border-radius: var(--radius-lg);
@@ -611,8 +604,8 @@ tbody tr:hover { background: rgba(102, 126, 234, 0.05); }
     animation: modalSlide 0.3s ease;
 }
 @keyframes modalSlide {
-    from { opacity: 0; transform: translateY(-30px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .modal-header {
     display: flex;
@@ -620,7 +613,7 @@ tbody tr:hover { background: rgba(102, 126, 234, 0.05); }
     align-items: center;
     padding: 1.3rem 1.5rem;
     border-bottom: 2px solid var(--border-color);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--weg-blue) 0%, var(--weg-blue-dark) 100%);
     color: white;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
@@ -675,8 +668,8 @@ form { padding: 1.5rem; }
 }
 .senha-input:focus { 
     outline: none; 
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    border-color: var(--weg-blue);
+    box-shadow: 0 0 0 4px rgba(0, 85, 164, 0.1);
 }
 
 /* CONFIGURAÇÕES */
@@ -687,15 +680,15 @@ form { padding: 1.5rem; }
     max-width: 1200px;
 }
 .setting-group {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--bg-card);
     padding: 1.8rem;
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
     box-shadow: var(--shadow-lg);
 }
 .setting-group h3 { 
     margin-bottom: 1.2rem; 
-    color: #667eea; 
+    color: var(--weg-blue); 
     font-size: 1.1rem;
     font-weight: 700;
     display: flex;
@@ -719,7 +712,7 @@ form { padding: 1.5rem; }
 .setting-item input[type="checkbox"] { 
     width: 22px; height: 22px; 
     cursor: pointer;
-    accent-color: #667eea;
+    accent-color: var(--weg-blue);
 }
 .setting-item input, .setting-item select { 
     width: 200px;
@@ -740,17 +733,17 @@ form { padding: 1.5rem; }
     padding: 1.2rem 1.5rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow-lg);
-    border-left: 4px solid #667eea;
+    border-left: 4px solid var(--weg-blue);
     min-width: 300px;
-    animation: slideIn 0.3s ease;
+    animation: slideInRight 0.3s ease;
     color: var(--text-primary);
     font-size: 0.95rem;
     font-weight: 500;
 }
-.toast.success { border-left-color: var(--success); }
+.toast.success { border-left-color: var(--weg-green); }
 .toast.error { border-left-color: var(--danger); }
 .toast.warning { border-left-color: var(--warning); }
-@keyframes slideIn { 
+@keyframes slideInRight { 
     from { transform: translateX(100%); opacity: 0; } 
     to { transform: translateX(0); opacity: 1; } 
 }
@@ -776,9 +769,9 @@ form { padding: 1.5rem; }
 }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
-::-webkit-scrollbar-thumb { background: #667eea; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #764ba2; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: var(--weg-blue); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--weg-blue-dark); }
 </style>
 </head>
 <body>
@@ -786,23 +779,22 @@ form { padding: 1.5rem; }
 <div class="app-container">
     <header class="header">
         <div class="logo">
-            <div class="logo-icon"></div>
-            <h1>Controle de Estoque <span>IA</span></h1>
+            <div class="logo-icon">W</div>
+            <h1>Controle de Estoque IA</h1>
         </div>
         <nav class="nav">
             <button class="nav-btn active" data-page="conferencia">📷 Conferência</button>
-            <button class="nav-btn" data-page="materiais"> Materiais</button>
+            <button class="nav-btn" data-page="materiais">📦 Materiais</button>
         </nav>
-        <button class="btn-config" id="btn-config" title="Configurações">⚙️</button>
+        <div class="header-actions">
+            <button class="btn-config" id="btn-config" title="Configurações">⚙️</button>
+        </div>
     </header>
 
     <main class="main-content">
-        
         <!-- CONFERÊNCIA -->
         <div id="page-conferencia" class="page active">
             <div class="conferencia-container">
-                
-                <!-- Seleção de Tipo -->
                 <div class="tipo-selector" id="tipo-selector">
                     <h2>Selecione o Tipo de Material</h2>
                     <div class="tipo-buttons">
@@ -819,17 +811,15 @@ form { padding: 1.5rem; }
                     </div>
                 </div>
 
-                <!-- Lista de Materiais -->
                 <div class="materiais-lista" id="materiais-lista">
                     <h3>
                         <span id="titulo-lista">Materiais</span>
                         <button class="btn-voltar" id="btn-voltar-tipo">← Voltar</button>
                     </h3>
-                    <input type="text" class="material-search" id="material-search" placeholder="🔍 Buscar por código, descrição ou dimensão...">
+                    <input type="text" class="material-search" id="material-search" placeholder=" Buscar por código, descrição ou dimensão...">
                     <div class="materiais-grid" id="materiais-grid"></div>
                 </div>
 
-                <!-- Câmera e Contagem -->
                 <div class="camera-view" id="camera-view">
                     <div class="camera-container">
                         <video id="video" autoplay playsinline muted></video>
@@ -860,7 +850,7 @@ form { padding: 1.5rem; }
                         </div>
 
                         <div class="acoes-buttons">
-                            <button id="btn-voltar-selecao" class="btn btn-danger">← Voltar à Seleção</button>
+                            <button class="btn btn-danger" id="btn-voltar-selecao">← Voltar à Seleção</button>
                         </div>
                     </div>
                 </div>
@@ -871,7 +861,7 @@ form { padding: 1.5rem; }
         <div id="page-materiais" class="page">
             <div class="page-header">
                 <h2>📦 Cadastro de Materiais</h2>
-                <button id="btn-novo-material" class="btn btn-primary">+ Novo Material</button>
+                <button class="btn btn-primary" id="btn-novo-material">+ Novo Material</button>
             </div>
             <div class="filters">
                 <input type="text" id="search-material" placeholder="🔍 Pesquisar material..." style="flex: 1;">
@@ -902,12 +892,12 @@ form { padding: 1.5rem; }
         <!-- CONFIGURAÇÕES -->
         <div id="page-configuracoes" class="page">
             <div class="page-header">
-                <h2>⚙️ Configurações</h2>
+                <h2>⚙️ Configurações do Sistema</h2>
                 <button class="btn btn-primary" id="btn-sair-config">← Voltar</button>
             </div>
             <div class="settings-container">
                 <div class="setting-group">
-                    <h3>🤖 Inteligência Artificial</h3>
+                    <h3> Inteligência Artificial</h3>
                     <div class="setting-item">
                         <label>Modelo de IA</label>
                         <select id="config-modelo-ia">
@@ -924,10 +914,10 @@ form { padding: 1.5rem; }
                     </div>
                     <div class="setting-item">
                         <label>Auto-detectar e parar</label>
-                        <input type="checkbox" id="config-auto-stop" checked title="Para automaticamente quando a contagem estabilizar">
+                        <input type="checkbox" id="config-auto-stop" checked>
                     </div>
                     <div class="setting-item">
-                        <label>Tempo de estabilização (segundos)</label>
+                        <label>Tempo de estabilização (seg)</label>
                         <input type="number" id="config-estabilizacao" min="1" max="10" value="3">
                     </div>
                 </div>
@@ -958,6 +948,9 @@ form { padding: 1.5rem; }
                         <button class="btn btn-warning" id="btn-zerar-quantidades" style="margin-top: 0.3rem;">🔄 Zerar Todas as Quantidades</button>
                     </div>
                 </div>
+            </div>
+            <div style="margin-top: 1.5rem; max-width: 1200px;">
+                <button class="btn btn-primary" id="btn-salvar-config">💾 Salvar Configurações</button>
             </div>
         </div>
     </main>
@@ -996,7 +989,7 @@ form { padding: 1.5rem; }
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-danger" onclick="App.closeModal('modal-material')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary"> Salvar</button>
+                    <button type="submit" class="btn btn-primary">💾 Salvar</button>
                 </div>
             </form>
         </div>
@@ -1006,7 +999,7 @@ form { padding: 1.5rem; }
     <div id="modal-senha" class="modal senha-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>🔒 Acesso Restrito</h2>
+                <h2> Acesso Restrito</h2>
                 <button class="btn-close" onclick="App.closeModal('modal-senha')">&times;</button>
             </div>
             <div style="padding: 2rem;">
@@ -1121,13 +1114,19 @@ const Config = {
 
 /* ============ UTILITÁRIOS ============ */
 const Utils = {
-    uuid() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-        const r = Math.random() * 16 | 0;
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    })},
+    uuid() { 
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0;
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    },
     now() {
         const d = new Date();
-        return { date: d.toISOString().split('T')[0], time: d.toTimeString().split(' ')[0], full: d.toLocaleString('pt-BR') };
+        return { 
+            date: d.toISOString().split('T')[0], 
+            time: d.toTimeString().split(' ')[0], 
+            full: d.toLocaleString('pt-BR') 
+        };
     },
     formatNumber(n) { return new Intl.NumberFormat('pt-BR').format(n); }
 };
@@ -1160,9 +1159,16 @@ const SheetsAPI = {
         ['cobre', 'aluminio'].forEach(tipo => {
             MATERIAIS_DATABASE[tipo].forEach(m => {
                 defaultData.push({
-                    id: Utils.uuid(), codigo: m.codigo, descricao: m.descricao, dimensoes: m.dimensoes,
-                    tipo: 'barra', material: tipo, quantidade: 0,
-                    minimo: 20, dataCadastro: Utils.now().full, status: 'ativo'
+                    id: Utils.uuid(), 
+                    codigo: m.codigo, 
+                    descricao: m.descricao, 
+                    dimensoes: m.dimensoes,
+                    tipo: 'barra', 
+                    material: tipo, 
+                    quantidade: 0,
+                    minimo: 20, 
+                    dataCadastro: Utils.now().full, 
+                    status: 'ativo'
                 });
             });
         });
@@ -1175,12 +1181,6 @@ const SheetsAPI = {
         const idx = stored.findIndex(x => x.id === data.id);
         if (idx >= 0) stored[idx] = data; else stored.unshift(data);
         localStorage.setItem(key, JSON.stringify(stored));
-        return { success: true };
-    },
-    async update(id, updates) {
-        const stored = JSON.parse(localStorage.getItem('materiais') || '[]');
-        const idx = stored.findIndex(x => x.id === id);
-        if (idx >= 0) { stored[idx] = { ...stored[idx], ...updates }; localStorage.setItem('materiais', JSON.stringify(stored)); }
         return { success: true };
     },
     async delete(id) {
@@ -1200,12 +1200,21 @@ const SheetsAPI = {
 /* ============ CÂMERA ============ */
 const Camera = {
     video: null, stream: null, track: null, zoom: 1, flashOn: false,
-    init() { this.video = document.getElementById('video'); },
+    
+    init() { 
+        this.video = document.getElementById('video'); 
+    },
+    
     async start() {
         try {
             const [w, h] = Config.resolution.split('x').map(Number);
             this.stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: { ideal: w }, height: { ideal: h }, facingMode: 'environment' }, audio: false
+                video: { 
+                    width: { ideal: w }, 
+                    height: { ideal: h }, 
+                    facingMode: 'environment' 
+                }, 
+                audio: false
             });
             this.video.srcObject = this.stream;
             this.track = this.stream.getVideoTracks()[0];
@@ -1222,17 +1231,20 @@ const Camera = {
             return false; 
         }
     },
+    
     setupOverlay() {
         const overlay = document.getElementById('overlay');
         overlay.width = this.video.videoWidth;
         overlay.height = this.video.videoHeight;
     },
+    
     stop() { 
         if (this.stream) { 
             this.stream.getTracks().forEach(t => t.stop()); 
             this.stream = null; 
         } 
     },
+    
     async toggleFlash() {
         if (!this.track) return;
         try {
@@ -1242,10 +1254,21 @@ const Camera = {
                 await this.track.applyConstraints({ advanced: [{ torch: this.flashOn }] });
                 document.getElementById('btn-flash').classList.toggle('active', this.flashOn);
             }
-        } catch (e) { Toast.warning('Flash não disponível neste dispositivo'); }
+        } catch (e) { 
+            Toast.warning('Flash não disponível neste dispositivo'); 
+        }
     },
-    zoomIn() { this.zoom = Math.min(this.zoom + 0.2, 3); this.applyZoom(); },
-    zoomOut() { this.zoom = Math.max(this.zoom - 0.2, 1); this.applyZoom(); },
+    
+    zoomIn() { 
+        this.zoom = Math.min(this.zoom + 0.2, 3); 
+        this.applyZoom(); 
+    },
+    
+    zoomOut() { 
+        this.zoom = Math.max(this.zoom - 0.2, 1); 
+        this.applyZoom(); 
+    },
+    
     async applyZoom() {
         if (!this.track) return;
         try {
@@ -1275,6 +1298,7 @@ const Vision = {
         document.getElementById('status-detectando').style.display = 'flex';
         this.detectLoop();
     },
+    
     stop() { 
         this.isRunning = false; 
         if (this.autoStopTimeout) clearTimeout(this.autoStopTimeout);
@@ -1289,7 +1313,9 @@ const Vision = {
             this.drawDetections(detections);
             this.updateDisplay();
             this.checkAutoStop();
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error('Erro na detecção:', e); 
+        }
         setTimeout(() => this.detectLoop(), 100);
     },
     
@@ -1362,7 +1388,7 @@ const Vision = {
             ctx.strokeRect(d.x, d.y, d.w, d.h);
             ctx.fillStyle = color; ctx.fillRect(d.x, d.y - 22, 50, 22);
             ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Arial';
-            ctx.fillText(`#${i + 1}`, d.x + 5, d.y - 6);
+            ctx.fillText('#' + (i + 1), d.x + 5, d.y - 6);
         });
     },
     
@@ -1493,7 +1519,7 @@ const Conference = {
         const started = await Camera.start();
         if (started) {
             await Vision.start(this.selectedTipo);
-            Toast.info('A IA está contando automaticamente. Aguarde...');
+            Toast.info('IA detectando automaticamente...');
         }
     },
     
@@ -1515,12 +1541,19 @@ const Conference = {
         }
         
         const conferencia = {
-            id: Utils.uuid(), data: Utils.now().date, hora: Utils.now().time,
-            material: this.selectedMaterial.codigo, descricao: this.selectedMaterial.descricao,
-            dimensoes: this.selectedMaterial.dimensoes, tipoMaterial: this.selectedTipo,
-            quantidadeDetectada: detectada, quantidadeAntes: registrada,
-            quantidadeDepois: novaQuantidade, adicionado: detectada,
-            modeloIA: Config.modeloIA, usuario: 'Admin'
+            id: Utils.uuid(), 
+            data: Utils.now().date, 
+            hora: Utils.now().time,
+            material: this.selectedMaterial.codigo, 
+            descricao: this.selectedMaterial.descricao,
+            dimensoes: this.selectedMaterial.dimensoes, 
+            tipoMaterial: this.selectedTipo,
+            quantidadeDetectada: detectada, 
+            quantidadeAntes: registrada,
+            quantidadeDepois: novaQuantidade, 
+            adicionado: detectada,
+            modeloIA: Config.modeloIA, 
+            usuario: 'Admin'
         };
         
         await SheetsAPI.save(conferencia, 'conferencia');
@@ -1533,7 +1566,12 @@ const Conference = {
 /* ============ MATERIAIS ============ */
 const Materials = {
     data: [],
-    async load() { this.data = await SheetsAPI.getMateriais(); this.render(); },
+    
+    async load() { 
+        this.data = await SheetsAPI.getMateriais(); 
+        this.render(); 
+    },
+    
     render() {
         const search = document.getElementById('search-material').value.toLowerCase();
         const filter = document.getElementById('filter-tipo').value;
@@ -1549,7 +1587,7 @@ const Materials = {
                 <td><strong>${m.codigo||'-'}</strong></td>
                 <td>${m.descricao||'-'}</td>
                 <td>${m.dimensoes||'-'}</td>
-                <td><span class="badge badge-${m.material}">${m.material==='cobre'?'🟤 Cobre':' Alumínio'}</span></td>
+                <td><span class="badge badge-${m.material}">${m.material==='cobre'?'🟤 Cobre':'⚪ Alumínio'}</span></td>
                 <td><strong style="font-size: 1.1rem;">${m.quantidade||0}</strong></td>
                 <td><span class="badge badge-${status}">${(m.quantidade||0) > 0 ? '✓ Em Estoque' : '⚠ Zerado'}</span></td>
                 <td>
@@ -1559,6 +1597,14 @@ const Materials = {
             </tr>`;
         }).join('') || '<tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--text-secondary);font-size:1.1rem;">Nenhum material cadastrado</td></tr>';
     },
+    
+    openModal() {
+        document.getElementById('modal-title').textContent = 'Novo Material';
+        document.getElementById('form-material').reset();
+        document.getElementById('input-id').value = '';
+        document.getElementById('modal-material').classList.add('active');
+    },
+    
     edit(id) {
         const m = this.data.find(x => x.id === id);
         if (!m) return;
@@ -1571,6 +1617,7 @@ const Materials = {
         document.getElementById('input-quantidade').value = m.quantidade || 0;
         document.getElementById('modal-material').classList.add('active');
     },
+    
     async remove(id) {
         if (!confirm('Deseja realmente excluir este material?')) return;
         await SheetsAPI.delete(id);
@@ -1660,12 +1707,7 @@ const App = {
     },
     
     setupMaterials() {
-        document.getElementById('btn-novo-material').addEventListener('click', () => {
-            document.getElementById('modal-title').textContent = 'Novo Material';
-            document.getElementById('form-material').reset();
-            document.getElementById('input-id').value = '';
-            document.getElementById('modal-material').classList.add('active');
-        });
+        document.getElementById('btn-novo-material').addEventListener('click', () => Materials.openModal());
         document.getElementById('search-material').addEventListener('input', () => Materials.render());
         document.getElementById('filter-tipo').addEventListener('change', () => Materials.render());
         
@@ -1678,7 +1720,10 @@ const App = {
                 dimensoes: document.getElementById('input-dimensoes').value,
                 material: document.getElementById('input-material').value,
                 quantidade: parseInt(document.getElementById('input-quantidade').value),
-                tipo: 'barra', minimo: 20, dataCadastro: Utils.now().full, status: 'ativo'
+                tipo: 'barra', 
+                minimo: 20, 
+                dataCadastro: Utils.now().full, 
+                status: 'ativo'
             };
             await SheetsAPI.save(data, 'material');
             Toast.success('Material salvo com sucesso!');
@@ -1687,12 +1732,18 @@ const App = {
         });
     },
     
-    closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    closeModal(id) { 
+        document.getElementById(id).classList.remove('active'); 
+    }
 };
 
+// Inicialização
 window.addEventListener('DOMContentLoaded', () => App.init());
+
+// Expor funções globais
 window.Materials = Materials;
 window.Conference = Conference;
+window.Camera = Camera;
 window.App = App;
 </script>
 </body>
