@@ -2,15 +2,14 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Controle de Estoque IA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Controle de Estoque IA</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.16.3/dist/ort.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf_plugin_autotable.min.js"></script>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 :root {
     --primary: #0d6efd;
@@ -20,7 +19,7 @@
     --danger: #dc3545;
     --warning: #ffc107;
     --info: #0dcaf0;
-    --bg-main: #f8f9fa;
+    --bg-main: #f0f2f5;
     --bg-card: #ffffff;
     --bg-header: #ffffff;
     --text-primary: #212529;
@@ -28,36 +27,26 @@
     --border-color: #dee2e6;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
-    --radius: 8px;
-    --radius-lg: 12px;
+    --radius: 10px;
+    --radius-lg: 14px;
     --cobre: #b87333;
-    --aluminio: #95a5a6;
-}
-
-body.dark-mode {
-    --bg-main: #0f1419;
-    --bg-card: #1a2028;
-    --bg-header: #1a2028;
-    --text-primary: #f8f9fa;
-    --text-secondary: #a0aec0;
-    --border-color: #2d3748;
-    --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.6);
+    --aluminio: #7f8c8d;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg-main);
     color: var(--text-primary);
-    transition: all 0.3s ease;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 .app-container { display: flex; flex-direction: column; min-height: 100vh; }
 
+/* HEADER */
 .header {
     background: var(--bg-header);
-    padding: 1rem 2rem;
+    padding: 0.9rem 1.2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -67,209 +56,189 @@ body {
     top: 0;
     z-index: 100;
 }
-
-.logo { display: flex; align-items: center; gap: 0.75rem; }
+.logo { display: flex; align-items: center; gap: 0.6rem; }
 .logo-icon {
-    width: 40px; height: 40px;
+    width: 38px; height: 38px;
     background: var(--primary);
     border-radius: var(--radius);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
 }
-.logo h1 { font-size: 1.3rem; color: var(--text-primary); font-weight: 600; }
+.logo h1 { font-size: 1.1rem; color: var(--text-primary); font-weight: 600; }
 .logo span { color: var(--primary); }
 
-.nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.nav { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .nav-btn {
     background: transparent;
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
-    padding: 0.5rem 1rem;
+    padding: 0.45rem 0.8rem;
     cursor: pointer;
     border-radius: var(--radius);
     transition: all 0.2s;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
 }
 .nav-btn:hover { background: var(--bg-card); color: var(--text-primary); }
 .nav-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-.header-actions { display: flex; align-items: center; gap: 1rem; }
-.theme-toggle {
+.header-actions { display: flex; align-items: center; gap: 0.6rem; }
+.btn-config {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    width: 44px; height: 44px;
+    width: 40px; height: 40px;
     border-radius: 50%;
     cursor: pointer;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
 }
-.theme-toggle:hover { transform: scale(1.1); box-shadow: var(--shadow); }
+.btn-config:hover { transform: rotate(45deg); box-shadow: var(--shadow); }
 
-.main-content { flex: 1; padding: 2rem; max-width: 1600px; margin: 0 auto; width: 100%; }
-.page { display: none; animation: fadeIn 0.3s ease; }
+/* MAIN */
+.main-content { flex: 1; padding: 1.2rem; max-width: 1400px; margin: 0 auto; width: 100%; }
+.page { display: none; animation: fadeIn 0.25s ease; }
 .page.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* Dashboard */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-.card {
+/* CONFERÊNCIA - BOTÕES GRANDES */
+.conferencia-wrapper { max-width: 900px; margin: 0 auto; }
+
+.tipo-selector {
     background: var(--bg-card);
     padding: 1.5rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
     border: 1px solid var(--border-color);
-    transition: transform 0.2s;
+    text-align: center;
 }
-.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-.card h3 { color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
-.metric { font-size: 2.5rem; font-weight: 700; color: var(--text-primary); }
+.tipo-selector h2 { margin-bottom: 1.5rem; font-size: 1.3rem; color: var(--text-primary); }
 
-.charts-container {
+.tipo-buttons {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
-.chart-card {
+.tipo-btn {
     background: var(--bg-card);
-    padding: 1.5rem;
+    border: 2px solid var(--border-color);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
-}
-.chart-card h3 { margin-bottom: 1rem; color: var(--text-secondary); }
-
-.tables-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 1.5rem;
-}
-.table-card {
-    background: var(--bg-card);
-    padding: 1.5rem;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
-    overflow: hidden;
-}
-.table-card h3 { margin-bottom: 1rem; color: var(--text-secondary); }
-
-/* Tabelas */
-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-thead { background: var(--bg-main); }
-th { padding: 0.75rem; text-align: left; color: var(--text-secondary); font-weight: 600; border-bottom: 2px solid var(--border-color); }
-td { padding: 0.75rem; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
-tbody tr:hover { background: var(--bg-main); }
-
-.badge {
-    display: inline-block;
-    padding: 0.25rem 0.6rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-.badge-success { background: rgba(25, 135, 84, 0.15); color: var(--success); }
-.badge-danger { background: rgba(220, 53, 69, 0.15); color: var(--danger); }
-.badge-warning { background: rgba(255, 193, 7, 0.15); color: var(--warning); }
-.badge-info { background: rgba(13, 202, 240, 0.15); color: var(--info); }
-.badge-cobre { background: rgba(184, 115, 51, 0.15); color: var(--cobre); }
-.badge-aluminio { background: rgba(149, 165, 166, 0.15); color: var(--aluminio); }
-
-/* Botões */
-.btn {
-    padding: 0.6rem 1.2rem;
-    border: none;
-    border-radius: var(--radius);
+    padding: 2rem 1rem;
     cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
     transition: all 0.2s;
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.8rem;
+    min-height: 140px;
+    justify-content: center;
 }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
-.btn-secondary { background: var(--secondary); color: white; }
-.btn-success { background: var(--success); color: white; }
-.btn-danger { background: var(--danger); color: white; }
-.btn-icon {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    width: 40px; height: 40px;
-    border-radius: var(--radius);
-    cursor: pointer;
+.tipo-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.tipo-btn.active { border-width: 3px; }
+.tipo-btn[data-tipo="cobre"].active { border-color: var(--cobre); background: rgba(184, 115, 51, 0.05); }
+.tipo-btn[data-tipo="aluminio"].active { border-color: var(--aluminio); background: rgba(127, 140, 141, 0.05); }
+.tipo-btn .icon { font-size: 3rem; line-height: 1; }
+.tipo-btn .label { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+.tipo-btn .count { font-size: 0.85rem; color: var(--text-secondary); }
+
+/* LISTA DE MATERIAIS - OTIMIZADA PARA TOUCH */
+.materiais-lista {
+    display: none;
+    margin-top: 1.5rem;
+}
+.materiais-lista.active { display: block; }
+.materiais-lista h3 {
+    margin-bottom: 1rem;
     font-size: 1.1rem;
-    transition: all 0.2s;
-}
-.btn-icon:hover { background: var(--primary); border-color: var(--primary); color: white; }
-
-/* Conferência - Interface Simplificada */
-.conferencia-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    gap: 1.5rem;
-}
-
-.material-select-section {
-    background: var(--bg-card);
-    padding: 2rem;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
-}
-.material-select-section h2 {
-    margin-bottom: 1.5rem;
-    font-size: 1.3rem;
     color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
-.form-group { margin-bottom: 1.25rem; }
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-    font-size: 0.9rem;
+.btn-voltar-tipo {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    cursor: pointer;
 }
-.form-group select, .form-group input {
+
+.material-search {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.9rem;
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     background: var(--bg-main);
     color: var(--text-primary);
-    font-size: 0.95rem;
+    font-size: 1rem;
+    margin-bottom: 1rem;
 }
-.form-group select:focus, .form-group input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+.material-search:focus { outline: none; border-color: var(--primary); }
+
+.materiais-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 0.3rem;
 }
 
-.material-info {
-    background: var(--bg-main);
-    padding: 1rem;
+.material-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
     border-radius: var(--radius);
-    margin-top: 1rem;
-    border-left: 4px solid var(--primary);
+    padding: 1rem 1.1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.9rem;
+    align-items: center;
+    min-height: 70px;
 }
-.material-info p { margin: 0.25rem 0; font-size: 0.9rem; }
-.material-info strong { color: var(--text-primary); }
+.material-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+.material-card.selected {
+    border-color: var(--primary);
+    background: rgba(13, 110, 253, 0.05);
+    border-width: 2px;
+}
+.material-card .codigo {
+    background: var(--bg-main);
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--primary);
+    white-space: nowrap;
+}
+.material-card .info { min-width: 0; }
+.material-card .descricao {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.material-card .dimensoes {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+.material-card .arrow {
+    font-size: 1.3rem;
+    color: var(--text-secondary);
+}
 
+/* CÂMERA */
 .camera-section {
     display: none;
-    grid-template-columns: 1fr 320px;
-    gap: 1.5rem;
+    grid-template-columns: 1fr 300px;
+    gap: 1rem;
     align-items: start;
 }
 .camera-section.active { display: grid; }
@@ -282,105 +251,161 @@ tbody tr:hover { background: var(--bg-main); }
     aspect-ratio: 16/9;
     box-shadow: var(--shadow-lg);
 }
-#video { width: 100%; height: 100%; object-fit: cover; }
-#overlay {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-}
+#video { width: 100%; height: 100%; object-fit: cover; display: block; }
+#overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
 
 .camera-controls {
     position: absolute;
-    bottom: 1rem;
+    bottom: 0.8rem;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 0.5rem;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 0.5rem;
+    gap: 0.4rem;
+    background: rgba(0, 0, 0, 0.75);
+    padding: 0.4rem;
     border-radius: var(--radius);
+    backdrop-filter: blur(8px);
 }
+.cam-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    width: 42px; height: 42px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+}
+.cam-btn:hover { background: var(--primary); }
+.cam-btn.active { background: var(--warning); color: #000; }
 
+/* Painel de Métricas */
 .metrics-panel {
     background: var(--bg-card);
-    padding: 1.5rem;
+    padding: 1.2rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
     border: 1px solid var(--border-color);
     position: sticky;
-    top: 100px;
+    top: 90px;
 }
-.metrics-panel h3 {
-    margin-bottom: 1.25rem;
-    font-size: 1.1rem;
-    color: var(--text-primary);
-}
+.metrics-panel h3 { margin-bottom: 1rem; font-size: 1.05rem; color: var(--text-primary); }
+
 .metric-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 0;
+    padding: 0.7rem 0;
     border-bottom: 1px solid var(--border-color);
 }
-.metric-item:last-child { border-bottom: none; }
-.metric-label { color: var(--text-secondary); font-size: 0.9rem; }
-.metric-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary);
-}
+.metric-item:last-of-type { border-bottom: none; }
+.metric-label { color: var(--text-secondary); font-size: 0.85rem; }
+.metric-value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
 .metric-value.success { color: var(--success); }
 .metric-value.danger { color: var(--danger); }
+.metric-value.zero { color: var(--text-secondary); }
 
-.action-buttons {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-    flex-wrap: wrap;
+.action-buttons { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
+.action-buttons .btn { width: 100%; justify-content: center; padding: 0.85rem; font-size: 0.95rem; }
+
+/* BOTÕES GERAIS */
+.btn {
+    padding: 0.6rem 1.1rem;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
-.action-buttons .btn { flex: 1; min-width: 120px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+.btn-secondary { background: var(--secondary); color: white; }
+.btn-success { background: var(--success); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-warning { background: var(--warning); color: #000; }
+.btn-icon {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 38px; height: 38px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-icon:hover { background: var(--primary); border-color: var(--primary); color: white; }
 
-/* Páginas de lista */
+/* PÁGINAS DE LISTA */
 .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.2rem;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.8rem;
 }
-.page-header h2 { font-size: 1.5rem; color: var(--text-primary); }
+.page-header h2 { font-size: 1.3rem; color: var(--text-primary); }
+
 .filters {
     display: flex;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    gap: 0.6rem;
+    margin-bottom: 1.2rem;
     flex-wrap: wrap;
     background: var(--bg-card);
-    padding: 1rem;
+    padding: 0.9rem;
     border-radius: var(--radius);
     border: 1px solid var(--border-color);
 }
-input[type="text"], input[type="number"], input[type="date"] {
+input[type="text"], input[type="number"], input[type="date"], select {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
-    padding: 0.6rem 0.9rem;
+    padding: 0.6rem 0.8rem;
     border-radius: var(--radius);
     font-size: 0.9rem;
 }
-input:focus { outline: none; border-color: var(--primary); }
+input:focus, select:focus { outline: none; border-color: var(--primary); }
 
 .table-container {
     background: var(--bg-card);
     border-radius: var(--radius-lg);
     overflow: hidden;
     border: 1px solid var(--border-color);
-    max-height: 600px;
+    max-height: 65vh;
     overflow-y: auto;
 }
 
-/* Modal */
+/* Tabelas */
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+thead { background: var(--bg-main); position: sticky; top: 0; z-index: 2; }
+th { padding: 0.7rem; text-align: left; color: var(--text-secondary); font-weight: 600; border-bottom: 2px solid var(--border-color); font-size: 0.8rem; }
+td { padding: 0.7rem; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
+tbody tr:hover { background: var(--bg-main); }
+
+.badge {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+.badge-success { background: rgba(25, 135, 84, 0.15); color: var(--success); }
+.badge-danger { background: rgba(220, 53, 69, 0.15); color: var(--danger); }
+.badge-warning { background: rgba(255, 193, 7, 0.15); color: var(--warning); }
+.badge-info { background: rgba(13, 202, 240, 0.15); color: var(--info); }
+.badge-cobre { background: rgba(184, 115, 51, 0.15); color: var(--cobre); }
+.badge-aluminio { background: rgba(127, 140, 141, 0.15); color: var(--aluminio); }
+
+/* MODAL */
 .modal {
     display: none;
     position: fixed;
@@ -390,14 +415,14 @@ input:focus { outline: none; border-color: var(--primary); }
     z-index: 1000;
     justify-content: center;
     align-items: center;
-    padding: 2rem;
+    padding: 1.2rem;
     backdrop-filter: blur(4px);
 }
 .modal.active { display: flex; }
 .modal-content {
     background: var(--bg-card);
     border-radius: var(--radius-lg);
-    max-width: 600px;
+    max-width: 550px;
     width: 100%;
     max-height: 90vh;
     overflow-y: auto;
@@ -408,10 +433,10 @@ input:focus { outline: none; border-color: var(--primary); }
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1.3rem;
     border-bottom: 1px solid var(--border-color);
 }
-.modal-header h2 { font-size: 1.25rem; color: var(--text-primary); }
+.modal-header h2 { font-size: 1.15rem; color: var(--text-primary); }
 .btn-close {
     background: transparent;
     border: none;
@@ -422,26 +447,73 @@ input:focus { outline: none; border-color: var(--primary); }
     border-radius: 50%;
 }
 .btn-close:hover { background: var(--bg-main); color: var(--text-primary); }
-form { padding: 1.5rem; }
-.form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
 
-/* Loading */
+form { padding: 1.3rem; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.4rem; color: var(--text-secondary); font-weight: 500; font-size: 0.88rem; }
+.form-group input, .form-group select { width: 100%; }
+.form-actions { display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 1.3rem; }
+
+/* MODAL SENHA */
+.senha-modal .modal-content { max-width: 380px; text-align: center; }
+.senha-input {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.5rem;
+    text-align: center;
+    letter-spacing: 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-main);
+    color: var(--text-primary);
+    margin: 1rem 0;
+}
+.senha-input:focus { outline: none; border-color: var(--primary); }
+
+/* CONFIGURAÇÕES */
+.settings-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.2rem;
+    max-width: 1100px;
+}
+.setting-group {
+    background: var(--bg-card);
+    padding: 1.3rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+.setting-group h3 { margin-bottom: 1rem; color: var(--primary); font-size: 1.05rem; }
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--border-color);
+    gap: 1rem;
+}
+.setting-item:last-child { border-bottom: none; }
+.setting-item label { color: var(--text-primary); font-size: 0.9rem; }
+.setting-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+.setting-item input, .setting-item select { width: 180px; }
+
+/* LOADING */
 .loading-overlay {
     display: none;
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(240, 242, 245, 0.95);
     z-index: 2000;
     justify-content: center;
     align-items: center;
     flex-direction: column;
     gap: 1rem;
 }
-body.dark-mode .loading-overlay { background: rgba(15, 20, 25, 0.9); }
 .loading-overlay.active { display: flex; }
 .spinner {
-    width: 60px; height: 60px;
+    width: 50px; height: 50px;
     border: 4px solid var(--border-color);
     border-top-color: var(--primary);
     border-radius: 50%;
@@ -449,7 +521,7 @@ body.dark-mode .loading-overlay { background: rgba(15, 20, 25, 0.9); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Toast */
+/* TOAST */
 .toast-container {
     position: fixed;
     top: 1rem; right: 1rem;
@@ -460,34 +532,47 @@ body.dark-mode .loading-overlay { background: rgba(15, 20, 25, 0.9); }
 }
 .toast {
     background: var(--bg-card);
-    padding: 1rem 1.5rem;
+    padding: 0.9rem 1.2rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow-lg);
     border-left: 4px solid var(--primary);
-    min-width: 280px;
+    min-width: 250px;
     animation: slideIn 0.3s ease;
     color: var(--text-primary);
+    font-size: 0.9rem;
 }
 .toast.success { border-left-color: var(--success); }
 .toast.error { border-left-color: var(--danger); }
 .toast.warning { border-left-color: var(--warning); }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-/* Responsivo */
+/* RESPONSIVO */
 @media (max-width: 900px) {
-    .header { flex-direction: column; gap: 1rem; padding: 1rem; }
-    .nav { width: 100%; overflow-x: auto; }
+    .header { padding: 0.8rem; }
+    .logo h1 { font-size: 1rem; }
+    .nav-btn { padding: 0.4rem 0.6rem; font-size: 0.8rem; }
     .camera-section { grid-template-columns: 1fr; }
     .metrics-panel { position: static; }
-    .main-content { padding: 1rem; }
+    .main-content { padding: 0.9rem; }
 }
 @media (max-width: 600px) {
-    .action-buttons .btn { min-width: 100%; }
+    .tipo-buttons { grid-template-columns: 1fr; }
+    .material-card { padding: 0.9rem; min-height: 65px; }
+    .material-card .descricao { font-size: 0.85rem; }
+    .action-buttons { flex-direction: column; }
+    .action-buttons .btn { width: 100%; }
+    .page-header { flex-direction: column; align-items: stretch; }
+    .page-header h2 { font-size: 1.15rem; }
+    .filters { flex-direction: column; }
+    .filters input, .filters select { width: 100%; }
+    table { font-size: 0.8rem; }
+    th, td { padding: 0.5rem; }
 }
 
-::-webkit-scrollbar { width: 10px; height: 10px; }
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-main); }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 5px; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 </style>
 </head>
@@ -496,87 +581,50 @@ body.dark-mode .loading-overlay { background: rgba(15, 20, 25, 0.9); }
 <div class="app-container">
     <header class="header">
         <div class="logo">
-            <div class="logo-icon">🏭</div>
+            <div class="logo-icon"></div>
             <h1>Controle de Estoque <span>IA</span></h1>
         </div>
         <nav class="nav">
-            <button class="nav-btn active" data-page="dashboard">📊 Dashboard</button>
-            <button class="nav-btn" data-page="conferencia">📷 Conferência</button>
-            <button class="nav-btn" data-page="materiais">📦 Materiais</button>
-            <button class="nav-btn" data-page="movimentacoes">📋 Movimentações</button>
+            <button class="nav-btn active" data-page="conferencia"> Conferência</button>
+            <button class="nav-btn" data-page="materiais"> Materiais</button>
+            <button class="nav-btn" data-page="movimentacoes"> Movimentações</button>
         </nav>
         <div class="header-actions">
-            <button class="theme-toggle" id="theme-toggle" title="Alternar tema">🌙</button>
+            <button class="btn-config" id="btn-config" title="Configurações">⚙️</button>
         </div>
     </header>
 
     <main class="main-content">
-        <!-- DASHBOARD -->
-        <div id="page-dashboard" class="page active">
-            <div class="dashboard-grid">
-                <div class="card"><h3>Total em Estoque</h3><div class="metric" id="total-estoque">0</div></div>
-                <div class="card"><h3>Barras de Cobre</h3><div class="metric" id="total-cobre" style="color: var(--cobre);">0</div></div>
-                <div class="card"><h3>Barras de Alumínio</h3><div class="metric" id="total-aluminio" style="color: var(--aluminio);">0</div></div>
-                <div class="card"><h3>Precisão Média IA</h3><div class="metric success" id="precisao-ia">0%</div></div>
-            </div>
-            <div class="charts-container">
-                <div class="chart-card"><h3>Estoque por Material</h3><canvas id="chart-estoque"></canvas></div>
-                <div class="chart-card"><h3>Movimentações (Últimos 7 dias)</h3><canvas id="chart-movimentacoes"></canvas></div>
-            </div>
-            <div class="tables-container">
-                <div class="table-card">
-                    <h3>Últimas Movimentações</h3>
-                    <table id="table-movimentacoes">
-                        <thead><tr><th>Data</th><th>Tipo</th><th>Material</th><th>Qtd</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <div class="table-card">
-                    <h3>Últimas Conferências</h3>
-                    <table id="table-conferencias">
-                        <thead><tr><th>Data</th><th>Material</th><th>Detectado</th><th>Registrado</th><th>Dif.</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- CONFERÊNCIA - INTERFACE SIMPLIFICADA -->
-        <div id="page-conferencia" class="page">
+        
+        <!-- CONFERÊNCIA -->
+        <div id="page-conferencia" class="page active">
             <div class="conferencia-wrapper">
                 
-                <!-- Seleção de Material -->
-                <div class="material-select-section" id="material-select-section">
-                    <h2> Selecionar Material para Conferência</h2>
-                    
-                    <div class="form-group">
-                        <label for="select-tipo-material">Tipo de Material</label>
-                        <select id="select-tipo-material">
-                            <option value="">Selecione...</option>
-                            <option value="cobre">🟤 Barras de Cobre</option>
-                            <option value="aluminio">⚪ Barras de Alumínio</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group" id="form-group-material" style="display: none;">
-                        <label for="select-material-especifico">Material Específico</label>
-                        <select id="select-material-especifico">
-                            <option value="">Selecione o tipo primeiro...</option>
-                        </select>
-                    </div>
-                    
-                    <div id="material-info-display" class="material-info" style="display: none;">
-                        <p><strong>Código:</strong> <span id="info-codigo">-</span></p>
-                        <p><strong>Descrição:</strong> <span id="info-descricao">-</span></p>
-                        <p><strong>Dimensões:</strong> <span id="info-dimensoes">-</span></p>
-                        <p><strong>Quantidade em Estoque:</strong> <span id="info-quantidade">-</span></p>
-                    </div>
-                    
-                    <div class="action-buttons" style="margin-top: 1.5rem;">
-                        <button id="btn-iniciar-conferencia" class="btn btn-primary" disabled>
-                            ▶️ Iniciar Conferência
+                <!-- Seleção de Tipo (BOTÕES) -->
+                <div class="tipo-selector" id="tipo-selector">
+                    <h2>Selecione o Tipo de Material</h2>
+                    <div class="tipo-buttons">
+                        <button class="tipo-btn" data-tipo="cobre">
+                            <span class="icon">🟤</span>
+                            <span class="label">Barras de Cobre</span>
+                            <span class="count" id="count-cobre">0 itens</span>
+                        </button>
+                        <button class="tipo-btn" data-tipo="aluminio">
+                            <span class="icon">⚪</span>
+                            <span class="label">Barras de Alumínio</span>
+                            <span class="count" id="count-aluminio">0 itens</span>
                         </button>
                     </div>
+                </div>
+
+                <!-- Lista de Materiais (TOUCH OTIMIZADO) -->
+                <div class="materiais-lista" id="materiais-lista">
+                    <h3>
+                        <span id="titulo-lista">Materiais</span>
+                        <button class="btn-voltar-tipo" id="btn-voltar-tipo">← Voltar</button>
+                    </h3>
+                    <input type="text" class="material-search" id="material-search" placeholder="🔍 Buscar por código, descrição ou dimensão...">
+                    <div class="materiais-grid" id="materiais-grid"></div>
                 </div>
 
                 <!-- Câmera e Métricas -->
@@ -585,45 +633,47 @@ body.dark-mode .loading-overlay { background: rgba(15, 20, 25, 0.9); }
                         <video id="video" autoplay playsinline muted></video>
                         <canvas id="overlay"></canvas>
                         <div class="camera-controls">
-                            <button class="btn-icon" id="btn-flash" title="Flash">🔦</button>
-                            <button class="btn-icon" id="btn-zoom-in" title="Zoom +">🔍+</button>
-                            <button class="btn-icon" id="btn-zoom-out" title="Zoom -">🔍-</button>
-                            <button class="btn-icon" id="btn-freeze" title="Congelar">⏸️</button>
+                            <button class="cam-btn" id="btn-flash" title="Flash">🔦</button>
+                            <button class="cam-btn" id="btn-zoom-in" title="Zoom +"></button>
+                            <button class="cam-btn" id="btn-zoom-out" title="Zoom -">➖</button>
+                            <button class="cam-btn" id="btn-freeze" title="Congelar">⏸️</button>
                         </div>
                     </div>
                     
                     <div class="metrics-panel">
-                        <h3>📊 Resultados</h3>
+                        <h3>📊 Conferência</h3>
+                        
+                        <div style="background: var(--bg-main); padding: 0.6rem; border-radius: 8px; margin-bottom: 0.8rem; font-size: 0.8rem;">
+                            <div style="color: var(--text-secondary);">Material:</div>
+                            <div style="font-weight: 600; color: var(--text-primary); font-size: 0.85rem;" id="conf-material-nome">-</div>
+                            <div style="color: var(--text-secondary); font-size: 0.75rem;" id="conf-material-dim">-</div>
+                        </div>
                         
                         <div class="metric-item">
                             <span class="metric-label">Detectado</span>
                             <span class="metric-value" id="qtd-detectada">0</span>
                         </div>
-                        
                         <div class="metric-item">
                             <span class="metric-label">Registrado</span>
                             <span class="metric-value" id="qtd-registrada">0</span>
                         </div>
-                        
                         <div class="metric-item">
                             <span class="metric-label">Diferença</span>
-                            <span class="metric-value" id="diferenca">0</span>
+                            <span class="metric-value zero" id="diferenca">0</span>
                         </div>
-                        
                         <div class="metric-item">
                             <span class="metric-label">FPS</span>
                             <span class="metric-value" id="fps">0</span>
                         </div>
-                        
                         <div class="metric-item">
                             <span class="metric-label">Confiança</span>
                             <span class="metric-value" id="confianca">0%</span>
                         </div>
                         
                         <div class="action-buttons">
-                            <button id="btn-parar" class="btn btn-secondary">⏹️ Parar</button>
-                            <button id="btn-salvar" class="btn btn-success" disabled>💾 Salvar</button>
-                            <button id="btn-voltar-selecao" class="btn btn-danger">← Voltar</button>
+                            <button id="btn-parar" class="btn btn-secondary">️ Parar</button>
+                            <button id="btn-salvar" class="btn btn-success" disabled>💾 Salvar Conferência</button>
+                            <button id="btn-voltar-selecao" class="btn btn-danger">← Voltar à Seleção</button>
                         </div>
                     </div>
                 </div>
@@ -682,6 +732,56 @@ body.dark-mode .loading-overlay { background: rgba(15, 20, 25, 0.9); }
                 </table>
             </div>
         </div>
+
+        <!-- CONFIGURAÇÕES -->
+        <div id="page-configuracoes" class="page">
+            <div class="page-header">
+                <h2>⚙️ Configurações do Sistema</h2>
+                <button class="btn btn-secondary" id="btn-sair-config">← Voltar</button>
+            </div>
+            <div class="settings-container">
+                <div class="setting-group">
+                    <h3>🤖 Inteligência Artificial</h3>
+                    <div class="setting-item">
+                        <label>Confiança Mínima (%)</label>
+                        <input type="number" id="config-confianca" min="0" max="100" value="50">
+                    </div>
+                    <div class="setting-item">
+                        <label>URL API Google Apps Script</label>
+                        <input type="text" id="config-api-url" placeholder="https://script.google.com/..." style="width: 100%;">
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <h3>📷 Câmera</h3>
+                    <div class="setting-item">
+                        <label>Resolução</label>
+                        <select id="config-resolucao">
+                            <option value="640x480">640x480 (Rápido)</option>
+                            <option value="1280x720" selected>1280x720 (HD)</option>
+                            <option value="1920x1080">1920x1080 (Full HD)</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>Ativar Flash</label>
+                        <input type="checkbox" id="config-flash">
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <h3>💾 Dados</h3>
+                    <div class="setting-item">
+                        <label>Modo Demo (sem API)</label>
+                        <input type="checkbox" id="config-demo-mode" checked>
+                    </div>
+                    <div class="setting-item">
+                        <label style="color: var(--danger);">Limpar Todos os Dados</label>
+                        <button class="btn btn-danger" id="btn-limpar-dados" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Limpar</button>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem; max-width: 1100px;">
+                <button id="btn-salvar-config" class="btn btn-primary">💾 Salvar Configurações</button>
+            </div>
+        </div>
     </main>
 
     <!-- Modal Material -->
@@ -689,12 +789,13 @@ body.dark-mode .loading-overlay { background: rgba(15, 20, 25, 0.9); }
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modal-title">Novo Material</h2>
-                <button class="btn-close" onclick="App.closeModal()">&times;</button>
+                <button class="btn-close" onclick="App.closeModal('modal-material')">&times;</button>
             </div>
             <form id="form-material">
                 <input type="hidden" id="input-id">
                 <div class="form-group"><label>Código *</label><input type="text" id="input-codigo" required></div>
                 <div class="form-group"><label>Descrição *</label><input type="text" id="input-descricao" required></div>
+                <div class="form-group"><label>Dimensões</label><input type="text" id="input-dimensoes" placeholder="Ex: 80x10"></div>
                 <div class="form-group"><label>Material *</label>
                     <select id="input-material" required>
                         <option value="cobre">Cobre</option>
@@ -703,10 +804,29 @@ body.dark-mode .loading-overlay { background: rgba(15, 20, 25, 0.9); }
                 </div>
                 <div class="form-group"><label>Quantidade</label><input type="number" id="input-quantidade" value="0"></div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="App.closeModal()">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" onclick="App.closeModal('modal-material')">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Salvar</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal Senha -->
+    <div id="modal-senha" class="modal senha-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔒 Acesso Restrito</h2>
+                <button class="btn-close" onclick="App.closeModal('modal-senha')">&times;</button>
+            </div>
+            <div style="padding: 1.5rem;">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Digite a senha para acessar as configurações:</p>
+                <input type="password" class="senha-input" id="input-senha" placeholder="••••••••" maxlength="10" inputmode="numeric">
+                <div style="display: flex; gap: 0.6rem;">
+                    <button class="btn btn-secondary" style="flex: 1;" onclick="App.closeModal('modal-senha')">Cancelar</button>
+                    <button class="btn btn-primary" style="flex: 1;" id="btn-confirmar-senha">Entrar</button>
+                </div>
+                <p id="senha-erro" style="color: var(--danger); margin-top: 0.8rem; font-size: 0.85rem; display: none;">Senha incorreta!</p>
+            </div>
         </div>
     </div>
 
@@ -718,7 +838,7 @@ body.dark-mode .loading-overlay { background: rgba(15, 20, 25, 0.9); }
 </div>
 
 <script>
-/* DADOS DOS MATERIAIS */
+/* ============ DADOS DOS MATERIAIS ============ */
 const MATERIAIS_DATABASE = {
     cobre: [
         { codigo: '10049704', descricao: 'BARRA RET COBRE C11000 10X80X4.000mm', dimensoes: '80x10' },
@@ -781,21 +901,29 @@ const MATERIAIS_DATABASE = {
     ]
 };
 
-/* CONFIGURAÇÃO */
+/* ============ CONFIGURAÇÃO ============ */
+const CONFIG_SENHA = '10032001';
 const Config = {
-    darkMode: localStorage.getItem('darkMode') !== 'false',
-    demoMode: true,
-    confidence: 0.5,
+    demoMode: localStorage.getItem('demoMode') !== 'false',
+    confidence: parseFloat(localStorage.getItem('confidence') || '0.5'),
+    resolution: localStorage.getItem('resolution') || '1280x720',
+    apiUrl: localStorage.getItem('apiUrl') || '',
     
-    toggleTheme() {
-        this.darkMode = !this.darkMode;
-        localStorage.setItem('darkMode', this.darkMode);
-        document.body.classList.toggle('dark-mode', this.darkMode);
-        document.getElementById('theme-toggle').textContent = this.darkMode ? '☀️' : '🌙';
+    save() {
+        localStorage.setItem('demoMode', this.demoMode);
+        localStorage.setItem('confidence', this.confidence);
+        localStorage.setItem('resolution', this.resolution);
+        localStorage.setItem('apiUrl', this.apiUrl);
+    },
+    load() {
+        document.getElementById('config-confianca').value = this.confidence * 100;
+        document.getElementById('config-resolucao').value = this.resolution;
+        document.getElementById('config-api-url').value = this.apiUrl;
+        document.getElementById('config-demo-mode').checked = this.demoMode;
     }
 };
 
-/* UTILITÁRIOS */
+/* ============ UTILITÁRIOS ============ */
 const Utils = {
     uuid() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
         const r = Math.random() * 16 | 0;
@@ -808,7 +936,7 @@ const Utils = {
     formatNumber(n) { return new Intl.NumberFormat('pt-BR').format(n); }
 };
 
-/* TOAST */
+/* ============ TOAST ============ */
 const Toast = {
     show(message, type = 'info') {
         const container = document.getElementById('toast-container');
@@ -816,22 +944,28 @@ const Toast = {
         toast.className = `toast ${type}`;
         toast.textContent = message;
         container.appendChild(toast);
-        setTimeout(() => { toast.style.animation = 'slideIn 0.3s ease reverse'; setTimeout(() => toast.remove(), 300); }, 3000);
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(100%)'; setTimeout(() => toast.remove(), 300); }, 3000);
     },
     success(msg) { this.show(msg, 'success'); },
     error(msg) { this.show(msg, 'error'); },
     warning(msg) { this.show(msg, 'warning'); }
 };
 
-/* API GOOGLE SHEETS (Simulada) */
+/* ============ API ============ */
 const SheetsAPI = {
     async getMateriais() {
         const stored = localStorage.getItem('materiais');
         if (stored) return JSON.parse(stored);
-        const defaultData = [...MATERIAIS_DATABASE.cobre, ...MATERIAIS_DATABASE.aluminio].map(m => ({
-            ...m, id: Utils.uuid(), tipo: 'barra', material: m.codigo.startsWith('1') && MATERIAIS_DATABASE.cobre.find(c => c.codigo === m.codigo) ? 'cobre' : 'aluminio',
-            quantidade: Math.floor(Math.random() * 200), minimo: 20, dataCadastro: Utils.now().full, status: 'ativo'
-        }));
+        const defaultData = [];
+        ['cobre', 'aluminio'].forEach(tipo => {
+            MATERIAIS_DATABASE[tipo].forEach(m => {
+                defaultData.push({
+                    id: Utils.uuid(), codigo: m.codigo, descricao: m.descricao, dimensoes: m.dimensoes,
+                    tipo: 'barra', material: tipo, quantidade: Math.floor(Math.random() * 200),
+                    minimo: 20, dataCadastro: Utils.now().full, status: 'ativo'
+                });
+            });
+        });
         localStorage.setItem('materiais', JSON.stringify(defaultData));
         return defaultData;
     },
@@ -840,25 +974,39 @@ const SheetsAPI = {
     async save(data, type) {
         const key = type === 'conferencia' ? 'conferencias' : type === 'movimentacao' ? 'movimentacoes' : 'materiais';
         const stored = JSON.parse(localStorage.getItem(key) || '[]');
-        stored.unshift(data);
+        const idx = stored.findIndex(x => x.id === data.id);
+        if (idx >= 0) stored[idx] = data; else stored.unshift(data);
         localStorage.setItem(key, JSON.stringify(stored));
+        return { success: true };
+    },
+    async update(id, updates) {
+        const key = 'materiais';
+        const stored = JSON.parse(localStorage.getItem(key) || '[]');
+        const idx = stored.findIndex(x => x.id === id);
+        if (idx >= 0) { stored[idx] = { ...stored[idx], ...updates }; localStorage.setItem(key, JSON.stringify(stored)); }
+        return { success: true };
+    },
+    async delete(id) {
+        const stored = JSON.parse(localStorage.getItem('materiais') || '[]');
+        const filtered = stored.filter(x => x.id !== id);
+        localStorage.setItem('materiais', JSON.stringify(filtered));
         return { success: true };
     }
 };
 
-/* CÂMERA */
+/* ============ CÂMERA ============ */
 const Camera = {
     video: null, stream: null, track: null, zoom: 1, flashOn: false,
     init() { this.video = document.getElementById('video'); },
     async start() {
         try {
+            const [w, h] = Config.resolution.split('x').map(Number);
             this.stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'environment' }, audio: false
+                video: { width: { ideal: w }, height: { ideal: h }, facingMode: 'environment' }, audio: false
             });
             this.video.srcObject = this.stream;
             this.track = this.stream.getVideoTracks()[0];
-            await new Promise(resolve => { this.video.onloadedmetadata = () => { this.video.play(); resolve(); }; });
-            this.setupOverlay();
+            await new Promise(resolve => { this.video.onloadedmetadata = () => { this.video.play(); this.setupOverlay(); resolve(); }; });
             return true;
         } catch (e) { Toast.error('Erro câmera: ' + e.message); return false; }
     },
@@ -872,7 +1020,9 @@ const Camera = {
         if (!this.track) return;
         try {
             const caps = this.track.getCapabilities();
-            if (caps.torch) { this.flashOn = !this.flashOn; await this.track.applyConstraints({ advanced: [{ torch: this.flashOn }] }); }
+            if (caps.torch) { this.flashOn = !this.flashOn; await this.track.applyConstraints({ advanced: [{ torch: this.flashOn }] });
+                document.getElementById('btn-flash').classList.toggle('active', this.flashOn);
+            }
         } catch (e) { Toast.warning('Flash indisponível'); }
     },
     zoomIn() { this.zoom = Math.min(this.zoom + 0.2, 3); this.applyZoom(); },
@@ -887,12 +1037,16 @@ const Camera = {
             }
         } catch (e) {}
     },
-    freeze() { this.video.paused ? this.video.play() : this.video.pause(); }
+    freeze() {
+        const btn = document.getElementById('btn-freeze');
+        if (this.video.paused) { this.video.play(); btn.classList.remove('active'); }
+        else { this.video.pause(); btn.classList.add('active'); }
+    }
 };
 
-/* VISÃO COMPUTACIONAL */
+/* ============ VISÃO COMPUTACIONAL ============ */
 const Vision = {
-    session: null, isRunning: false, lastCount: 0, stableCount: 0,
+    isRunning: false, lastCount: 0, stableCount: 0, materialType: null,
     fpsCounter: { frames: 0, lastTime: performance.now(), fps: 0 },
     avgConfidence: 0, confidenceBuffer: [],
     
@@ -982,13 +1136,13 @@ const Vision = {
         overlay.height = video.videoHeight;
         const ctx = overlay.getContext('2d');
         ctx.clearRect(0, 0, overlay.width, overlay.height);
-        const color = this.materialType === 'cobre' ? '#b87333' : '#95a5a6';
+        const color = this.materialType === 'cobre' ? '#b87333' : '#7f8c8d';
         detections.forEach((d, i) => {
             ctx.strokeStyle = color; ctx.lineWidth = 3;
             ctx.strokeRect(d.x, d.y, d.w, d.h);
-            ctx.fillStyle = color; ctx.fillRect(d.x, d.y - 25, 60, 25);
+            ctx.fillStyle = color; ctx.fillRect(d.x, d.y - 22, 50, 22);
             ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Arial';
-            ctx.fillText(`#${i + 1}`, d.x + 5, d.y - 8);
+            ctx.fillText(`#${i + 1}`, d.x + 5, d.y - 6);
         });
     },
     
@@ -1009,86 +1163,182 @@ const Vision = {
             document.getElementById('confianca').textContent = (this.avgConfidence * 100).toFixed(0) + '%';
         }
         document.getElementById('qtd-detectada').textContent = detections.length;
+        
+        const registrada = parseInt(document.getElementById('qtd-registrada').textContent) || 0;
+        const diff = detections.length - registrada;
+        const diffEl = document.getElementById('diferenca');
+        diffEl.textContent = (diff > 0 ? '+' : '') + diff;
+        diffEl.className = 'metric-value ' + (diff === 0 ? 'zero' : diff > 0 ? 'danger' : 'success');
     },
     
     updateStableCount() {
         if (this.lastCount === parseInt(document.getElementById('qtd-detectada').textContent)) {
             this.stableCount++;
             if (this.stableCount > 10) document.getElementById('btn-salvar').disabled = false;
-        }
+        } else { this.stableCount = 0; }
     },
     
     getCount() { return this.lastCount; }
 };
 
-/* DASHBOARD */
-const Dashboard = {
-    charts: {},
-    async render() {
+/* ============ CONFERÊNCIA ============ */
+const Conference = {
+    selectedTipo: null,
+    selectedMaterial: null,
+    
+    init() {
+        // Atualizar contadores
+        document.getElementById('count-cobre').textContent = MATERIAIS_DATABASE.cobre.length + ' itens';
+        document.getElementById('count-aluminio').textContent = MATERIAIS_DATABASE.aluminio.length + ' itens';
+        
+        // Botões de tipo
+        document.querySelectorAll('.tipo-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.selectTipo(btn.dataset.tipo));
+        });
+        
+        // Voltar tipo
+        document.getElementById('btn-voltar-tipo').addEventListener('click', () => this.backToTipo());
+        
+        // Busca
+        document.getElementById('material-search').addEventListener('input', (e) => this.renderMateriais(e.target.value));
+        
+        // Ações câmera
+        document.getElementById('btn-parar').addEventListener('click', () => this.stop());
+        document.getElementById('btn-salvar').addEventListener('click', () => this.save());
+        document.getElementById('btn-voltar-selecao').addEventListener('click', () => this.backToTipo());
+        document.getElementById('btn-flash').addEventListener('click', () => Camera.toggleFlash());
+        document.getElementById('btn-zoom-in').addEventListener('click', () => Camera.zoomIn());
+        document.getElementById('btn-zoom-out').addEventListener('click', () => Camera.zoomOut());
+        document.getElementById('btn-freeze').addEventListener('click', () => Camera.freeze());
+    },
+    
+    selectTipo(tipo) {
+        this.selectedTipo = tipo;
+        document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector(`.tipo-btn[data-tipo="${tipo}"]`).classList.add('active');
+        
+        document.getElementById('tipo-selector').style.display = 'none';
+        document.getElementById('materiais-lista').classList.add('active');
+        document.getElementById('titulo-lista').textContent = tipo === 'cobre' ? 'Barras de Cobre' : 'Barras de Alumínio';
+        document.getElementById('material-search').value = '';
+        this.renderMateriais('');
+    },
+    
+    backToTipo() {
+        Vision.stop();
+        Camera.stop();
+        document.getElementById('tipo-selector').style.display = 'block';
+        document.getElementById('materiais-lista').classList.remove('active');
+        document.getElementById('camera-section').classList.remove('active');
+        document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('overlay').getContext('2d').clearRect(0, 0, 9999, 9999);
+        this.selectedTipo = null;
+        this.selectedMaterial = null;
+    },
+    
+    renderMateriais(search) {
+        const grid = document.getElementById('materiais-grid');
+        const tipo = this.selectedTipo;
+        const materiais = MATERIAIS_DATABASE[tipo];
+        
+        const filtered = materiais.filter(m => {
+            if (!search) return true;
+            const s = search.toLowerCase();
+            return m.codigo.toLowerCase().includes(s) || 
+                   m.descricao.toLowerCase().includes(s) || 
+                   m.dimensoes.toLowerCase().includes(s);
+        });
+        
+        grid.innerHTML = filtered.map(m => `
+            <div class="material-card" data-codigo="${m.codigo}" onclick="Conference.selectMaterial('${m.codigo}')">
+                <div class="codigo">${m.codigo}</div>
+                <div class="info">
+                    <div class="descricao">${m.descricao}</div>
+                    <div class="dimensoes"> ${m.dimensoes}</div>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+        `).join('');
+        
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-secondary);">Nenhum material encontrado</div>';
+        }
+    },
+    
+    async selectMaterial(codigo) {
+        const material = MATERIAIS_DATABASE[this.selectedTipo].find(m => m.codigo === codigo);
+        if (!material) return;
+        
+        this.selectedMaterial = { ...material, material: this.selectedTipo };
+        
+        // Buscar quantidade registrada
         const materiais = await SheetsAPI.getMateriais();
-        const movimentacoes = await SheetsAPI.getMovimentacoes();
-        const conferencias = await SheetsAPI.getConferencias();
+        const matData = materiais.find(m => m.codigo === codigo);
+        const qtdRegistrada = matData ? matData.quantidade : 0;
         
-        const total = materiais.reduce((s, m) => s + (m.quantidade || 0), 0);
-        const cobre = materiais.filter(m => m.material === 'cobre').reduce((s, m) => s + (m.quantidade || 0), 0);
-        const aluminio = materiais.filter(m => m.material === 'aluminio').reduce((s, m) => s + (m.quantidade || 0), 0);
+        // Mostrar info no painel
+        document.getElementById('conf-material-nome').textContent = material.descricao;
+        document.getElementById('conf-material-dim').textContent = `Código: ${material.codigo} | ${material.dimensoes}`;
+        document.getElementById('qtd-registrada').textContent = qtdRegistrada;
+        document.getElementById('qtd-detectada').textContent = '0';
+        document.getElementById('diferenca').textContent = '0';
+        document.getElementById('btn-salvar').disabled = true;
         
-        document.getElementById('total-estoque').textContent = Utils.formatNumber(total);
-        document.getElementById('total-cobre').textContent = Utils.formatNumber(cobre);
-        document.getElementById('total-aluminio').textContent = Utils.formatNumber(aluminio);
+        // Abrir câmera
+        document.getElementById('materiais-lista').classList.remove('active');
+        document.getElementById('camera-section').classList.add('active');
         
-        if (conferencias.length > 0) {
-            const avgPrec = conferencias.reduce((s, c) => s + (c.precisaoIA || 0), 0) / conferencias.length;
-            document.getElementById('precisao-ia').textContent = avgPrec.toFixed(1) + '%';
+        Camera.init();
+        const started = await Camera.start();
+        if (started) {
+            await Vision.start(this.selectedTipo);
+        }
+    },
+    
+    stop() { Vision.stop(); },
+    
+    async save() {
+        const detectada = Vision.getCount();
+        const registrada = parseInt(document.getElementById('qtd-registrada').textContent) || 0;
+        const diferenca = detectada - registrada;
+        const precisao = registrada > 0 ? Math.max(0, 100 - Math.abs(diferenca / registrada * 100)) : 100;
+        
+        const conferencia = {
+            id: Utils.uuid(), data: Utils.now().date, hora: Utils.now().time,
+            material: this.selectedMaterial.codigo, descricao: this.selectedMaterial.descricao,
+            dimensoes: this.selectedMaterial.dimensoes, tipoMaterial: this.selectedTipo,
+            quantidadeDetectada: detectada, quantidadeInformada: registrada,
+            diferenca: diferenca, precisaoIA: precisao, usuario: 'Admin'
+        };
+        
+        await SheetsAPI.save(conferencia, 'conferencia');
+        
+        // Atualizar estoque se houver diferença
+        if (diferenca !== 0) {
+            const materiais = await SheetsAPI.getMateriais();
+            const matData = materiais.find(m => m.codigo === this.selectedMaterial.codigo);
+            if (matData) {
+                matData.quantidade = detectada;
+                await SheetsAPI.save(matData, 'material');
+            }
+            
+            const mov = {
+                id: Utils.uuid(), data: Utils.now().date, hora: Utils.now().time,
+                usuario: 'Admin', tipo: diferenca > 0 ? 'entrada' : 'saida',
+                material: this.selectedMaterial.codigo, descricao: this.selectedMaterial.descricao,
+                quantidade: Math.abs(diferenca), quantidadeAntes: registrada,
+                quantidadeDepois: detectada, origem: 'conferencia-ia',
+                observacao: `Ajuste por conferência IA. Dif: ${diferenca}`
+            };
+            await SheetsAPI.save(mov, 'movimentacao');
         }
         
-        this.renderCharts(materiais, movimentacoes);
-        this.renderTables(movimentacoes, conferencias);
-    },
-    
-    renderCharts(materiais, movimentacoes) {
-        const cobre = materiais.filter(m => m.material === 'cobre').reduce((s, m) => s + (m.quantidade || 0), 0);
-        const aluminio = materiais.filter(m => m.material === 'aluminio').reduce((s, m) => s + (m.quantidade || 0), 0);
-        
-        if (this.charts.estoque) this.charts.estoque.destroy();
-        this.charts.estoque = new Chart(document.getElementById('chart-estoque'), {
-            type: 'doughnut',
-            data: { labels: ['Cobre', 'Alumínio'], datasets: [{ data: [cobre, aluminio], backgroundColor: ['#b87333', '#95a5a6'], borderWidth: 0 }] },
-            options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') } } } }
-        });
-        
-        const last7 = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); last7.push(d.toISOString().split('T')[0]); }
-        const entradas = last7.map(date => movimentacoes.filter(m => m.tipo === 'entrada' && m.data === date).reduce((s, m) => s + (m.quantidade || 0), 0));
-        const saidas = last7.map(date => movimentacoes.filter(m => m.tipo === 'saida' && m.data === date).reduce((s, m) => s + (m.quantidade || 0), 0));
-        
-        if (this.charts.mov) this.charts.mov.destroy();
-        this.charts.mov = new Chart(document.getElementById('chart-movimentacoes'), {
-            type: 'bar',
-            data: { labels: last7.map(d => new Date(d).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'})), datasets: [
-                { label: 'Entradas', data: entradas, backgroundColor: '#198754' },
-                { label: 'Saídas', data: saidas, backgroundColor: '#dc3545' }
-            ]},
-            options: { responsive: true, plugins: { legend: { labels: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') } } } }
-        });
-    },
-    
-    renderTables(movimentacoes, conferencias) {
-        const tbodyMov = document.querySelector('#table-movimentacoes tbody');
-        tbodyMov.innerHTML = movimentacoes.slice(0, 10).map(m => `
-            <tr><td>${m.data || '-'}</td><td><span class="badge badge-${m.tipo==='entrada'?'success':'danger'}">${m.tipo}</span></td>
-            <td><span class="badge badge-${m.material}">${m.material==='cobre'?'Cobre':'Alumínio'}</span></td><td>${m.quantidade||0}</td></tr>
-        `).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary)">Nenhuma movimentação</td></tr>';
-        
-        const tbodyConf = document.querySelector('#table-conferencias tbody');
-        tbodyConf.innerHTML = conferencias.slice(0, 10).map(c => {
-            const diff = (c.quantidadeDetectada||0) - (c.quantidadeInformada||0);
-            return `<tr><td>${c.data||'-'}</td><td><span class="badge badge-${c.material}">${c.material==='cobre'?'Cobre':'Alumínio'}</span></td>
-            <td>${c.quantidadeDetectada||0}</td><td>${c.quantidadeInformada||0}</td><td><span class="badge badge-${diff===0?'success':diff>0?'warning':'danger'}">${diff}</span></td></tr>`;
-        }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-secondary)">Nenhuma conferência</td></tr>';
+        Toast.success('Conferência salva com sucesso!');
+        this.backToTipo();
     }
 };
 
-/* MATERIAIS */
+/* ============ MATERIAIS ============ */
 const Materials = {
     data: [],
     async load() { this.data = await SheetsAPI.getMateriais(); this.render(); },
@@ -1103,134 +1353,100 @@ const Materials = {
         const tbody = document.querySelector('#table-materiais tbody');
         tbody.innerHTML = filtered.map(m => {
             const status = (m.quantidade||0) <= (m.minimo||0) ? 'danger' : 'success';
-            return `<tr><td><strong>${m.codigo||'-'}</strong></td><td>${m.descricao||'-'}</td><td>${m.tipo||'-'}</td>
-            <td><span class="badge badge-${m.material}">${m.material==='cobre'?'Cobre':'Alumínio'}</span></td>
-            <td><strong>${m.quantidade||0}</strong></td><td><span class="badge badge-${status}">${status==='success'?'OK':'Baixo'}</span></td>
-            <td><button class="btn-icon" onclick="Materials.remove('${m.id}')" title="Excluir">🗑️</button></td></tr>`;
+            return `<tr>
+                <td><strong>${m.codigo||'-'}</strong></td>
+                <td>${m.descricao||'-'}</td>
+                <td>${m.tipo||'-'}</td>
+                <td><span class="badge badge-${m.material}">${m.material==='cobre'?'Cobre':'Alumínio'}</span></td>
+                <td><strong>${m.quantidade||0}</strong></td>
+                <td><span class="badge badge-${status}">${status==='success'?'OK':'Baixo'}</span></td>
+                <td>
+                    <button class="btn-icon" onclick="Materials.edit('${m.id}')" title="Editar">✏️</button>
+                    <button class="btn-icon" onclick="Materials.remove('${m.id}')" title="Excluir">🗑️</button>
+                </td>
+            </tr>`;
         }).join('') || '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-secondary)">Nenhum material</td></tr>';
     },
+    edit(id) {
+        const m = this.data.find(x => x.id === id);
+        if (!m) return;
+        document.getElementById('modal-title').textContent = 'Editar Material';
+        document.getElementById('input-id').value = m.id;
+        document.getElementById('input-codigo').value = m.codigo || '';
+        document.getElementById('input-descricao').value = m.descricao || '';
+        document.getElementById('input-dimensoes').value = m.dimensoes || '';
+        document.getElementById('input-material').value = m.material || 'cobre';
+        document.getElementById('input-quantidade').value = m.quantidade || 0;
+        document.getElementById('modal-material').classList.add('active');
+    },
     async remove(id) {
-        if (!confirm('Excluir?')) return;
-        this.data = this.data.filter(m => m.id !== id);
-        localStorage.setItem('materiais', JSON.stringify(this.data));
-        Toast.success('Excluído');
+        if (!confirm('Deseja realmente excluir este material?')) return;
+        await SheetsAPI.delete(id);
+        Toast.success('Material excluído');
         await this.load();
     }
 };
 
-/* CONFERÊNCIA */
-const Conference = {
-    selectedMaterial: null,
-    
-    init() {
-        document.getElementById('select-tipo-material').addEventListener('change', (e) => {
-            const tipo = e.target.value;
-            const selectEspecifico = document.getElementById('select-material-especifico');
-            const formGroup = document.getElementById('form-group-material');
-            
-            if (!tipo) {
-                formGroup.style.display = 'none';
-                document.getElementById('material-info-display').style.display = 'none';
-                document.getElementById('btn-iniciar-conferencia').disabled = true;
-                return;
-            }
-            
-            formGroup.style.display = 'block';
-            selectEspecifico.innerHTML = '<option value="">Selecione...</option>';
-            
-            MATERIAIS_DATABASE[tipo].forEach(m => {
-                const option = document.createElement('option');
-                option.value = m.codigo;
-                option.textContent = `${m.codigo} - ${m.descricao} (${m.dimensoes})`;
-                selectEspecifico.appendChild(option);
-            });
+/* ============ MOVIMENTAÇÕES ============ */
+const Movements = {
+    data: [],
+    async load() { this.data = await SheetsAPI.getMovimentacoes(); this.render(); },
+    render() {
+        const inicio = document.getElementById('filter-data-inicio').value;
+        const fim = document.getElementById('filter-data-fim').value;
+        const tipo = document.getElementById('filter-tipo-mov').value;
+        const filtered = this.data.filter(m => {
+            if (inicio && m.data < inicio) return false;
+            if (fim && m.data > fim) return false;
+            if (tipo && m.tipo !== tipo) return false;
+            return true;
         });
-        
-        document.getElementById('select-material-especifico').addEventListener('change', (e) => {
-            const codigo = e.target.value;
-            const tipo = document.getElementById('select-tipo-material').value;
-            
-            if (!codigo) {
-                document.getElementById('material-info-display').style.display = 'none';
-                document.getElementById('btn-iniciar-conferencia').disabled = true;
-                return;
-            }
-            
-            const material = MATERIAIS_DATABASE[tipo].find(m => m.codigo === codigo);
-            if (material) {
-                this.selectedMaterial = { ...material, material: tipo };
-                document.getElementById('info-codigo').textContent = material.codigo;
-                document.getElementById('info-descricao').textContent = material.descricao;
-                document.getElementById('info-dimensoes').textContent = material.dimensoes;
-                document.getElementById('info-quantidade').textContent = '0 (atualizar)';
-                document.getElementById('material-info-display').style.display = 'block';
-                document.getElementById('btn-iniciar-conferencia').disabled = false;
-            }
-        });
-        
-        document.getElementById('btn-iniciar-conferencia').addEventListener('click', () => this.start());
-        document.getElementById('btn-parar').addEventListener('click', () => this.stop());
-        document.getElementById('btn-salvar').addEventListener('click', () => this.save());
-        document.getElementById('btn-voltar-selecao').addEventListener('click', () => this.back());
-        document.getElementById('btn-flash').addEventListener('click', () => Camera.toggleFlash());
-        document.getElementById('btn-zoom-in').addEventListener('click', () => Camera.zoomIn());
-        document.getElementById('btn-zoom-out').addEventListener('click', () => Camera.zoomOut());
-        document.getElementById('btn-freeze').addEventListener('click', () => Camera.freeze());
+        const tbody = document.querySelector('#table-historico tbody');
+        tbody.innerHTML = filtered.map(m => `
+            <tr>
+                <td>${m.data||'-'}</td>
+                <td><span class="badge badge-${m.tipo==='entrada'?'success':'danger'}">${m.tipo}</span></td>
+                <td><span class="badge badge-info">${m.codigo||m.material||'-'}</span></td>
+                <td><strong>${m.quantidade||0}</strong></td>
+                <td style="font-size:0.8rem;">${m.observacao||'-'}</td>
+            </tr>
+        `).join('') || '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-secondary)">Nenhuma movimentação</td></tr>';
     },
-    
-    async start() {
-        document.getElementById('material-select-section').style.display = 'none';
-        document.getElementById('camera-section').classList.add('active');
-        
-        Camera.init();
-        await Camera.start();
-        await Vision.start(this.selectedMaterial.material);
-        
-        document.getElementById('qtd-registrada').textContent = '0';
-        document.getElementById('btn-salvar').disabled = true;
+    exportExcel() {
+        if (this.data.length === 0) { Toast.warning('Sem dados'); return; }
+        const ws = XLSX.utils.json_to_sheet(this.data.map(m => ({
+            Data: m.data, Hora: m.hora, Tipo: m.tipo, Material: m.codigo || m.material,
+            Descricao: m.descricao, Quantidade: m.quantidade, Antes: m.quantidadeAntes,
+            Depois: m.quantidadeDepois, Observacao: m.observacao
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Movimentacoes');
+        XLSX.writeFile(wb, `movimentacoes_${Utils.now().date}.xlsx`);
+        Toast.success('Excel exportado');
     },
-    
-    stop() { Vision.stop(); },
-    
-    async save() {
-        const detectada = Vision.getCount();
-        const registrada = 0;
-        const diferenca = detectada - registrada;
-        const precisao = 95;
-        
-        const conferencia = {
-            id: Utils.uuid(), data: Utils.now().date, hora: Utils.now().time,
-            material: this.selectedMaterial.codigo, descricao: this.selectedMaterial.descricao,
-            quantidadeDetectada: detectada, quantidadeInformada: registrada,
-            diferenca: diferenca, precisaoIA: precisao, usuario: 'Admin'
-        };
-        
-        await SheetsAPI.save(conferencia, 'conferencia');
-        Toast.success('Conferência salva!');
-        this.back();
-    },
-    
-    back() {
-        Vision.stop();
-        Camera.stop();
-        document.getElementById('material-select-section').style.display = 'block';
-        document.getElementById('camera-section').classList.remove('active');
-        document.getElementById('overlay').getContext('2d').clearRect(0, 0, 9999, 9999);
+    exportPDF() {
+        if (this.data.length === 0) { Toast.warning('Sem dados'); return; }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text('Relatório de Movimentações', 14, 15);
+        doc.autoTable({ startY: 25, head: [['Data','Tipo','Material','Qtd','Obs']], 
+            body: this.data.map(m => [m.data, m.tipo, m.codigo||m.material, m.quantidade, (m.observacao||'').substring(0,30)]), 
+            theme: 'grid', styles: {fontSize:8} });
+        doc.save(`movimentacoes_${Utils.now().date}.pdf`);
+        Toast.success('PDF exportado');
     }
 };
 
-/* APP */
+/* ============ APP ============ */
 const App = {
     init() {
-        document.body.classList.toggle('dark-mode', Config.darkMode);
-        document.getElementById('theme-toggle').textContent = Config.darkMode ? '☀️' : '';
-        document.getElementById('theme-toggle').addEventListener('click', () => Config.toggleTheme());
-        
+        Config.load();
         this.setupNavigation();
         Conference.init();
         this.setupMaterials();
         this.setupMovements();
-        Dashboard.render();
+        this.setupConfig();
+        this.setupSenha();
     },
     
     setupNavigation() {
@@ -1241,9 +1457,64 @@ const App = {
                 btn.classList.add('active');
                 const page = btn.dataset.page;
                 document.getElementById(`page-${page}`).classList.add('active');
-                if (page === 'dashboard') await Dashboard.render();
-                else if (page === 'materiais') await Materials.load();
+                if (page === 'materiais') await Materials.load();
+                else if (page === 'movimentacoes') await Movements.load();
             });
+        });
+    },
+    
+    setupSenha() {
+        document.getElementById('btn-config').addEventListener('click', () => {
+            document.getElementById('input-senha').value = '';
+            document.getElementById('senha-erro').style.display = 'none';
+            document.getElementById('modal-senha').classList.add('active');
+            setTimeout(() => document.getElementById('input-senha').focus(), 100);
+        });
+        
+        document.getElementById('btn-confirmar-senha').addEventListener('click', () => this.verificarSenha());
+        document.getElementById('input-senha').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.verificarSenha();
+        });
+    },
+    
+    verificarSenha() {
+        const senha = document.getElementById('input-senha').value;
+        if (senha === CONFIG_SENHA) {
+            this.closeModal('modal-senha');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-configuracoes').classList.add('active');
+            Config.load();
+        } else {
+            document.getElementById('senha-erro').style.display = 'block';
+            document.getElementById('input-senha').value = '';
+            document.getElementById('input-senha').focus();
+        }
+    },
+    
+    setupConfig() {
+        document.getElementById('btn-sair-config').addEventListener('click', () => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-conferencia').classList.add('active');
+            document.querySelector('.nav-btn[data-page="conferencia"]').classList.add('active');
+        });
+        
+        document.getElementById('btn-salvar-config').addEventListener('click', () => {
+            Config.confidence = parseInt(document.getElementById('config-confianca').value) / 100;
+            Config.resolution = document.getElementById('config-resolucao').value;
+            Config.apiUrl = document.getElementById('config-api-url').value;
+            Config.demoMode = document.getElementById('config-demo-mode').checked;
+            Config.save();
+            Toast.success('Configurações salvas!');
+        });
+        
+        document.getElementById('btn-limpar-dados').addEventListener('click', () => {
+            if (confirm('ATENÇÃO: Isso apagará TODOS os dados (materiais, movimentações e conferências). Deseja continuar?')) {
+                localStorage.removeItem('materiais');
+                localStorage.removeItem('movimentacoes');
+                localStorage.removeItem('conferencias');
+                Toast.success('Dados limpos!');
+            }
         });
     },
     
@@ -1254,7 +1525,6 @@ const App = {
             document.getElementById('input-id').value = '';
             document.getElementById('modal-material').classList.add('active');
         });
-        
         document.getElementById('search-material').addEventListener('input', () => Materials.render());
         document.getElementById('filter-tipo').addEventListener('change', () => Materials.render());
         
@@ -1264,49 +1534,32 @@ const App = {
                 id: document.getElementById('input-id').value || Utils.uuid(),
                 codigo: document.getElementById('input-codigo').value,
                 descricao: document.getElementById('input-descricao').value,
+                dimensoes: document.getElementById('input-dimensoes').value,
                 material: document.getElementById('input-material').value,
                 quantidade: parseInt(document.getElementById('input-quantidade').value),
                 tipo: 'barra', minimo: 20, dataCadastro: Utils.now().full, status: 'ativo'
             };
-            const stored = JSON.parse(localStorage.getItem('materiais') || '[]');
-            const idx = stored.findIndex(m => m.id === data.id);
-            if (idx >= 0) stored[idx] = data; else stored.push(data);
-            localStorage.setItem('materiais', JSON.stringify(stored));
-            Toast.success('Salvo!');
-            this.closeModal();
+            await SheetsAPI.save(data, 'material');
+            Toast.success('Material salvo!');
+            this.closeModal('modal-material');
             await Materials.load();
         });
     },
     
     setupMovements() {
-        document.getElementById('btn-export-excel').addEventListener('click', async () => {
-            const data = await SheetsAPI.getMovimentacoes();
-            if (!data.length) { Toast.warning('Sem dados'); return; }
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Movimentacoes');
-            XLSX.writeFile(wb, `movimentacoes_${Utils.now().date}.xlsx`);
-            Toast.success('Excel exportado');
-        });
-        
-        document.getElementById('btn-export-pdf').addEventListener('click', async () => {
-            const data = await SheetsAPI.getMovimentacoes();
-            if (!data.length) { Toast.warning('Sem dados'); return; }
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text('Movimentações', 14, 15);
-            doc.autoTable({ startY: 25, head: [['Data','Tipo','Material','Qtd']], 
-                body: data.map(m => [m.data, m.tipo, m.material, m.quantidade]), theme: 'grid', styles: {fontSize:8} });
-            doc.save(`movimentacoes_${Utils.now().date}.pdf`);
-            Toast.success('PDF exportado');
-        });
+        document.getElementById('filter-data-inicio').addEventListener('change', () => Movements.render());
+        document.getElementById('filter-data-fim').addEventListener('change', () => Movements.render());
+        document.getElementById('filter-tipo-mov').addEventListener('change', () => Movements.render());
+        document.getElementById('btn-export-excel').addEventListener('click', () => Movements.exportExcel());
+        document.getElementById('btn-export-pdf').addEventListener('click', () => Movements.exportPDF());
     },
     
-    closeModal() { document.getElementById('modal-material').classList.remove('active'); }
+    closeModal(id) { document.getElementById(id).classList.remove('active'); }
 };
 
 window.addEventListener('DOMContentLoaded', () => App.init());
 window.Materials = Materials;
+window.Conference = Conference;
 window.App = App;
 </script>
 </body>
