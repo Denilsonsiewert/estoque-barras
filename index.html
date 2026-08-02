@@ -18,8 +18,12 @@
     --weg-green-dark: #008f44;
     --weg-green-light: #00c961;
     --danger: #dc3545;
+    --danger-dark: #b02a37;
     --warning: #ffc107;
+    --warning-dark: #e0a800;
     --info: #17a2b8;
+    --info-dark: #138496;
+    --success: #28a745;
     --bg-main: #f5f7fa;
     --bg-card: #ffffff;
     --bg-header: #ffffff;
@@ -28,8 +32,10 @@
     --border-color: #dee2e6;
     --shadow: 0 2px 12px rgba(0, 85, 164, 0.08);
     --shadow-lg: 0 8px 24px rgba(0, 85, 164, 0.12);
+    --shadow-xl: 0 12px 40px rgba(0, 85, 164, 0.16);
     --radius: 8px;
     --radius-lg: 12px;
+    --radius-xl: 16px;
 }
 
 body {
@@ -38,6 +44,7 @@ body {
     color: var(--text-primary);
     min-height: 100vh;
     overflow-x: hidden;
+    line-height: 1.6;
 }
 
 .app-container { display: flex; flex-direction: column; min-height: 100vh; }
@@ -76,13 +83,17 @@ body {
     padding: 0.6rem 1.2rem;
     cursor: pointer;
     border-radius: var(--radius);
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 0.9rem;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 .nav-btn:hover { 
     background: rgba(0, 85, 164, 0.1); 
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 85, 164, 0.2);
 }
 .nav-btn.active { 
     background: var(--weg-blue); 
@@ -99,8 +110,9 @@ body {
     cursor: pointer;
     font-size: 1.3rem;
     color: white;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 85, 164, 0.3);
 }
 .btn-config:hover { 
     transform: rotate(45deg) scale(1.1); 
@@ -109,10 +121,20 @@ body {
 }
 
 /* MAIN */
-.main-content { flex: 1; padding: 2rem 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; }
-.page { display: none; animation: fadeIn 0.3s ease; }
-.page.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.main-content { 
+    flex: 1; 
+    padding: 2rem 1.5rem; 
+    max-width: 1400px; 
+    margin: 0 auto; 
+    width: 100%;
+    animation: fadeIn 0.3s ease;
+}
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(20px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
 
 /* CONFERÊNCIA */
 .conferencia-container { max-width: 1200px; margin: 0 auto; }
@@ -125,7 +147,12 @@ body {
     text-align: center;
     border: 2px solid var(--border-color);
 }
-.tipo-selector h2 { margin-bottom: 2rem; font-size: 1.5rem; color: var(--weg-blue); font-weight: 700; }
+.tipo-selector h2 { 
+    margin-bottom: 2rem; 
+    font-size: 1.5rem; 
+    color: var(--weg-blue); 
+    font-weight: 700;
+}
 
 .tipo-buttons {
     display: grid;
@@ -156,7 +183,7 @@ body {
 }
 .tipo-card:hover { 
     transform: translateY(-5px); 
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-xl);
     border-color: var(--weg-blue);
 }
 .tipo-card:hover::before { opacity: 1; }
@@ -165,8 +192,18 @@ body {
     background: rgba(0, 85, 164, 0.05);
     box-shadow: 0 8px 24px rgba(0, 85, 164, 0.2);
 }
-.tipo-card .icon { font-size: 4rem; line-height: 1; z-index: 1; }
-.tipo-card .label { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); z-index: 1; }
+.tipo-card .icon { 
+    font-size: 4rem; 
+    line-height: 1; 
+    z-index: 1;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+}
+.tipo-card .label { 
+    font-size: 1.2rem; 
+    font-weight: 700; 
+    color: var(--text-primary); 
+    z-index: 1;
+}
 .tipo-card .count { 
     font-size: 0.9rem; 
     color: var(--text-secondary); 
@@ -186,9 +223,13 @@ body {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     border: 2px solid var(--border-color);
+    animation: slideIn 0.3s ease;
 }
-.materiais-lista.active { display: block; animation: slideIn 0.3s ease; }
-@keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+.materiais-lista.active { display: block; }
+@keyframes slideIn { 
+    from { opacity: 0; transform: translateX(-20px); } 
+    to { opacity: 1; transform: translateX(0); } 
+}
 
 .materiais-lista h3 {
     margin-bottom: 1.5rem;
@@ -207,9 +248,13 @@ body {
     border-radius: var(--radius);
     cursor: pointer;
     font-size: 0.9rem;
+    font-weight: 600;
     transition: all 0.2s;
 }
-.btn-voltar:hover { background: #5a6268; transform: translateX(-2px); }
+.btn-voltar:hover { 
+    background: #5a6268; 
+    transform: translateX(-2px);
+}
 
 .material-search {
     width: 100%;
@@ -292,8 +337,9 @@ body {
     grid-template-columns: 1fr 320px;
     gap: 1.5rem;
     align-items: start;
+    animation: fadeIn 0.3s ease;
 }
-.camera-view.active { display: grid; animation: fadeIn 0.3s ease; }
+.camera-view.active { display: grid; }
 
 .camera-container {
     position: relative;
@@ -301,7 +347,7 @@ body {
     border-radius: var(--radius-lg);
     overflow: hidden;
     aspect-ratio: 16/9;
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-xl);
 }
 #video { width: 100%; height: 100%; object-fit: cover; display: block; }
 #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -329,8 +375,14 @@ body {
     transition: all 0.2s;
     display: flex; align-items: center; justify-content: center;
 }
-.cam-btn:hover { background: var(--weg-blue); transform: scale(1.1); }
-.cam-btn.active { background: var(--warning); color: #000; }
+.cam-btn:hover { 
+    background: var(--weg-blue); 
+    transform: scale(1.1);
+}
+.cam-btn.active { 
+    background: var(--warning); 
+    color: #000;
+}
 
 /* Painel de Contagem */
 .contagem-panel {
@@ -432,7 +484,7 @@ body {
     cursor: pointer;
     font-size: 0.95rem;
     font-weight: 600;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -463,6 +515,7 @@ body {
     color: white;
 }
 .btn-danger:hover:not(:disabled) { 
+    background: var(--danger-dark);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
@@ -471,6 +524,7 @@ body {
     color: #000;
 }
 .btn-warning:hover:not(:disabled) { 
+    background: var(--warning-dark);
     transform: translateY(-2px);
 }
 .btn-secondary {
@@ -512,7 +566,11 @@ body {
     flex-wrap: wrap;
     gap: 1rem;
 }
-.page-header h2 { font-size: 1.5rem; color: var(--weg-blue); font-weight: 700; }
+.page-header h2 { 
+    font-size: 1.5rem; 
+    color: var(--weg-blue); 
+    font-weight: 700;
+}
 
 .filters {
     display: flex;
@@ -557,8 +615,19 @@ thead {
     top: 0; 
     z-index: 2;
 }
-th { padding: 1rem; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
-td { padding: 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
+th { 
+    padding: 1rem; 
+    text-align: left; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    font-size: 0.8rem; 
+    letter-spacing: 0.5px;
+}
+td { 
+    padding: 1rem; 
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
 tbody tr { transition: all 0.2s; }
 tbody tr:hover { background: rgba(0, 85, 164, 0.05); }
 
@@ -600,7 +669,7 @@ tbody tr:hover { background: rgba(0, 85, 164, 0.05); }
     width: 100%;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-xl);
     animation: modalSlide 0.3s ease;
 }
 @keyframes modalSlide {
@@ -628,7 +697,10 @@ tbody tr:hover { background: rgba(0, 85, 164, 0.05); }
     font-size: 1.3rem;
     transition: all 0.2s;
 }
-.btn-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+.btn-close:hover { 
+    background: rgba(255,255,255,0.3); 
+    transform: rotate(90deg);
+}
 
 form { padding: 1.5rem; }
 .form-group { margin-bottom: 1.2rem; }
@@ -783,28 +855,27 @@ form { padding: 1.5rem; }
             <h1>Controle de Estoque IA</h1>
         </div>
         <nav class="nav">
-            <button class="nav-btn active" data-page="conferencia">📷 Conferência</button>
-            <button class="nav-btn" data-page="materiais">📦 Materiais</button>
+            <button class="nav-btn active" data-page="conferencia" onclick="App.navegar('conferencia')">📷 Conferência</button>
+            <button class="nav-btn" data-page="materiais" onclick="App.navegar('materiais')">📦 Materiais</button>
         </nav>
         <div class="header-actions">
-            <button class="btn-config" id="btn-config" title="Configurações">⚙️</button>
+            <button class="btn-config" onclick="App.abrirSenha()" title="Configurações">️</button>
         </div>
     </header>
 
     <main class="main-content">
-        <!-- CONFERÊNCIA -->
         <div id="page-conferencia" class="page active">
             <div class="conferencia-container">
                 <div class="tipo-selector" id="tipo-selector">
                     <h2>Selecione o Tipo de Material</h2>
                     <div class="tipo-buttons">
-                        <button class="tipo-card" data-tipo="cobre">
-                            <span class="icon">🟤</span>
+                        <button class="tipo-card" onclick="Conference.selectTipo('cobre')">
+                            <span class="icon"></span>
                             <span class="label">Barras de Cobre</span>
                             <span class="count" id="count-cobre">0 itens</span>
                         </button>
-                        <button class="tipo-card" data-tipo="aluminio">
-                            <span class="icon">⚪</span>
+                        <button class="tipo-card" onclick="Conference.selectTipo('aluminio')">
+                            <span class="icon"></span>
                             <span class="label">Barras de Alumínio</span>
                             <span class="count" id="count-aluminio">0 itens</span>
                         </button>
@@ -814,9 +885,9 @@ form { padding: 1.5rem; }
                 <div class="materiais-lista" id="materiais-lista">
                     <h3>
                         <span id="titulo-lista">Materiais</span>
-                        <button class="btn-voltar" id="btn-voltar-tipo">← Voltar</button>
+                        <button class="btn-voltar" onclick="Conference.backToTipo()">← Voltar</button>
                     </h3>
-                    <input type="text" class="material-search" id="material-search" placeholder=" Buscar por código, descrição ou dimensão...">
+                    <input type="text" class="material-search" id="material-search" placeholder="🔍 Buscar por código, descrição ou dimensão..." oninput="Conference.renderMateriais(this.value)">
                     <div class="materiais-grid" id="materiais-grid"></div>
                 </div>
 
@@ -825,9 +896,9 @@ form { padding: 1.5rem; }
                         <video id="video" autoplay playsinline muted></video>
                         <canvas id="overlay"></canvas>
                         <div class="camera-controls">
-                            <button class="cam-btn" id="btn-flash" title="Flash">🔦</button>
-                            <button class="cam-btn" id="btn-zoom-in" title="Zoom +">🔍+</button>
-                            <button class="cam-btn" id="btn-zoom-out" title="Zoom -">➖</button>
+                            <button class="cam-btn" onclick="Camera.toggleFlash()" title="Flash">🔦</button>
+                            <button class="cam-btn" onclick="Camera.zoomIn()" title="Zoom +">🔍+</button>
+                            <button class="cam-btn" onclick="Camera.zoomOut()" title="Zoom -">➖</button>
                         </div>
                     </div>
                     
@@ -850,22 +921,21 @@ form { padding: 1.5rem; }
                         </div>
 
                         <div class="acoes-buttons">
-                            <button class="btn btn-danger" id="btn-voltar-selecao">← Voltar à Seleção</button>
+                            <button class="btn btn-danger" onclick="Conference.backToTipo()">← Voltar à Seleção</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- MATERIAIS -->
         <div id="page-materiais" class="page">
             <div class="page-header">
                 <h2>📦 Cadastro de Materiais</h2>
-                <button class="btn btn-primary" id="btn-novo-material">+ Novo Material</button>
+                <button class="btn btn-primary" onclick="Materials.openModal()">+ Novo Material</button>
             </div>
             <div class="filters">
-                <input type="text" id="search-material" placeholder="🔍 Pesquisar material..." style="flex: 1;">
-                <select id="filter-tipo">
+                <input type="text" id="search-material" placeholder="🔍 Pesquisar material..." style="flex: 1;" oninput="Materials.render()">
+                <select id="filter-tipo" onchange="Materials.render()">
                     <option value="">Todos os Materiais</option>
                     <option value="cobre">Cobre</option>
                     <option value="aluminio">Alumínio</option>
@@ -889,15 +959,14 @@ form { padding: 1.5rem; }
             </div>
         </div>
 
-        <!-- CONFIGURAÇÕES -->
         <div id="page-configuracoes" class="page">
             <div class="page-header">
                 <h2>⚙️ Configurações do Sistema</h2>
-                <button class="btn btn-primary" id="btn-sair-config">← Voltar</button>
+                <button class="btn btn-primary" onclick="App.sairConfig()">← Voltar</button>
             </div>
             <div class="settings-container">
                 <div class="setting-group">
-                    <h3> Inteligência Artificial</h3>
+                    <h3>🤖 Inteligência Artificial</h3>
                     <div class="setting-item">
                         <label>Modelo de IA</label>
                         <select id="config-modelo-ia">
@@ -945,24 +1014,23 @@ form { padding: 1.5rem; }
                     <div class="setting-item" style="flex-direction: column; align-items: stretch; gap: 0.8rem;">
                         <label style="color: var(--warning); font-weight: 700;">🔄 Zerar Quantidades</label>
                         <span style="font-size: 0.85rem; color: var(--text-secondary);">Mantém todos os itens, zera apenas as quantidades</span>
-                        <button class="btn btn-warning" id="btn-zerar-quantidades" style="margin-top: 0.3rem;">🔄 Zerar Todas as Quantidades</button>
+                        <button class="btn btn-warning" onclick="App.zerarQuantidades()" style="margin-top: 0.3rem;">🔄 Zerar Todas as Quantidades</button>
                     </div>
                 </div>
             </div>
             <div style="margin-top: 1.5rem; max-width: 1200px;">
-                <button class="btn btn-primary" id="btn-salvar-config">💾 Salvar Configurações</button>
+                <button class="btn btn-primary" onclick="App.salvarConfig()">💾 Salvar Configurações</button>
             </div>
         </div>
     </main>
 
-    <!-- Modal Material -->
     <div id="modal-material" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modal-title">Novo Material</h2>
                 <button class="btn-close" onclick="App.closeModal('modal-material')">&times;</button>
             </div>
-            <form id="form-material">
+            <form id="form-material" onsubmit="Materials.save(event)">
                 <input type="hidden" id="input-id">
                 <div class="form-group">
                     <label>Código *</label>
@@ -995,7 +1063,6 @@ form { padding: 1.5rem; }
         </div>
     </div>
 
-    <!-- Modal Senha -->
     <div id="modal-senha" class="modal senha-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1007,7 +1074,7 @@ form { padding: 1.5rem; }
                 <input type="password" class="senha-input" id="input-senha" placeholder="••••••••" maxlength="10" inputmode="numeric">
                 <div style="display: flex; gap: 0.8rem;">
                     <button class="btn btn-danger" style="flex: 1;" onclick="App.closeModal('modal-senha')">Cancelar</button>
-                    <button class="btn btn-primary" style="flex: 1;" id="btn-confirmar-senha">Entrar</button>
+                    <button class="btn btn-primary" style="flex: 1;" onclick="App.verificarSenha()">Entrar</button>
                 </div>
                 <p id="senha-erro" style="color: var(--danger); margin-top: 1rem; font-size: 0.9rem; display: none; font-weight: 600;">Senha incorreta!</p>
             </div>
@@ -1018,7 +1085,6 @@ form { padding: 1.5rem; }
 </div>
 
 <script>
-/* ============ DADOS DOS MATERIAIS ============ */
 const MATERIAIS_DATABASE = {
     cobre: [
         { codigo: '10049704', descricao: 'BARRA RET COBRE C11000 10X80X4.000mm', dimensoes: '80x10' },
@@ -1081,38 +1147,8 @@ const MATERIAIS_DATABASE = {
     ]
 };
 
-/* ============ CONFIGURAÇÃO ============ */
 const CONFIG_SENHA = '10032001';
-const Config = {
-    modeloIA: localStorage.getItem('modeloIA') || 'yolov8',
-    demoMode: localStorage.getItem('demoMode') !== 'false',
-    confidence: parseFloat(localStorage.getItem('confidence') || '0.5'),
-    resolution: localStorage.getItem('resolution') || '1280x720',
-    autoStop: localStorage.getItem('autoStop') !== 'false',
-    estabilizacao: parseInt(localStorage.getItem('estabilizacao') || '3'),
-    apiUrl: localStorage.getItem('apiUrl') || '',
-    
-    save() {
-        localStorage.setItem('modeloIA', this.modeloIA);
-        localStorage.setItem('demoMode', this.demoMode);
-        localStorage.setItem('confidence', this.confidence);
-        localStorage.setItem('resolution', this.resolution);
-        localStorage.setItem('autoStop', this.autoStop);
-        localStorage.setItem('estabilizacao', this.estabilizacao);
-        localStorage.setItem('apiUrl', this.apiUrl);
-    },
-    load() {
-        document.getElementById('config-modelo-ia').value = this.modeloIA;
-        document.getElementById('config-confianca').value = this.confidence * 100;
-        document.getElementById('config-resolucao').value = this.resolution;
-        document.getElementById('config-auto-stop').checked = this.autoStop;
-        document.getElementById('config-estabilizacao').value = this.estabilizacao;
-        document.getElementById('config-api-url').value = this.apiUrl;
-        document.getElementById('config-demo-mode').checked = this.demoMode;
-    }
-};
 
-/* ============ UTILITÁRIOS ============ */
 const Utils = {
     uuid() { 
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -1120,7 +1156,7 @@ const Utils = {
             return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
         });
     },
-    now() {
+    now() { 
         const d = new Date();
         return { 
             date: d.toISOString().split('T')[0], 
@@ -1131,12 +1167,11 @@ const Utils = {
     formatNumber(n) { return new Intl.NumberFormat('pt-BR').format(n); }
 };
 
-/* ============ TOAST ============ */
 const Toast = {
     show(message, type = 'info') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
+        toast.className = 'toast ' + type;
         toast.textContent = message;
         container.appendChild(toast);
         setTimeout(() => { 
@@ -1150,68 +1185,65 @@ const Toast = {
     warning(msg) { this.show(msg, 'warning'); }
 };
 
-/* ============ API ============ */
 const SheetsAPI = {
     async getMateriais() {
-        const stored = localStorage.getItem('materiais');
-        if (stored) return JSON.parse(stored);
-        const defaultData = [];
-        ['cobre', 'aluminio'].forEach(tipo => {
-            MATERIAIS_DATABASE[tipo].forEach(m => {
-                defaultData.push({
-                    id: Utils.uuid(), 
-                    codigo: m.codigo, 
-                    descricao: m.descricao, 
-                    dimensoes: m.dimensoes,
-                    tipo: 'barra', 
-                    material: tipo, 
-                    quantidade: 0,
-                    minimo: 20, 
-                    dataCadastro: Utils.now().full, 
-                    status: 'ativo'
+        let data = localStorage.getItem('materiais');
+        if (!data) {
+            data = [];
+            ['cobre','aluminio'].forEach(tipo => {
+                MATERIAIS_DATABASE[tipo].forEach(m => {
+                    data.push({
+                        id: Utils.uuid(),
+                        codigo: m.codigo, 
+                        descricao: m.descricao, 
+                        dimensoes: m.dimensoes,
+                        tipo: 'barra',
+                        material: tipo,
+                        quantidade: 0,
+                        minimo: 20,
+                        dataCadastro: Utils.now().full,
+                        status: 'ativo'
+                    });
                 });
             });
-        });
-        localStorage.setItem('materiais', JSON.stringify(defaultData));
-        return defaultData;
+            localStorage.setItem('materiais', JSON.stringify(data));
+        }
+        return JSON.parse(data);
     },
-    async save(data, type) {
+    async save(item, type) {
         const key = type === 'conferencia' ? 'conferencias' : 'materiais';
-        const stored = JSON.parse(localStorage.getItem(key) || '[]');
-        const idx = stored.findIndex(x => x.id === data.id);
-        if (idx >= 0) stored[idx] = data; else stored.unshift(data);
-        localStorage.setItem(key, JSON.stringify(stored));
+        let data = JSON.parse(localStorage.getItem(key) || '[]');
+        const idx = data.findIndex(x => x.id === item.id);
+        if (idx >= 0) data[idx] = item; else data.unshift(item);
+        localStorage.setItem(key, JSON.stringify(data));
         return { success: true };
     },
     async delete(id) {
-        const stored = JSON.parse(localStorage.getItem('materiais') || '[]');
-        const filtered = stored.filter(x => x.id !== id);
-        localStorage.setItem('materiais', JSON.stringify(filtered));
+        let data = JSON.parse(localStorage.getItem('materiais') || '[]');
+        data = data.filter(x => x.id !== id);
+        localStorage.setItem('materiais', JSON.stringify(data));
         return { success: true };
     },
     async zerarQuantidades() {
-        const stored = JSON.parse(localStorage.getItem('materiais') || '[]');
-        stored.forEach(m => { m.quantidade = 0; });
-        localStorage.setItem('materiais', JSON.stringify(stored));
-        return { success: true, count: stored.length };
+        let data = JSON.parse(localStorage.getItem('materiais') || '[]');
+        data.forEach(m => m.quantidade = 0);
+        localStorage.setItem('materiais', JSON.stringify(data));
+        return { success: true, count: data.length };
     }
 };
 
-/* ============ CÂMERA ============ */
 const Camera = {
     video: null, stream: null, track: null, zoom: 1, flashOn: false,
     
-    init() { 
-        this.video = document.getElementById('video'); 
-    },
+    init() { this.video = document.getElementById('video'); },
     
     async start() {
         try {
-            const [w, h] = Config.resolution.split('x').map(Number);
+            const res = (localStorage.getItem('resolution') || '1280x720').split('x').map(Number);
             this.stream = await navigator.mediaDevices.getUserMedia({
                 video: { 
-                    width: { ideal: w }, 
-                    height: { ideal: h }, 
+                    width: { ideal: res[0] }, 
+                    height: { ideal: res[1] }, 
                     facingMode: 'environment' 
                 }, 
                 audio: false
@@ -1221,41 +1253,36 @@ const Camera = {
             await new Promise(resolve => { 
                 this.video.onloadedmetadata = () => { 
                     this.video.play(); 
-                    this.setupOverlay(); 
+                    const o = document.getElementById('overlay');
+                    o.width = this.video.videoWidth;
+                    o.height = this.video.videoHeight;
                     resolve(); 
                 }; 
             });
             return true;
-        } catch (e) { 
+        } catch(e) { 
             Toast.error('Erro ao acessar câmera: ' + e.message); 
             return false; 
         }
     },
     
-    setupOverlay() {
-        const overlay = document.getElementById('overlay');
-        overlay.width = this.video.videoWidth;
-        overlay.height = this.video.videoHeight;
-    },
-    
     stop() { 
-        if (this.stream) { 
+        if(this.stream) { 
             this.stream.getTracks().forEach(t => t.stop()); 
             this.stream = null; 
         } 
     },
     
     async toggleFlash() {
-        if (!this.track) return;
-        try {
-            const caps = this.track.getCapabilities();
-            if (caps.torch) { 
+        if(!this.track) return;
+        try { 
+            const caps = this.track.getCapabilities(); 
+            if(caps.torch) { 
                 this.flashOn = !this.flashOn; 
-                await this.track.applyConstraints({ advanced: [{ torch: this.flashOn }] });
-                document.getElementById('btn-flash').classList.toggle('active', this.flashOn);
+                await this.track.applyConstraints({advanced:[{torch: this.flashOn}]}); 
             }
-        } catch (e) { 
-            Toast.warning('Flash não disponível neste dispositivo'); 
+        } catch(e) {
+            Toast.warning('Flash não disponível');
         }
     },
     
@@ -1270,187 +1297,156 @@ const Camera = {
     },
     
     async applyZoom() {
-        if (!this.track) return;
-        try {
-            const caps = this.track.getCapabilities();
-            if (caps.zoom) {
+        if(!this.track) return;
+        try { 
+            const caps = this.track.getCapabilities(); 
+            if(caps.zoom) {
                 const z = caps.zoom.min + (caps.zoom.max - caps.zoom.min) * ((this.zoom - 1) / 2);
-                await this.track.applyConstraints({ advanced: [{ zoom: z }] });
+                await this.track.applyConstraints({advanced:[{zoom: z}]});
             }
-        } catch (e) {}
+        } catch(e) {}
     }
 };
 
-/* ============ VISÃO COMPUTACIONAL ============ */
 const Vision = {
     isRunning: false, 
     lastCount: 0, 
-    stableCount: 0, 
-    materialType: null,
-    lastCounts: [],
-    autoStopTimeout: null,
+    materialType: null, 
+    counts: [], 
+    timeout: null,
     
-    async start(materialType) {
-        this.materialType = materialType;
+    async start(tipo) {
+        this.materialType = tipo;
         this.isRunning = true;
-        this.stableCount = 0;
-        this.lastCounts = [];
+        this.counts = []; 
         document.getElementById('status-detectando').style.display = 'flex';
-        this.detectLoop();
+        this.loop();
     },
     
     stop() { 
         this.isRunning = false; 
-        if (this.autoStopTimeout) clearTimeout(this.autoStopTimeout);
+        if(this.timeout) clearTimeout(this.timeout);
         document.getElementById('status-detectando').style.display = 'none';
     },
     
-    async detectLoop() {
-        if (!this.isRunning) return;
-        try {
-            const detections = this.fallbackDetector();
-            this.lastCount = detections.length;
-            this.drawDetections(detections);
-            this.updateDisplay();
-            this.checkAutoStop();
-        } catch (e) { 
-            console.error('Erro na detecção:', e); 
-        }
-        setTimeout(() => this.detectLoop(), 100);
+    loop() {
+        if(!this.isRunning) return;
+        const det = this.detect();
+        this.lastCount = det.length;
+        this.draw(det);
+        document.getElementById('qtd-detectada').textContent = this.lastCount;
+        this.checkAuto();
+        setTimeout(() => this.loop(), 100);
     },
     
-    fallbackDetector() {
-        const video = Camera.video;
-        if (video.readyState < 2) return [];
-        const canvas = document.createElement('canvas');
-        const scale = 0.25;
-        canvas.width = video.videoWidth * scale;
-        canvas.height = video.videoHeight * scale;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-        const detections = [];
-        const blockSize = 20;
-        const isCopper = this.materialType === 'cobre';
+    detect() {
+        const v = Camera.video;
+        if(v.readyState < 2) return [];
+        const c = document.createElement('canvas'), s = 0.25;
+        c.width = v.videoWidth * s;
+        c.height = v.videoHeight * s;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(v, 0, 0, c.width, c.height);
+        const img = ctx.getImageData(0, 0, c.width, c.height),
+              data = img.data,
+              det = [],
+              bs = 20,
+              copper = this.materialType === 'cobre';
         
-        for (let by = 0; by < canvas.height; by += blockSize) {
-            for (let bx = 0; bx < canvas.width; bx += blockSize) {
-                let r = 0, g = 0, b = 0, count = 0;
-                for (let y = by; y < Math.min(by + blockSize, canvas.height); y += 2) {
-                    for (let x = bx; x < Math.min(bx + blockSize, canvas.width); x += 2) {
-                        const idx = (y * canvas.width + x) * 4;
-                        r += data[idx]; g += data[idx + 1]; b += data[idx + 2]; count++;
+        for(let by = 0; by < c.height; by += bs) {
+            for(let bx = 0; bx < c.width; bx += bs) {
+                let r = 0, g = 0, b = 0, cnt = 0;
+                for(let y = by; y < Math.min(by + bs, c.height); y += 2) {
+                    for(let x = bx; x < Math.min(bx + bs, c.width); x += 2) {
+                        const i = (y * c.width + x) * 4;
+                        r += data[i];
+                        g += data[i + 1];
+                        b += data[i + 2];
+                        cnt++;
                     }
                 }
-                r /= count; g /= count; b /= count;
-                let match = isCopper ? (r > 150 && g > 80 && g < 160 && b < 100) : (r > 150 && g > 150 && b > 150);
-                if (match) detections.push({ x: bx/scale, y: by/scale, w: blockSize/scale, h: blockSize/scale, confidence: 0.75 });
+                r /= cnt; g /= cnt; b /= cnt;
+                if((copper ? (r > 150 && g > 80 && g < 160 && b < 100) : (r > 150 && g > 150 && b > 150))) {
+                    det.push({x: bx/s, y: by/s, w: bs/s, h: bs/s});
+                }
             }
         }
-        return this.mergeBlocks(detections);
+        return this.merge(det);
     },
     
-    mergeBlocks(detections) {
-        if (detections.length === 0) return [];
-        const merged = [], used = new Set();
-        for (let i = 0; i < detections.length; i++) {
-            if (used.has(i)) continue;
-            let minX = detections[i].x, minY = detections[i].y;
-            let maxX = detections[i].x + detections[i].w, maxY = detections[i].y + detections[i].h;
-            for (let j = i + 1; j < detections.length; j++) {
-                if (used.has(j)) continue;
-                const d = detections[j];
-                if (Math.abs(d.x - minX) < 60 || Math.abs((d.x + d.w) - maxX) < 60) {
-                    if (Math.abs(d.y - minY) < 60 || Math.abs((d.y + d.h) - maxY) < 60) {
-                        minX = Math.min(minX, d.x); minY = Math.min(minY, d.y);
-                        maxX = Math.max(maxX, d.x + d.w); maxY = Math.max(maxY, d.y + d.h);
+    merge(det) {
+        if(!det.length) return [];
+        const res = [], used = new Set();
+        for(let i = 0; i < det.length; i++) {
+            if(used.has(i)) continue;
+            let minX = det[i].x, minY = det[i].y,
+                maxX = det[i].x + det[i].w, maxY = det[i].y + det[i].h;
+            for(let j = i + 1; j < det.length; j++) {
+                if(used.has(j)) continue;
+                const d = det[j];
+                if(Math.abs(d.x - minX) < 60 || Math.abs((d.x + d.w) - maxX) < 60) {
+                    if(Math.abs(d.y - minY) < 60 || Math.abs((d.y + d.h) - maxY) < 60) {
+                        minX = Math.min(minX, d.x);
+                        minY = Math.min(minY, d.y);
+                        maxX = Math.max(maxX, d.x + d.w);
+                        maxY = Math.max(maxY, d.y + d.h);
                         used.add(j);
                     }
                 }
             }
-            merged.push({ x: minX, y: minY, w: maxX - minX, h: maxY - minY, confidence: 0.75 });
+            res.push({x: minX, y: minY, w: maxX - minX, h: maxY - minY});
             used.add(i);
         }
-        return merged;
+        return res;
     },
     
-    drawDetections(detections) {
-        const overlay = document.getElementById('overlay');
-        const video = Camera.video;
-        overlay.width = video.videoWidth;
-        overlay.height = video.videoHeight;
-        const ctx = overlay.getContext('2d');
-        ctx.clearRect(0, 0, overlay.width, overlay.height);
-        const color = this.materialType === 'cobre' ? '#b87333' : '#7f8c8d';
-        detections.forEach((d, i) => {
-            ctx.strokeStyle = color; ctx.lineWidth = 3;
+    draw(det) {
+        const o = document.getElementById('overlay'),
+              v = Camera.video;
+        o.width = v.videoWidth;
+        o.height = v.videoHeight;
+        const ctx = o.getContext('2d');
+        ctx.clearRect(0, 0, o.width, o.height);
+        const col = this.materialType === 'cobre' ? '#b87333' : '#7f8c8d';
+        det.forEach((d, i) => {
+            ctx.strokeStyle = col;
+            ctx.lineWidth = 3;
             ctx.strokeRect(d.x, d.y, d.w, d.h);
-            ctx.fillStyle = color; ctx.fillRect(d.x, d.y - 22, 50, 22);
-            ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Arial';
+            ctx.fillStyle = col;
+            ctx.fillRect(d.x, d.y - 22, 50, 22);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px Arial';
             ctx.fillText('#' + (i + 1), d.x + 5, d.y - 6);
         });
     },
     
-    updateDisplay() {
-        document.getElementById('qtd-detectada').textContent = this.lastCount;
-    },
-    
-    checkAutoStop() {
-        if (!Config.autoStop) return;
-        
-        this.lastCounts.push(this.lastCount);
-        if (this.lastCounts.length > Config.estabilizacao * 10) {
-            this.lastCounts.shift();
+    checkAuto() {
+        const autoStop = document.getElementById('config-auto-stop').checked;
+        const estab = parseInt(document.getElementById('config-estabilizacao').value) || 3;
+        if(!autoStop) return;
+        this.counts.push(this.lastCount);
+        if(this.counts.length > estab * 10) this.counts.shift();
+        if(this.counts.length >= estab * 10 && 
+           this.counts.slice(-estab * 10).every(c => c === this.counts[0]) && 
+           this.counts[0] > 0) {
+            if(this.timeout) clearTimeout(this.timeout);
+            this.timeout = setTimeout(async () => {
+                this.stop();
+                await Conference.save();
+            }, 500);
         }
-        
-        if (this.lastCounts.length >= Config.estabilizacao * 10) {
-            const recent = this.lastCounts.slice(-Config.estabilizacao * 10);
-            const allSame = recent.every(c => c === recent[0]);
-            
-            if (allSame && recent[0] > 0) {
-                if (this.autoStopTimeout) clearTimeout(this.autoStopTimeout);
-                this.autoStopTimeout = setTimeout(() => {
-                    this.autoSave();
-                }, 500);
-            }
-        }
-    },
-    
-    async autoSave() {
-        this.stop();
-        await Conference.save();
-    },
-    
-    getCount() { return this.lastCount; }
+    }
 };
 
-/* ============ CONFERÊNCIA ============ */
 const Conference = {
     selectedTipo: null,
     selectedMaterial: null,
     
-    init() {
-        document.getElementById('count-cobre').textContent = MATERIAIS_DATABASE.cobre.length + ' itens';
-        document.getElementById('count-aluminio').textContent = MATERIAIS_DATABASE.aluminio.length + ' itens';
-        
-        document.querySelectorAll('.tipo-card').forEach(btn => {
-            btn.addEventListener('click', () => this.selectTipo(btn.dataset.tipo));
-        });
-        
-        document.getElementById('btn-voltar-tipo').addEventListener('click', () => this.backToTipo());
-        document.getElementById('material-search').addEventListener('input', (e) => this.renderMateriais(e.target.value));
-        document.getElementById('btn-voltar-selecao').addEventListener('click', () => this.backToTipo());
-        document.getElementById('btn-flash').addEventListener('click', () => Camera.toggleFlash());
-        document.getElementById('btn-zoom-in').addEventListener('click', () => Camera.zoomIn());
-        document.getElementById('btn-zoom-out').addEventListener('click', () => Camera.zoomOut());
-    },
-    
     selectTipo(tipo) {
+        console.log('Selecionando tipo:', tipo);
         this.selectedTipo = tipo;
         document.querySelectorAll('.tipo-card').forEach(b => b.classList.remove('active'));
-        document.querySelector(`.tipo-card[data-tipo="${tipo}"]`).classList.add('active');
-        
+        document.querySelector('.tipo-card[onclick*="' + tipo + '"]').classList.add('active');
         document.getElementById('tipo-selector').style.display = 'none';
         document.getElementById('materiais-lista').classList.add('active');
         document.getElementById('titulo-lista').textContent = tipo === 'cobre' ? 'Barras de Cobre' : 'Barras de Alumínio';
@@ -1471,131 +1467,102 @@ const Conference = {
     },
     
     renderMateriais(search) {
-        const grid = document.getElementById('materiais-grid');
-        const tipo = this.selectedTipo;
-        const materiais = MATERIAIS_DATABASE[tipo];
-        
-        const filtered = materiais.filter(m => {
-            if (!search) return true;
-            const s = search.toLowerCase();
-            return m.codigo.toLowerCase().includes(s) || 
-                   m.descricao.toLowerCase().includes(s) || 
-                   m.dimensoes.toLowerCase().includes(s);
-        });
-        
-        grid.innerHTML = filtered.map(m => `
-            <div class="material-item" data-codigo="${m.codigo}" onclick="Conference.selectMaterial('${m.codigo}')">
-                <div class="codigo">${m.codigo}</div>
-                <div class="info">
-                    <div class="descricao">${m.descricao}</div>
-                    <div class="dimensoes">📐 ${m.dimensoes}</div>
-                </div>
-                <div class="arrow">›</div>
-            </div>
-        `).join('');
-        
-        if (filtered.length === 0) {
-            grid.innerHTML = '<div style="text-align:center; padding: 3rem; color: var(--text-secondary); font-size: 1.1rem;">Nenhum material encontrado</div>';
-        }
+        const grid = document.getElementById('materiais-grid'),
+              mats = MATERIAIS_DATABASE[this.selectedTipo];
+        const filt = mats.filter(m => !search || 
+            m.codigo.toLowerCase().includes(search.toLowerCase()) || 
+            m.descricao.toLowerCase().includes(search.toLowerCase()) || 
+            m.dimensoes.toLowerCase().includes(search.toLowerCase()));
+        grid.innerHTML = filt.map(m => 
+            '<div class="material-item" onclick="Conference.selectMaterial(\'' + m.codigo + '\')">' +
+            '<div class="codigo">' + m.codigo + '</div>' +
+            '<div class="info">' +
+            '<div class="descricao">' + m.descricao + '</div>' +
+            '<div class="dimensoes">📐 ' + m.dimensoes + '</div>' +
+            '</div>' +
+            '<div class="arrow">›</div>' +
+            '</div>'
+        ).join('') || '<div style="text-align:center;padding:3rem;color:#6c757d">Nenhum material encontrado</div>';
     },
     
     async selectMaterial(codigo) {
-        const material = MATERIAIS_DATABASE[this.selectedTipo].find(m => m.codigo === codigo);
-        if (!material) return;
-        
-        this.selectedMaterial = { ...material, material: this.selectedTipo };
-        
-        const materiais = await SheetsAPI.getMateriais();
-        const matData = materiais.find(m => m.codigo === codigo);
-        const qtdRegistrada = matData ? matData.quantidade : 0;
-        
-        document.getElementById('conf-material-nome').textContent = material.descricao;
-        document.getElementById('conf-material-dim').textContent = `${material.codigo} | ${material.dimensoes}`;
-        
+        console.log('Selecionando material:', codigo);
+        const mat = MATERIAIS_DATABASE[this.selectedTipo].find(m => m.codigo === codigo);
+        if(!mat) return;
+        this.selectedMaterial = {...mat, material: this.selectedTipo};
+        const mats = await SheetsAPI.getMateriais(),
+              md = mats.find(m => m.codigo === codigo);
+        document.getElementById('conf-material-nome').textContent = mat.descricao;
+        document.getElementById('conf-material-dim').textContent = mat.codigo + ' | ' + mat.dimensoes;
         document.getElementById('materiais-lista').classList.remove('active');
         document.getElementById('camera-view').classList.add('active');
-        
         Camera.init();
-        const started = await Camera.start();
-        if (started) {
+        if(await Camera.start()) {
             await Vision.start(this.selectedTipo);
-            Toast.info('IA detectando automaticamente...');
+            Toast.success('IA detectando automaticamente...');
         }
     },
     
     async save() {
-        const detectada = Vision.getCount();
-        if (detectada === 0) {
+        const det = Vision.lastCount;
+        if(det === 0) {
             Toast.warning('Nenhuma barra detectada!');
             return;
         }
-        
-        const materiais = await SheetsAPI.getMateriais();
-        const matData = materiais.find(m => m.codigo === this.selectedMaterial.codigo);
-        const registrada = matData ? matData.quantidade : 0;
-        const novaQuantidade = registrada + detectada;
-        
-        if (matData) {
-            matData.quantidade = novaQuantidade;
-            await SheetsAPI.save(matData, 'material');
+        const mats = await SheetsAPI.getMateriais(),
+              md = mats.find(m => m.codigo === this.selectedMaterial.codigo),
+              reg = md ? md.quantidade : 0,
+              nova = reg + det;
+        if(md) {
+            md.quantidade = nova;
+            await SheetsAPI.save(md, 'material');
         }
-        
-        const conferencia = {
-            id: Utils.uuid(), 
-            data: Utils.now().date, 
-            hora: Utils.now().time,
-            material: this.selectedMaterial.codigo, 
+        await SheetsAPI.save({
+            id: Utils.uuid(),
+            data: Utils.now().date,
+            material: this.selectedMaterial.codigo,
             descricao: this.selectedMaterial.descricao,
-            dimensoes: this.selectedMaterial.dimensoes, 
-            tipoMaterial: this.selectedTipo,
-            quantidadeDetectada: detectada, 
-            quantidadeAntes: registrada,
-            quantidadeDepois: novaQuantidade, 
-            adicionado: detectada,
-            modeloIA: Config.modeloIA, 
-            usuario: 'Admin'
-        };
-        
-        await SheetsAPI.save(conferencia, 'conferencia');
-        
-        Toast.success(`✅ ${detectada} barras adicionadas! Total: ${novaQuantidade}`);
+            detectada: det,
+            antes: reg,
+            depois: nova,
+            adicionado: det
+        }, 'conferencia');
+        Toast.success('✅ ' + det + ' barras adicionadas! Total: ' + nova);
         this.backToTipo();
     }
 };
 
-/* ============ MATERIAIS ============ */
 const Materials = {
     data: [],
     
-    async load() { 
-        this.data = await SheetsAPI.getMateriais(); 
-        this.render(); 
+    async load() {
+        this.data = await SheetsAPI.getMateriais();
+        this.render();
     },
     
     render() {
-        const search = document.getElementById('search-material').value.toLowerCase();
-        const filter = document.getElementById('filter-tipo').value;
-        const filtered = this.data.filter(m => {
-            const matchSearch = !search || (m.codigo||'').toLowerCase().includes(search) || (m.descricao||'').toLowerCase().includes(search);
-            const matchFilter = !filter || m.material === filter;
-            return matchSearch && matchFilter;
-        });
-        const tbody = document.querySelector('#table-materiais tbody');
-        tbody.innerHTML = filtered.map(m => {
-            const status = (m.quantidade||0) <= 0 ? 'danger' : 'success';
-            return `<tr>
-                <td><strong>${m.codigo||'-'}</strong></td>
-                <td>${m.descricao||'-'}</td>
-                <td>${m.dimensoes||'-'}</td>
-                <td><span class="badge badge-${m.material}">${m.material==='cobre'?'🟤 Cobre':'⚪ Alumínio'}</span></td>
-                <td><strong style="font-size: 1.1rem;">${m.quantidade||0}</strong></td>
-                <td><span class="badge badge-${status}">${(m.quantidade||0) > 0 ? '✓ Em Estoque' : '⚠ Zerado'}</span></td>
-                <td>
-                    <button class="btn-icon" onclick="Materials.edit('${m.id}')" title="Editar">✏️</button>
-                    <button class="btn-icon" onclick="Materials.remove('${m.id}')" title="Excluir">🗑️</button>
-                </td>
-            </tr>`;
-        }).join('') || '<tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--text-secondary);font-size:1.1rem;">Nenhum material cadastrado</td></tr>';
+        const s = document.getElementById('search-material').value.toLowerCase(),
+              f = document.getElementById('filter-tipo').value;
+        const filt = this.data.filter(m => 
+            (!s || (m.codigo||'').toLowerCase().includes(s) || (m.descricao||'').toLowerCase().includes(s)) && 
+            (!f || m.material === f)
+        );
+        document.querySelector('#table-materiais tbody').innerHTML = filt.map(m => 
+            '<tr>' +
+            '<td><strong>' + m.codigo + '</strong></td>' +
+            '<td>' + m.descricao + '</td>' +
+            '<td>' + (m.dimensoes || '-') + '</td>' +
+            '<td><span class="badge badge-' + (m.material==='cobre'?'cobre':'aluminio') + '">' + 
+            (m.material==='cobre'?'🟤 Cobre':'⚪ Alumínio') + '</span></td>' +
+            '<td><strong>' + (m.quantidade || 0) + '</strong></td>' +
+            '<td><span class="badge badge-' + ((m.quantidade||0) > 0 ? 'success' : 'danger') + '">' + 
+            ((m.quantidade||0) > 0 ? '✓ OK' : '⚠ Zerado') + '</span></td>' +
+            '<td>' +
+            '<button class="btn-icon" onclick="Materials.edit(\'' + m.id + '\')" title="Editar">✏️</button>' +
+            '<button class="btn-icon" onclick="Materials.del(\'' + m.id + '\')" title="Excluir">🗑️</button>' +
+            '</td>' +
+            '</tr>'
+        ).join('') || '<tr><td colspan="7" style="text-align:center;padding:3rem">Nenhum material</td></tr>';
     },
     
     openModal() {
@@ -1607,7 +1574,7 @@ const Materials = {
     
     edit(id) {
         const m = this.data.find(x => x.id === id);
-        if (!m) return;
+        if(!m) return;
         document.getElementById('modal-title').textContent = 'Editar Material';
         document.getElementById('input-id').value = m.id;
         document.getElementById('input-codigo').value = m.codigo || '';
@@ -1618,131 +1585,104 @@ const Materials = {
         document.getElementById('modal-material').classList.add('active');
     },
     
-    async remove(id) {
-        if (!confirm('Deseja realmente excluir este material?')) return;
+    async save(e) {
+        e.preventDefault();
+        const data = {
+            id: document.getElementById('input-id').value || Utils.uuid(),
+            codigo: document.getElementById('input-codigo').value,
+            descricao: document.getElementById('input-descricao').value,
+            dimensoes: document.getElementById('input-dimensoes').value,
+            material: document.getElementById('input-material').value,
+            quantidade: parseInt(document.getElementById('input-quantidade').value),
+            tipo: 'barra',
+            minimo: 20,
+            dataCadastro: Utils.now().full,
+            status: 'ativo'
+        };
+        await SheetsAPI.save(data, 'material');
+        Toast.success('Material salvo com sucesso!');
+        App.closeModal('modal-material');
+        await this.load();
+    },
+    
+    async del(id) {
+        if(!confirm('Deseja realmente excluir este material?')) return;
         await SheetsAPI.delete(id);
         Toast.success('Material excluído com sucesso');
         await this.load();
     }
 };
 
-/* ============ APP ============ */
 const App = {
     init() {
-        Config.load();
-        this.setupNavigation();
-        Conference.init();
-        this.setupMaterials();
-        this.setupConfig();
-        this.setupSenha();
+        document.getElementById('count-cobre').textContent = MATERIAIS_DATABASE.cobre.length + ' itens';
+        document.getElementById('count-aluminio').textContent = MATERIAIS_DATABASE.aluminio.length + ' itens';
+        console.log('Sistema inicializado com sucesso');
     },
     
-    setupNavigation() {
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                btn.classList.add('active');
-                const page = btn.dataset.page;
-                document.getElementById(`page-${page}`).classList.add('active');
-                if (page === 'materiais') await Materials.load();
-            });
-        });
+    navegar(page) {
+        console.log('Navegando para:', page);
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelector('.nav-btn[data-page="' + page + '"]').classList.add('active');
+        document.getElementById('page-' + page).classList.add('active');
+        if(page === 'materiais') Materials.load();
     },
     
-    setupSenha() {
-        document.getElementById('btn-config').addEventListener('click', () => {
-            document.getElementById('input-senha').value = '';
-            document.getElementById('senha-erro').style.display = 'none';
-            document.getElementById('modal-senha').classList.add('active');
-            setTimeout(() => document.getElementById('input-senha').focus(), 100);
-        });
-        
-        document.getElementById('btn-confirmar-senha').addEventListener('click', () => this.verificarSenha());
-        document.getElementById('input-senha').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.verificarSenha();
-        });
+    abrirSenha() {
+        document.getElementById('input-senha').value = '';
+        document.getElementById('senha-erro').style.display = 'none';
+        document.getElementById('modal-senha').classList.add('active');
+        setTimeout(() => document.getElementById('input-senha').focus(), 100);
     },
     
     verificarSenha() {
         const senha = document.getElementById('input-senha').value;
-        if (senha === CONFIG_SENHA) {
+        if(senha === CONFIG_SENHA) {
             this.closeModal('modal-senha');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('page-configuracoes').classList.add('active');
-            Config.load();
         } else {
             document.getElementById('senha-erro').style.display = 'block';
             document.getElementById('input-senha').value = '';
-            document.getElementById('input-senha').focus();
         }
     },
     
-    setupConfig() {
-        document.getElementById('btn-sair-config').addEventListener('click', () => {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById('page-conferencia').classList.add('active');
-            document.querySelector('.nav-btn[data-page="conferencia"]').classList.add('active');
-        });
-        
-        document.getElementById('btn-salvar-config').addEventListener('click', () => {
-            Config.modeloIA = document.getElementById('config-modelo-ia').value;
-            Config.confidence = parseInt(document.getElementById('config-confianca').value) / 100;
-            Config.resolution = document.getElementById('config-resolucao').value;
-            Config.autoStop = document.getElementById('config-auto-stop').checked;
-            Config.estabilizacao = parseInt(document.getElementById('config-estabilizacao').value);
-            Config.apiUrl = document.getElementById('config-api-url').value;
-            Config.demoMode = document.getElementById('config-demo-mode').checked;
-            Config.save();
-            Toast.success('Configurações salvas com sucesso!');
-        });
-        
-        document.getElementById('btn-zerar-quantidades').addEventListener('click', async () => {
-            if (confirm('⚠️ ATENÇÃO:\n\nIsso irá ZERAR a quantidade de TODAS as barras.\n\nAs descrições, códigos e itens serão mantidos.\n\nDeseja continuar?')) {
-                const result = await SheetsAPI.zerarQuantidades();
-                Toast.success(`✅ Quantidades zeradas! (${result.count} itens mantidos)`);
-            }
-        });
+    sairConfig() {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-conferencia').classList.add('active');
+        document.querySelector('.nav-btn[data-page="conferencia"]').classList.add('active');
     },
     
-    setupMaterials() {
-        document.getElementById('btn-novo-material').addEventListener('click', () => Materials.openModal());
-        document.getElementById('search-material').addEventListener('input', () => Materials.render());
-        document.getElementById('filter-tipo').addEventListener('change', () => Materials.render());
-        
-        document.getElementById('form-material').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                id: document.getElementById('input-id').value || Utils.uuid(),
-                codigo: document.getElementById('input-codigo').value,
-                descricao: document.getElementById('input-descricao').value,
-                dimensoes: document.getElementById('input-dimensoes').value,
-                material: document.getElementById('input-material').value,
-                quantidade: parseInt(document.getElementById('input-quantidade').value),
-                tipo: 'barra', 
-                minimo: 20, 
-                dataCadastro: Utils.now().full, 
-                status: 'ativo'
-            };
-            await SheetsAPI.save(data, 'material');
-            Toast.success('Material salvo com sucesso!');
-            this.closeModal('modal-material');
-            await Materials.load();
-        });
+    closeModal(id) {
+        document.getElementById(id).classList.remove('active');
     },
     
-    closeModal(id) { 
-        document.getElementById(id).classList.remove('active'); 
+    async zerarQuantidades() {
+        if(confirm('⚠️ ATENÇÃO:\n\nIsso irá ZERAR a quantidade de TODAS as barras.\n\nAs descrições, códigos e itens serão mantidos.\n\nDeseja continuar?')) {
+            const n = await SheetsAPI.zerarQuantidades();
+            Toast.success('✅ Quantidades zeradas! (' + n + ' itens mantidos)');
+        }
+    },
+    
+    salvarConfig() {
+        const modelo = document.getElementById('config-modelo-ia').value;
+        const conf = parseInt(document.getElementById('config-confianca').value) / 100;
+        const res = document.getElementById('config-resolucao').value;
+        const autoStop = document.getElementById('config-auto-stop').checked;
+        const estab = document.getElementById('config-estabilizacao').value;
+        localStorage.setItem('modeloIA', modelo);
+        localStorage.setItem('confidence', conf);
+        localStorage.setItem('resolution', res);
+        localStorage.setItem('autoStop', autoStop);
+        localStorage.setItem('estabilizacao', estab);
+        Toast.success('Configurações salvas com sucesso!');
     }
 };
 
-// Inicialização
 window.addEventListener('DOMContentLoaded', () => App.init());
-
-// Expor funções globais
-window.Materials = Materials;
 window.Conference = Conference;
+window.Materials = Materials;
 window.Camera = Camera;
 window.App = App;
 </script>
