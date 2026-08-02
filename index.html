@@ -49,7 +49,6 @@ body {
 
 .app-container { display: flex; flex-direction: column; min-height: 100vh; }
 
-/* HEADER WEG */
 .header {
     background: var(--bg-header);
     padding: 1rem 1.5rem;
@@ -117,7 +116,6 @@ body {
     box-shadow: 0 4px 12px rgba(0, 85, 164, 0.4);
 }
 
-/* MAIN */
 .main-content { 
     flex: 1; 
     padding: 2rem 1.5rem; 
@@ -133,7 +131,6 @@ body {
     to { opacity: 1; transform: translateY(0); } 
 }
 
-/* CONFERÊNCIA */
 .conferencia-container { max-width: 1200px; margin: 0 auto; }
 
 .tipo-selector {
@@ -211,7 +208,6 @@ body {
     font-weight: 600;
 }
 
-/* Lista de Materiais */
 .materiais-lista { 
     display: none; 
     margin-top: 1.5rem; 
@@ -328,7 +324,6 @@ body {
 }
 .material-item:hover .arrow { opacity: 1; transform: translateX(4px); }
 
-/* CÂMERA */
 .camera-view {
     display: none;
     grid-template-columns: 1fr 320px;
@@ -381,7 +376,6 @@ body {
     color: #000;
 }
 
-/* Painel de Contagem */
 .contagem-panel {
     background: var(--bg-card);
     padding: 1.5rem;
@@ -473,7 +467,6 @@ body {
 
 .acoes-buttons { display: flex; flex-direction: column; gap: 0.8rem; }
 
-/* BOTÕES GERAIS */
 .btn {
     padding: 0.9rem 1.5rem;
     border: none;
@@ -554,7 +547,6 @@ body {
     transform: scale(1.1);
 }
 
-/* PÁGINA MATERIAIS */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -645,7 +637,6 @@ tbody tr:hover { background: rgba(0, 85, 164, 0.05); }
 .badge-cobre { background: rgba(184, 115, 51, 0.15); color: #b87333; }
 .badge-aluminio { background: rgba(127, 140, 141, 0.15); color: #7f8c8d; }
 
-/* MODAL */
 .modal {
     display: none;
     position: fixed;
@@ -741,7 +732,6 @@ form { padding: 1.5rem; }
     box-shadow: 0 0 0 4px rgba(0, 85, 164, 0.1);
 }
 
-/* CONFIGURAÇÕES */
 .settings-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -788,7 +778,6 @@ form { padding: 1.5rem; }
     padding: 0.6rem 0.9rem;
 }
 
-/* TOAST */
 .toast-container {
     position: fixed;
     top: 1.5rem; right: 1.5rem;
@@ -817,7 +806,6 @@ form { padding: 1.5rem; }
     to { transform: translateX(0); opacity: 1; } 
 }
 
-/* RESPONSIVO */
 @media (max-width: 900px) {
     .header { padding: 0.9rem 1rem; }
     .logo h1 { font-size: 1rem; }
@@ -852,11 +840,11 @@ form { padding: 1.5rem; }
             <h1>Estoque de Barras</h1>
         </div>
         <nav class="nav">
-            <button class="nav-btn active" data-page="conferencia" onclick="App.navegar('conferencia')">📷 Conferência</button>
-            <button class="nav-btn" data-page="materiais" onclick="App.navegar('materiais')"> Materiais</button>
+            <button class="nav-btn active" data-page="conferencia" onclick="App.navegar('conferencia')">&#128247; Confer&#234;ncia</button>
+            <button class="nav-btn" data-page="materiais" onclick="App.navegar('materiais')">&#128230; Materiais</button>
         </nav>
         <div class="header-actions">
-            <button class="btn-config" onclick="App.abrirSenha()" title="Configurações">⚙</button>
+            <button class="btn-config" onclick="App.abrirSenha()" title="Configura&#231;&#245;es">&#9881;</button>
         </div>
     </header>
 
@@ -867,13 +855,13 @@ form { padding: 1.5rem; }
                     <h2>Selecione o Tipo de Material</h2>
                     <div class="tipo-buttons">
                         <button class="tipo-card" onclick="Conference.selectTipo('cobre')">
-                            <span class="icon">🟤</span>
+                            <span class="icon">&#128996;</span>
                             <span class="label">Barras de Cobre</span>
                             <span class="count" id="count-cobre">0 itens</span>
                         </button>
                         <button class="tipo-card" onclick="Conference.selectTipo('aluminio')">
-                            <span class="icon"></span>
-                            <span class="label">Barras de Alumínio</span>
+                            <span class="icon">&#9898;</span>
+                            <span class="label">Barras de Alum&#237;nio</span>
                             <span class="count" id="count-aluminio">0 itens</span>
                         </button>
                     </div>
@@ -882,9 +870,9 @@ form { padding: 1.5rem; }
                 <div class="materiais-lista" id="materiais-lista">
                     <h3>
                         <span id="titulo-lista">Materiais</span>
-                        <button class="btn-voltar" onclick="Conference.backToTipo()">← Voltar</button>
+                        <button class="btn-voltar" onclick="Conference.backToTipo()">&#8592; Voltar</button>
                     </h3>
-                    <input type="text" class="material-search" id="material-search" placeholder="🔍 Buscar por código, descrição ou dimensão..." oninput="Conference.renderMateriais(this.value)">
+                    <input type="text" class="material-search" id="material-search" placeholder="&#128269; Buscar por c&#243;digo, descri&#231;&#227;o ou dimens&#227;o..." oninput="Conference.renderMateriais(this.value)">
                     <div class="materiais-grid" id="materiais-grid"></div>
                 </div>
 
@@ -893,9 +881,9 @@ form { padding: 1.5rem; }
                         <video id="video" autoplay playsinline muted></video>
                         <canvas id="overlay"></canvas>
                         <div class="camera-controls">
-                            <button class="cam-btn" onclick="Camera.toggleFlash()" title="Flash"></button>
-                            <button class="cam-btn" onclick="Camera.zoomIn()" title="Zoom +">🔍+</button>
-                            <button class="cam-btn" onclick="Camera.zoomOut()" title="Zoom -">➖</button>
+                            <button class="cam-btn" onclick="Camera.toggleFlash()" title="Flash">&#128294;</button>
+                            <button class="cam-btn" onclick="Camera.zoomIn()" title="Zoom +">&#128269;+</button>
+                            <button class="cam-btn" onclick="Camera.zoomOut()" title="Zoom -">&#10134;</button>
                         </div>
                     </div>
                     
@@ -918,7 +906,7 @@ form { padding: 1.5rem; }
                         </div>
 
                         <div class="acoes-buttons">
-                            <button class="btn btn-danger" onclick="Conference.backToTipo()">← Voltar à Seleção</button>
+                            <button class="btn btn-danger" onclick="Conference.backToTipo()">&#8592; Voltar &#224; Sele&#231;&#227;o</button>
                         </div>
                     </div>
                 </div>
@@ -927,28 +915,28 @@ form { padding: 1.5rem; }
 
         <div id="page-materiais" class="page">
             <div class="page-header">
-                <h2>📦 Cadastro de Materiais</h2>
+                <h2>&#128230; Cadastro de Materiais</h2>
                 <button class="btn btn-primary" onclick="Materials.openModal()">+ Novo Material</button>
             </div>
             <div class="filters">
-                <input type="text" id="search-material" placeholder="🔍 Pesquisar material..." style="flex: 1;" oninput="Materials.render()">
+                <input type="text" id="search-material" placeholder="&#128269; Pesquisar material..." style="flex: 1;" oninput="Materials.render()">
                 <select id="filter-tipo" onchange="Materials.render()">
                     <option value="">Todos os Materiais</option>
                     <option value="cobre">Cobre</option>
-                    <option value="aluminio">Alumínio</option>
+                    <option value="aluminio">Alum&#237;nio</option>
                 </select>
             </div>
             <div class="table-container">
                 <table id="table-materiais">
                     <thead>
                         <tr>
-                            <th>Código</th>
-                            <th>Descrição</th>
-                            <th>Dimensões</th>
+                            <th>C&#243;digo</th>
+                            <th>Descri&#231;&#227;o</th>
+                            <th>Dimens&#245;es</th>
                             <th>Tipo</th>
                             <th>Quantidade</th>
                             <th>Status</th>
-                            <th>Ações</th>
+                            <th>A&#231;&#245;es</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -958,24 +946,24 @@ form { padding: 1.5rem; }
 
         <div id="page-configuracoes" class="page">
             <div class="page-header">
-                <h2>⚙️ Configurações do Sistema</h2>
-                <button class="btn btn-primary" onclick="App.sairConfig()">← Voltar</button>
+                <h2>&#9881; Configura&#231;&#245;es do Sistema</h2>
+                <button class="btn btn-primary" onclick="App.sairConfig()">&#8592; Voltar</button>
             </div>
             <div class="settings-container">
                 <div class="setting-group">
-                    <h3> Inteligência Artificial</h3>
+                    <h3>&#129302; Intelig&#234;ncia Artificial</h3>
                     <div class="setting-item">
                         <label>Modelo de IA</label>
                         <select id="config-modelo-ia">
                             <option value="yolov8">YOLOv8 (Recomendado)</option>
-                            <option value="yolov11">YOLOv11 (Mais rápido)</option>
+                            <option value="yolov11">YOLOv11 (Mais r&#225;pido)</option>
                             <option value="detectron2">Detectron2 (Mais preciso)</option>
                             <option value="ssd">SSD MobileNet (Leve)</option>
-                            <option value="fallback">Detector de Cores (Básico)</option>
+                            <option value="fallback">Detector de Cores (B&#225;sico)</option>
                         </select>
                     </div>
                     <div class="setting-item">
-                        <label>Confiança Mínima (%)</label>
+                        <label>Confian&#231;a M&#237;nima (%)</label>
                         <input type="number" id="config-confianca" min="0" max="100" value="50">
                     </div>
                     <div class="setting-item">
@@ -983,16 +971,16 @@ form { padding: 1.5rem; }
                         <input type="checkbox" id="config-auto-stop" checked>
                     </div>
                     <div class="setting-item">
-                        <label>Tempo de estabilização (seg)</label>
+                        <label>Tempo de estabiliza&#231;&#227;o (seg)</label>
                         <input type="number" id="config-estabilizacao" min="1" max="10" value="3">
                     </div>
                 </div>
                 <div class="setting-group">
-                    <h3>📷 Câmera</h3>
+                    <h3>&#128247; C&#226;mera</h3>
                     <div class="setting-item">
-                        <label>Resolução</label>
+                        <label>Resolu&#231;&#227;o</label>
                         <select id="config-resolucao">
-                            <option value="640x480">640x480 (Rápido)</option>
+                            <option value="640x480">640x480 (R&#225;pido)</option>
                             <option value="1280x720" selected>1280x720 (HD)</option>
                             <option value="1920x1080">1920x1080 (Full HD)</option>
                         </select>
@@ -1003,20 +991,20 @@ form { padding: 1.5rem; }
                     </div>
                 </div>
                 <div class="setting-group">
-                    <h3>💾 Dados</h3>
+                    <h3>&#128190; Dados</h3>
                     <div class="setting-item">
                         <label>Modo Demo (sem API)</label>
                         <input type="checkbox" id="config-demo-mode" checked>
                     </div>
                     <div class="setting-item" style="flex-direction: column; align-items: stretch; gap: 0.8rem;">
-                        <label style="color: var(--warning); font-weight: 700;">🔄 Zerar Quantidades</label>
-                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Mantém todos os itens, zera apenas as quantidades</span>
-                        <button class="btn btn-warning" onclick="App.zerarQuantidades()" style="margin-top: 0.3rem;">🔄 Zerar Todas as Quantidades</button>
+                        <label style="color: var(--warning); font-weight: 700;">&#128260; Zerar Quantidades</label>
+                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Mant&#233;m todos os itens, zera apenas as quantidades</span>
+                        <button class="btn btn-warning" onclick="App.zerarQuantidades()" style="margin-top: 0.3rem;">&#128260; Zerar Todas as Quantidades</button>
                     </div>
                 </div>
             </div>
             <div style="margin-top: 1.5rem; max-width: 1200px;">
-                <button class="btn btn-primary" onclick="App.salvarConfig()">💾 Salvar Configurações</button>
+                <button class="btn btn-primary" onclick="App.salvarConfig()">&#128190; Salvar Configura&#231;&#245;es</button>
             </div>
         </div>
     </main>
@@ -1030,22 +1018,22 @@ form { padding: 1.5rem; }
             <form id="form-material" onsubmit="Materials.save(event)">
                 <input type="hidden" id="input-id">
                 <div class="form-group">
-                    <label>Código *</label>
+                    <label>C&#243;digo *</label>
                     <input type="text" id="input-codigo" required placeholder="Ex: 10049704">
                 </div>
                 <div class="form-group">
-                    <label>Descrição *</label>
+                    <label>Descri&#231;&#227;o *</label>
                     <input type="text" id="input-descricao" required placeholder="Ex: BARRA RET COBRE C11000">
                 </div>
                 <div class="form-group">
-                    <label>Dimensões</label>
+                    <label>Dimens&#245;es</label>
                     <input type="text" id="input-dimensoes" placeholder="Ex: 80x10">
                 </div>
                 <div class="form-group">
                     <label>Material *</label>
                     <select id="input-material" required>
                         <option value="cobre">Cobre</option>
-                        <option value="aluminio">Alumínio</option>
+                        <option value="aluminio">Alum&#237;nio</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1054,7 +1042,7 @@ form { padding: 1.5rem; }
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-danger" onclick="App.closeModal('modal-material')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">💾 Salvar</button>
+                    <button type="submit" class="btn btn-primary">&#128190; Salvar</button>
                 </div>
             </form>
         </div>
@@ -1063,12 +1051,12 @@ form { padding: 1.5rem; }
     <div id="modal-senha" class="modal senha-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2> Acesso Restrito</h2>
+                <h2>&#128274; Acesso Restrito</h2>
                 <button class="btn-close" onclick="App.closeModal('modal-senha')">&times;</button>
             </div>
             <div style="padding: 2rem;">
-                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Digite a senha para acessar configurações:</p>
-                <input type="password" class="senha-input" id="input-senha" placeholder="••••••••" maxlength="10" inputmode="numeric">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Digite a senha para acessar configura&#231;&#245;es:</p>
+                <input type="password" class="senha-input" id="input-senha" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" maxlength="10" inputmode="numeric">
                 <div style="display: flex; gap: 0.8rem;">
                     <button class="btn btn-danger" style="flex: 1;" onclick="App.closeModal('modal-senha')">Cancelar</button>
                     <button class="btn btn-primary" style="flex: 1;" onclick="App.verificarSenha()">Entrar</button>
@@ -1165,30 +1153,35 @@ const Utils = {
 };
 
 const Toast = {
-    show(message, type = 'info') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
+    show(message, type) {
+        type = type || 'info';
+        var container = document.getElementById('toast-container');
+        var toast = document.createElement('div');
         toast.className = 'toast ' + type;
         toast.textContent = message;
         container.appendChild(toast);
-        setTimeout(() => { 
+        setTimeout(function() { 
             toast.style.opacity = '0'; 
             toast.style.transform = 'translateX(100%)'; 
-            setTimeout(() => toast.remove(), 300); 
+            setTimeout(function() { toast.remove(); }, 300); 
         }, 4000);
     },
-    success(msg) { this.show(msg, 'success'); },
-    error(msg) { this.show(msg, 'error'); },
-    warning(msg) { this.show(msg, 'warning'); }
+    success: function(msg) { this.show(msg, 'success'); },
+    error: function(msg) { this.show(msg, 'error'); },
+    warning: function(msg) { this.show(msg, 'warning'); }
 };
 
 const SheetsAPI = {
-    async getMateriais() {
-        let data = localStorage.getItem('materiais');
+    getMateriais: function() {
+        var data = localStorage.getItem('materiais');
         if (!data) {
             data = [];
-            ['cobre','aluminio'].forEach(tipo => {
-                MATERIAIS_DATABASE[tipo].forEach(m => {
+            var tipos = ['cobre','aluminio'];
+            for (var t = 0; t < tipos.length; t++) {
+                var tipo = tipos[t];
+                var lista = MATERIAIS_DATABASE[tipo];
+                for (var i = 0; i < lista.length; i++) {
+                    var m = lista[i];
                     data.push({
                         id: Utils.uuid(),
                         codigo: m.codigo, 
@@ -1201,105 +1194,119 @@ const SheetsAPI = {
                         dataCadastro: Utils.now().full,
                         status: 'ativo'
                     });
-                });
-            });
+                }
+            }
             localStorage.setItem('materiais', JSON.stringify(data));
         }
-        return JSON.parse(data);
+        return Promise.resolve(JSON.parse(data));
     },
-    async save(item, type) {
-        const key = type === 'conferencia' ? 'conferencias' : 'materiais';
-        let data = JSON.parse(localStorage.getItem(key) || '[]');
-        const idx = data.findIndex(x => x.id === item.id);
+    save: function(item, type) {
+        var key = type === 'conferencia' ? 'conferencias' : 'materiais';
+        var data = JSON.parse(localStorage.getItem(key) || '[]');
+        var idx = -1;
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].id === item.id) { idx = i; break; }
+        }
         if (idx >= 0) data[idx] = item; else data.unshift(item);
         localStorage.setItem(key, JSON.stringify(data));
-        return { success: true };
+        return Promise.resolve({ success: true });
     },
-    async delete(id) {
-        let data = JSON.parse(localStorage.getItem('materiais') || '[]');
-        data = data.filter(x => x.id !== id);
-        localStorage.setItem('materiais', JSON.stringify(data));
-        return { success: true };
+    delete: function(id) {
+        var data = JSON.parse(localStorage.getItem('materiais') || '[]');
+        var filtered = [];
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].id !== id) filtered.push(data[i]);
+        }
+        localStorage.setItem('materiais', JSON.stringify(filtered));
+        return Promise.resolve({ success: true });
     },
-    async zerarQuantidades() {
-        let data = JSON.parse(localStorage.getItem('materiais') || '[]');
-        data.forEach(m => m.quantidade = 0);
+    zerarQuantidades: function() {
+        var data = JSON.parse(localStorage.getItem('materiais') || '[]');
+        for (var i = 0; i < data.length; i++) {
+            data[i].quantidade = 0;
+        }
         localStorage.setItem('materiais', JSON.stringify(data));
-        return { success: true, count: data.length };
+        return Promise.resolve({ success: true, count: data.length });
     }
 };
 
 const Camera = {
     video: null, stream: null, track: null, zoom: 1, flashOn: false,
     
-    init() { this.video = document.getElementById('video'); },
+    init: function() { this.video = document.getElementById('video'); },
     
-    async start() {
-        try {
-            const res = (localStorage.getItem('resolution') || '1280x720').split('x').map(Number);
-            this.stream = await navigator.mediaDevices.getUserMedia({
-                video: { 
-                    width: { ideal: res[0] }, 
-                    height: { ideal: res[1] }, 
-                    facingMode: 'environment' 
-                }, 
-                audio: false
-            });
-            this.video.srcObject = this.stream;
-            this.track = this.stream.getVideoTracks()[0];
-            await new Promise(resolve => { 
-                this.video.onloadedmetadata = () => { 
-                    this.video.play(); 
-                    const o = document.getElementById('overlay');
-                    o.width = this.video.videoWidth;
-                    o.height = this.video.videoHeight;
-                    resolve(); 
-                }; 
-            });
-            return true;
-        } catch(e) { 
-            Toast.error('Erro ao acessar câmera: ' + e.message); 
-            return false; 
-        }
+    start: function() {
+        var self = this;
+        return new Promise(function(resolve) {
+            try {
+                var res = (localStorage.getItem('resolution') || '1280x720').split('x').map(Number);
+                navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        width: { ideal: res[0] }, 
+                        height: { ideal: res[1] }, 
+                        facingMode: 'environment' 
+                    }, 
+                    audio: false
+                }).then(function(stream) {
+                    self.stream = stream;
+                    self.video.srcObject = stream;
+                    self.track = stream.getVideoTracks()[0];
+                    self.video.onloadedmetadata = function() { 
+                        self.video.play(); 
+                        var o = document.getElementById('overlay');
+                        o.width = self.video.videoWidth;
+                        o.height = self.video.videoHeight;
+                        resolve(true); 
+                    };
+                }).catch(function(e) {
+                    Toast.error('Erro ao acessar c\u00e2mera: ' + e.message); 
+                    resolve(false);
+                });
+            } catch(e) { 
+                Toast.error('Erro: ' + e.message); 
+                resolve(false);
+            }
+        });
     },
     
-    stop() { 
+    stop: function() { 
         if(this.stream) { 
-            this.stream.getTracks().forEach(t => t.stop()); 
+            this.stream.getTracks().forEach(function(t) { t.stop(); });
             this.stream = null; 
         } 
     },
     
-    async toggleFlash() {
+    toggleFlash: function() {
         if(!this.track) return;
+        var self = this;
         try { 
-            const caps = this.track.getCapabilities(); 
+            var caps = this.track.getCapabilities(); 
             if(caps.torch) { 
                 this.flashOn = !this.flashOn; 
-                await this.track.applyConstraints({advanced:[{torch: this.flashOn}]}); 
+                this.track.applyConstraints({advanced:[{torch: this.flashOn}]}); 
             }
         } catch(e) {
-            Toast.warning('Flash não disponível');
+            Toast.warning('Flash n\u00e3o dispon\u00edvel');
         }
     },
     
-    zoomIn() { 
+    zoomIn: function() { 
         this.zoom = Math.min(this.zoom + 0.2, 3); 
         this.applyZoom(); 
     },
     
-    zoomOut() { 
+    zoomOut: function() { 
         this.zoom = Math.max(this.zoom - 0.2, 1); 
         this.applyZoom(); 
     },
     
-    async applyZoom() {
+    applyZoom: function() {
         if(!this.track) return;
         try { 
-            const caps = this.track.getCapabilities(); 
+            var caps = this.track.getCapabilities(); 
             if(caps.zoom) {
-                const z = caps.zoom.min + (caps.zoom.max - caps.zoom.min) * ((this.zoom - 1) / 2);
-                await this.track.applyConstraints({advanced:[{zoom: z}]});
+                var z = caps.zoom.min + (caps.zoom.max - caps.zoom.min) * ((this.zoom - 1) / 2);
+                this.track.applyConstraints({advanced:[{zoom: z}]});
             }
         } catch(e) {}
     }
@@ -1312,7 +1319,7 @@ const Vision = {
     counts: [], 
     timeout: null,
     
-    async start(tipo) {
+    start: function(tipo) {
         this.materialType = tipo;
         this.isRunning = true;
         this.counts = []; 
@@ -1320,42 +1327,43 @@ const Vision = {
         this.loop();
     },
     
-    stop() { 
+    stop: function() { 
         this.isRunning = false; 
         if(this.timeout) clearTimeout(this.timeout);
         document.getElementById('status-detectando').style.display = 'none';
     },
     
-    loop() {
+    loop: function() {
         if(!this.isRunning) return;
-        const det = this.detect();
+        var self = this;
+        var det = this.detect();
         this.lastCount = det.length;
         this.draw(det);
         document.getElementById('qtd-detectada').textContent = this.lastCount;
         this.checkAuto();
-        setTimeout(() => this.loop(), 100);
+        setTimeout(function() { self.loop(); }, 100);
     },
     
-    detect() {
-        const v = Camera.video;
+    detect: function() {
+        var v = Camera.video;
         if(v.readyState < 2) return [];
-        const c = document.createElement('canvas'), s = 0.25;
+        var c = document.createElement('canvas'), s = 0.25;
         c.width = v.videoWidth * s;
         c.height = v.videoHeight * s;
-        const ctx = c.getContext('2d');
+        var ctx = c.getContext('2d');
         ctx.drawImage(v, 0, 0, c.width, c.height);
-        const img = ctx.getImageData(0, 0, c.width, c.height),
-              data = img.data,
-              det = [],
-              bs = 20,
-              copper = this.materialType === 'cobre';
+        var img = ctx.getImageData(0, 0, c.width, c.height);
+        var data = img.data;
+        var det = [];
+        var bs = 20;
+        var copper = this.materialType === 'cobre';
         
-        for(let by = 0; by < c.height; by += bs) {
-            for(let bx = 0; bx < c.width; bx += bs) {
-                let r = 0, g = 0, b = 0, cnt = 0;
-                for(let y = by; y < Math.min(by + bs, c.height); y += 2) {
-                    for(let x = bx; x < Math.min(bx + bs, c.width); x += 2) {
-                        const i = (y * c.width + x) * 4;
+        for(var by = 0; by < c.height; by += bs) {
+            for(var bx = 0; bx < c.width; bx += bs) {
+                var r = 0, g = 0, b = 0, cnt = 0;
+                for(var y = by; y < Math.min(by + bs, c.height); y += 2) {
+                    for(var x = bx; x < Math.min(bx + bs, c.width); x += 2) {
+                        var i = (y * c.width + x) * 4;
                         r += data[i];
                         g += data[i + 1];
                         b += data[i + 2];
@@ -1363,7 +1371,8 @@ const Vision = {
                     }
                 }
                 r /= cnt; g /= cnt; b /= cnt;
-                if((copper ? (r > 150 && g > 80 && g < 160 && b < 100) : (r > 150 && g > 150 && b > 150))) {
+                var match = copper ? (r > 150 && g > 80 && g < 160 && b < 100) : (r > 150 && g > 150 && b > 150);
+                if(match) {
                     det.push({x: bx/s, y: by/s, w: bs/s, h: bs/s});
                 }
             }
@@ -1371,41 +1380,42 @@ const Vision = {
         return this.merge(det);
     },
     
-    merge(det) {
+    merge: function(det) {
         if(!det.length) return [];
-        const res = [], used = new Set();
-        for(let i = 0; i < det.length; i++) {
-            if(used.has(i)) continue;
-            let minX = det[i].x, minY = det[i].y,
-                maxX = det[i].x + det[i].w, maxY = det[i].y + det[i].h;
-            for(let j = i + 1; j < det.length; j++) {
-                if(used.has(j)) continue;
-                const d = det[j];
+        var res = [], used = {};
+        for(var i = 0; i < det.length; i++) {
+            if(used[i]) continue;
+            var minX = det[i].x, minY = det[i].y;
+            var maxX = det[i].x + det[i].w, maxY = det[i].y + det[i].h;
+            for(var j = i + 1; j < det.length; j++) {
+                if(used[j]) continue;
+                var d = det[j];
                 if(Math.abs(d.x - minX) < 60 || Math.abs((d.x + d.w) - maxX) < 60) {
                     if(Math.abs(d.y - minY) < 60 || Math.abs((d.y + d.h) - maxY) < 60) {
                         minX = Math.min(minX, d.x);
                         minY = Math.min(minY, d.y);
                         maxX = Math.max(maxX, d.x + d.w);
                         maxY = Math.max(maxY, d.y + d.h);
-                        used.add(j);
+                        used[j] = true;
                     }
                 }
             }
             res.push({x: minX, y: minY, w: maxX - minX, h: maxY - minY});
-            used.add(i);
+            used[i] = true;
         }
         return res;
     },
     
-    draw(det) {
-        const o = document.getElementById('overlay'),
-              v = Camera.video;
+    draw: function(det) {
+        var o = document.getElementById('overlay');
+        var v = Camera.video;
         o.width = v.videoWidth;
         o.height = v.videoHeight;
-        const ctx = o.getContext('2d');
+        var ctx = o.getContext('2d');
         ctx.clearRect(0, 0, o.width, o.height);
-        const col = this.materialType === 'cobre' ? '#b87333' : '#7f8c8d';
-        det.forEach((d, i) => {
+        var col = this.materialType === 'cobre' ? '#b87333' : '#7f8c8d';
+        for(var i = 0; i < det.length; i++) {
+            var d = det[i];
             ctx.strokeStyle = col;
             ctx.lineWidth = 3;
             ctx.strokeRect(d.x, d.y, d.w, d.h);
@@ -1414,23 +1424,29 @@ const Vision = {
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 12px Arial';
             ctx.fillText('#' + (i + 1), d.x + 5, d.y - 6);
-        });
+        }
     },
     
-    checkAuto() {
-        const autoStop = document.getElementById('config-auto-stop').checked;
-        const estab = parseInt(document.getElementById('config-estabilizacao').value) || 3;
+    checkAuto: function() {
+        var autoStop = document.getElementById('config-auto-stop').checked;
+        var estab = parseInt(document.getElementById('config-estabilizacao').value) || 3;
         if(!autoStop) return;
         this.counts.push(this.lastCount);
         if(this.counts.length > estab * 10) this.counts.shift();
-        if(this.counts.length >= estab * 10 && 
-           this.counts.slice(-estab * 10).every(c => c === this.counts[0]) && 
-           this.counts[0] > 0) {
-            if(this.timeout) clearTimeout(this.timeout);
-            this.timeout = setTimeout(async () => {
-                this.stop();
-                await Conference.save();
-            }, 500);
+        if(this.counts.length >= estab * 10) {
+            var recent = this.counts.slice(-estab * 10);
+            var allSame = true;
+            for(var i = 0; i < recent.length; i++) {
+                if(recent[i] !== recent[0]) { allSame = false; break; }
+            }
+            if(allSame && recent[0] > 0) {
+                var self = this;
+                if(this.timeout) clearTimeout(this.timeout);
+                this.timeout = setTimeout(function() {
+                    self.stop();
+                    Conference.save();
+                }, 500);
+            }
         }
     }
 };
@@ -1439,138 +1455,182 @@ const Conference = {
     selectedTipo: null,
     selectedMaterial: null,
     
-    selectTipo(tipo) {
-        console.log('Selecionando tipo:', tipo);
+    selectTipo: function(tipo) {
         this.selectedTipo = tipo;
-        document.querySelectorAll('.tipo-card').forEach(b => b.classList.remove('active'));
-        document.querySelector('.tipo-card[onclick*="' + tipo + '"]').classList.add('active');
+        var cards = document.querySelectorAll('.tipo-card');
+        for(var i = 0; i < cards.length; i++) {
+            cards[i].classList.remove('active');
+        }
+        var target = document.querySelector('.tipo-card[onclick*="' + tipo + '"]');
+        if(target) target.classList.add('active');
         document.getElementById('tipo-selector').style.display = 'none';
         document.getElementById('materiais-lista').classList.add('active');
-        document.getElementById('titulo-lista').textContent = tipo === 'cobre' ? 'Barras de Cobre' : 'Barras de Alumínio';
+        document.getElementById('titulo-lista').textContent = tipo === 'cobre' ? 'Barras de Cobre' : 'Barras de Alum\u00ednio';
         document.getElementById('material-search').value = '';
         this.renderMateriais('');
     },
     
-    backToTipo() {
+    backToTipo: function() {
         Vision.stop();
         Camera.stop();
         document.getElementById('tipo-selector').style.display = 'block';
         document.getElementById('materiais-lista').classList.remove('active');
         document.getElementById('camera-view').classList.remove('active');
-        document.querySelectorAll('.tipo-card').forEach(b => b.classList.remove('active'));
+        var cards = document.querySelectorAll('.tipo-card');
+        for(var i = 0; i < cards.length; i++) {
+            cards[i].classList.remove('active');
+        }
         document.getElementById('overlay').getContext('2d').clearRect(0, 0, 9999, 9999);
         this.selectedTipo = null;
         this.selectedMaterial = null;
     },
     
-    renderMateriais(search) {
-        const grid = document.getElementById('materiais-grid'),
-              mats = MATERIAIS_DATABASE[this.selectedTipo];
-        const filt = mats.filter(m => !search || 
-            m.codigo.toLowerCase().includes(search.toLowerCase()) || 
-            m.descricao.toLowerCase().includes(search.toLowerCase()) || 
-            m.dimensoes.toLowerCase().includes(search.toLowerCase()));
-        grid.innerHTML = filt.map(m => 
-            '<div class="material-item" onclick="Conference.selectMaterial(\'' + m.codigo + '\')">' +
-            '<div class="codigo">' + m.codigo + '</div>' +
-            '<div class="info">' +
-            '<div class="descricao">' + m.descricao + '</div>' +
-            '<div class="dimensoes">📐 ' + m.dimensoes + '</div>' +
-            '</div>' +
-            '<div class="arrow">›</div>' +
-            '</div>'
-        ).join('') || '<div style="text-align:center;padding:3rem;color:#6c757d">Nenhum material encontrado</div>';
-    },
-    
-    async selectMaterial(codigo) {
-        console.log('Selecionando material:', codigo);
-        const mat = MATERIAIS_DATABASE[this.selectedTipo].find(m => m.codigo === codigo);
-        if(!mat) return;
-        this.selectedMaterial = {...mat, material: this.selectedTipo};
-        const mats = await SheetsAPI.getMateriais(),
-              md = mats.find(m => m.codigo === codigo);
-        document.getElementById('conf-material-nome').textContent = mat.descricao;
-        document.getElementById('conf-material-dim').textContent = mat.codigo + ' | ' + mat.dimensoes;
-        document.getElementById('materiais-lista').classList.remove('active');
-        document.getElementById('camera-view').classList.add('active');
-        Camera.init();
-        if(await Camera.start()) {
-            await Vision.start(this.selectedTipo);
-            Toast.success('IA detectando automaticamente...');
+    renderMateriais: function(search) {
+        var grid = document.getElementById('materiais-grid');
+        var mats = MATERIAIS_DATABASE[this.selectedTipo];
+        var filt = [];
+        for(var i = 0; i < mats.length; i++) {
+            var m = mats[i];
+            if(!search || 
+                m.codigo.toLowerCase().indexOf(search.toLowerCase()) >= 0 || 
+                m.descricao.toLowerCase().indexOf(search.toLowerCase()) >= 0 || 
+                m.dimensoes.toLowerCase().indexOf(search.toLowerCase()) >= 0) {
+                filt.push(m);
+            }
         }
+        var html = '';
+        for(var i = 0; i < filt.length; i++) {
+            var m = filt[i];
+            html += '<div class="material-item" onclick="Conference.selectMaterial(\'' + m.codigo + '\')">' +
+                '<div class="codigo">' + m.codigo + '</div>' +
+                '<div class="info">' +
+                '<div class="descricao">' + m.descricao + '</div>' +
+                '<div class="dimensoes">\uD83D\uDCCF ' + m.dimensoes + '</div>' +
+                '</div>' +
+                '<div class="arrow">\u203A</div>' +
+                '</div>';
+        }
+        grid.innerHTML = html || '<div style="text-align:center;padding:3rem;color:#6c757d">Nenhum material encontrado</div>';
     },
     
-    async save() {
-        const det = Vision.lastCount;
+    selectMaterial: function(codigo) {
+        var mat = null;
+        var lista = MATERIAIS_DATABASE[this.selectedTipo];
+        for(var i = 0; i < lista.length; i++) {
+            if(lista[i].codigo === codigo) { mat = lista[i]; break; }
+        }
+        if(!mat) return;
+        this.selectedMaterial = {codigo: mat.codigo, descricao: mat.descricao, dimensoes: mat.dimensoes, material: this.selectedTipo};
+        
+        SheetsAPI.getMateriais().then(function(mats) {
+            var md = null;
+            for(var i = 0; i < mats.length; i++) {
+                if(mats[i].codigo === codigo) { md = mats[i]; break; }
+            }
+            document.getElementById('conf-material-nome').textContent = mat.descricao;
+            document.getElementById('conf-material-dim').textContent = mat.codigo + ' | ' + mat.dimensoes;
+            document.getElementById('materiais-lista').classList.remove('active');
+            document.getElementById('camera-view').classList.add('active');
+            Camera.init();
+            Camera.start().then(function(ok) {
+                if(ok) {
+                    Vision.start(Conference.selectedTipo);
+                    Toast.success('IA detectando automaticamente...');
+                }
+            });
+        });
+    },
+    
+    save: function() {
+        var det = Vision.lastCount;
         if(det === 0) {
             Toast.warning('Nenhuma barra detectada!');
             return;
         }
-        const mats = await SheetsAPI.getMateriais(),
-              md = mats.find(m => m.codigo === this.selectedMaterial.codigo),
-              reg = md ? md.quantidade : 0,
-              nova = reg + det;
-        if(md) {
-            md.quantidade = nova;
-            await SheetsAPI.save(md, 'material');
-        }
-        await SheetsAPI.save({
-            id: Utils.uuid(),
-            data: Utils.now().date,
-            material: this.selectedMaterial.codigo,
-            descricao: this.selectedMaterial.descricao,
-            detectada: det,
-            antes: reg,
-            depois: nova,
-            adicionado: det
-        }, 'conferencia');
-        Toast.success('✅ ' + det + ' barras adicionadas! Total: ' + nova);
-        this.backToTipo();
+        var self = this;
+        SheetsAPI.getMateriais().then(function(mats) {
+            var md = null;
+            for(var i = 0; i < mats.length; i++) {
+                if(mats[i].codigo === self.selectedMaterial.codigo) { md = mats[i]; break; }
+            }
+            var reg = md ? md.quantidade : 0;
+            var nova = reg + det;
+            if(md) {
+                md.quantidade = nova;
+                SheetsAPI.save(md, 'material');
+            }
+            SheetsAPI.save({
+                id: Utils.uuid(),
+                data: Utils.now().date,
+                material: self.selectedMaterial.codigo,
+                descricao: self.selectedMaterial.descricao,
+                detectada: det,
+                antes: reg,
+                depois: nova,
+                adicionado: det
+            }, 'conferencia');
+            Toast.success('\u2705 ' + det + ' barras adicionadas! Total: ' + nova);
+            self.backToTipo();
+        });
     }
 };
 
 const Materials = {
     data: [],
     
-    async load() {
-        this.data = await SheetsAPI.getMateriais();
-        this.render();
+    load: function() {
+        var self = this;
+        SheetsAPI.getMateriais().then(function(data) {
+            self.data = data;
+            self.render();
+        });
     },
     
-    render() {
-        const s = document.getElementById('search-material').value.toLowerCase(),
-              f = document.getElementById('filter-tipo').value;
-        const filt = this.data.filter(m => 
-            (!s || (m.codigo||'').toLowerCase().includes(s) || (m.descricao||'').toLowerCase().includes(s)) && 
-            (!f || m.material === f)
-        );
-        document.querySelector('#table-materiais tbody').innerHTML = filt.map(m => 
-            '<tr>' +
-            '<td><strong>' + m.codigo + '</strong></td>' +
-            '<td>' + m.descricao + '</td>' +
-            '<td>' + (m.dimensoes || '-') + '</td>' +
-            '<td><span class="badge badge-' + (m.material==='cobre'?'cobre':'aluminio') + '">' + 
-            (m.material==='cobre'?'🟤 Cobre':'⚪ Alumínio') + '</span></td>' +
-            '<td><strong>' + (m.quantidade || 0) + '</strong></td>' +
-            '<td><span class="badge badge-' + ((m.quantidade||0) > 0 ? 'success' : 'danger') + '">' + 
-            ((m.quantidade||0) > 0 ? '✓ OK' : ' Zerado') + '</span></td>' +
-            '<td>' +
-            '<button class="btn-icon" onclick="Materials.edit(\'' + m.id + '\')" title="Editar">️</button>' +
-            '<button class="btn-icon" onclick="Materials.del(\'' + m.id + '\')" title="Excluir">🗑️</button>' +
-            '</td>' +
-            '</tr>'
-        ).join('') || '<tr><td colspan="7" style="text-align:center;padding:3rem">Nenhum material</td></tr>';
+    render: function() {
+        var s = document.getElementById('search-material').value.toLowerCase();
+        var f = document.getElementById('filter-tipo').value;
+        var filt = [];
+        for(var i = 0; i < this.data.length; i++) {
+            var m = this.data[i];
+            var matchSearch = !s || (m.codigo||'').toLowerCase().indexOf(s) >= 0 || (m.descricao||'').toLowerCase().indexOf(s) >= 0;
+            var matchFilter = !f || m.material === f;
+            if(matchSearch && matchFilter) filt.push(m);
+        }
+        var html = '';
+        for(var i = 0; i < filt.length; i++) {
+            var m = filt[i];
+            var status = (m.quantidade||0) > 0 ? 'success' : 'danger';
+            var statusText = (m.quantidade||0) > 0 ? '\u2713 OK' : '\u26A0 Zerado';
+            var badgeClass = m.material === 'cobre' ? 'badge-cobre' : 'badge-aluminio';
+            var badgeText = m.material === 'cobre' ? '\uD83D\uDFE4 Cobre' : '\u26AA Alum\u00ednio';
+            html += '<tr>' +
+                '<td><strong>' + m.codigo + '</strong></td>' +
+                '<td>' + m.descricao + '</td>' +
+                '<td>' + (m.dimensoes || '-') + '</td>' +
+                '<td><span class="badge ' + badgeClass + '">' + badgeText + '</span></td>' +
+                '<td><strong>' + (m.quantidade || 0) + '</strong></td>' +
+                '<td><span class="badge badge-' + status + '">' + statusText + '</span></td>' +
+                '<td>' +
+                '<button class="btn-icon" onclick="Materials.edit(\'' + m.id + '\')" title="Editar">\u270F\uFE0F</button>' +
+                '<button class="btn-icon" onclick="Materials.del(\'' + m.id + '\')" title="Excluir">\uD83D\uDDD1\uFE0F</button>' +
+                '</td>' +
+                '</tr>';
+        }
+        document.querySelector('#table-materiais tbody').innerHTML = html || '<tr><td colspan="7" style="text-align:center;padding:3rem">Nenhum material</td></tr>';
     },
     
-    openModal() {
+    openModal: function() {
         document.getElementById('modal-title').textContent = 'Novo Material';
         document.getElementById('form-material').reset();
         document.getElementById('input-id').value = '';
         document.getElementById('modal-material').classList.add('active');
     },
     
-    edit(id) {
-        const m = this.data.find(x => x.id === id);
+    edit: function(id) {
+        var m = null;
+        for(var i = 0; i < this.data.length; i++) {
+            if(this.data[i].id === id) { m = this.data[i]; break; }
+        }
         if(!m) return;
         document.getElementById('modal-title').textContent = 'Editar Material';
         document.getElementById('input-id').value = m.id;
@@ -1582,9 +1642,10 @@ const Materials = {
         document.getElementById('modal-material').classList.add('active');
     },
     
-    async save(e) {
+    save: function(e) {
         e.preventDefault();
-        const data = {
+        var self = this;
+        var data = {
             id: document.getElementById('input-id').value || Utils.uuid(),
             codigo: document.getElementById('input-codigo').value,
             descricao: document.getElementById('input-descricao').value,
@@ -1596,48 +1657,54 @@ const Materials = {
             dataCadastro: Utils.now().full,
             status: 'ativo'
         };
-        await SheetsAPI.save(data, 'material');
-        Toast.success('Material salvo com sucesso!');
-        App.closeModal('modal-material');
-        await this.load();
+        SheetsAPI.save(data, 'material').then(function() {
+            Toast.success('Material salvo com sucesso!');
+            App.closeModal('modal-material');
+            self.load();
+        });
     },
     
-    async del(id) {
+    del: function(id) {
         if(!confirm('Deseja realmente excluir este material?')) return;
-        await SheetsAPI.delete(id);
-        Toast.success('Material excluído com sucesso');
-        await this.load();
+        var self = this;
+        SheetsAPI.delete(id).then(function() {
+            Toast.success('Material exclu\u00eddo com sucesso');
+            self.load();
+        });
     }
 };
 
 const App = {
-    init() {
+    init: function() {
         document.getElementById('count-cobre').textContent = MATERIAIS_DATABASE.cobre.length + ' itens';
         document.getElementById('count-aluminio').textContent = MATERIAIS_DATABASE.aluminio.length + ' itens';
         console.log('Sistema inicializado com sucesso');
     },
     
-    navegar(page) {
-        console.log('Navegando para:', page);
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelector('.nav-btn[data-page="' + page + '"]').classList.add('active');
+    navegar: function(page) {
+        var btns = document.querySelectorAll('.nav-btn');
+        for(var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+        var pages = document.querySelectorAll('.page');
+        for(var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
+        var target = document.querySelector('.nav-btn[data-page="' + page + '"]');
+        if(target) target.classList.add('active');
         document.getElementById('page-' + page).classList.add('active');
         if(page === 'materiais') Materials.load();
     },
     
-    abrirSenha() {
+    abrirSenha: function() {
         document.getElementById('input-senha').value = '';
         document.getElementById('senha-erro').style.display = 'none';
         document.getElementById('modal-senha').classList.add('active');
-        setTimeout(() => document.getElementById('input-senha').focus(), 100);
+        setTimeout(function() { document.getElementById('input-senha').focus(); }, 100);
     },
     
-    verificarSenha() {
-        const senha = document.getElementById('input-senha').value;
+    verificarSenha: function() {
+        var senha = document.getElementById('input-senha').value;
         if(senha === CONFIG_SENHA) {
             this.closeModal('modal-senha');
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            var pages = document.querySelectorAll('.page');
+            for(var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
             document.getElementById('page-configuracoes').classList.add('active');
         } else {
             document.getElementById('senha-erro').style.display = 'block';
@@ -1645,39 +1712,42 @@ const App = {
         }
     },
     
-    sairConfig() {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    sairConfig: function() {
+        var pages = document.querySelectorAll('.page');
+        for(var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
         document.getElementById('page-conferencia').classList.add('active');
-        document.querySelector('.nav-btn[data-page="conferencia"]').classList.add('active');
+        var target = document.querySelector('.nav-btn[data-page="conferencia"]');
+        if(target) target.classList.add('active');
     },
     
-    closeModal(id) {
+    closeModal: function(id) {
         document.getElementById(id).classList.remove('active');
     },
     
-    async zerarQuantidades() {
-        if(confirm('⚠️ ATENÇÃO:\n\nIsso irá ZERAR a quantidade de TODAS as barras.\n\nAs descrições, códigos e itens serão mantidos.\n\nDeseja continuar?')) {
-            const n = await SheetsAPI.zerarQuantidades();
-            Toast.success('✅ Quantidades zeradas! (' + n + ' itens mantidos)');
+    zerarQuantidades: function() {
+        if(confirm('\u26A0\uFE0F ATEN\u00C7\u00C3O:\n\nIsso ir\u00e1 ZERAR a quantidade de TODAS as barras.\n\nAs descri\u00e7\u00f5es, c\u00f3digos e itens ser\u00e3o mantidos.\n\nDeseja continuar?')) {
+            SheetsAPI.zerarQuantidades().then(function(result) {
+                Toast.success('\u2705 Quantidades zeradas! (' + result.count + ' itens mantidos)');
+            });
         }
     },
     
-    salvarConfig() {
-        const modelo = document.getElementById('config-modelo-ia').value;
-        const conf = parseInt(document.getElementById('config-confianca').value) / 100;
-        const res = document.getElementById('config-resolucao').value;
-        const autoStop = document.getElementById('config-auto-stop').checked;
-        const estab = document.getElementById('config-estabilizacao').value;
+    salvarConfig: function() {
+        var modelo = document.getElementById('config-modelo-ia').value;
+        var conf = parseInt(document.getElementById('config-confianca').value) / 100;
+        var res = document.getElementById('config-resolucao').value;
+        var autoStop = document.getElementById('config-auto-stop').checked;
+        var estab = document.getElementById('config-estabilizacao').value;
         localStorage.setItem('modeloIA', modelo);
         localStorage.setItem('confidence', conf);
         localStorage.setItem('resolution', res);
         localStorage.setItem('autoStop', autoStop);
         localStorage.setItem('estabilizacao', estab);
-        Toast.success('Configurações salvas com sucesso!');
+        Toast.success('Configura\u00e7\u00f5es salvas com sucesso!');
     }
 };
 
-window.addEventListener('DOMContentLoaded', () => App.init());
+window.addEventListener('DOMContentLoaded', function() { App.init(); });
 window.Conference = Conference;
 window.Materials = Materials;
 window.Camera = Camera;
