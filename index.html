@@ -12,10 +12,9 @@
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 :root {
     --weg-blue: #0055a4; --weg-blue-dark: #003d7a; --weg-green: #00a650; --weg-green-dark: #008f44;
-    --danger: #dc3545; --danger-dark: #b02a37; --warning: #ffc107; --warning-dark: #e0a800;
-    --info: #17a2b8; --bg-main: #f5f7fa; --bg-card: #ffffff; --text-primary: #212529;
-    --text-secondary: #6c757d; --border-color: #dee2e6;
-    --shadow-lg: 0 8px 24px rgba(0,85,164,0.12); --shadow-xl: 0 12px 40px rgba(0,85,164,0.16);
+    --danger: #dc3545; --warning: #ffc107; --warning-dark: #e0a800; --info: #17a2b8;
+    --bg-main: #f5f7fa; --bg-card: #ffffff; --text-primary: #212529; --text-secondary: #6c757d;
+    --border-color: #dee2e6; --shadow-lg: 0 8px 24px rgba(0,85,164,0.12); --shadow-xl: 0 12px 40px rgba(0,85,164,0.16);
     --radius: 8px; --radius-lg: 12px;
 }
 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-main); color: var(--text-primary); min-height: 100vh; }
@@ -25,7 +24,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .logo-icon { width: 45px; height: 45px; object-fit: contain; border-radius: var(--radius); }
 .logo h1 { font-size: 1.2rem; color: var(--weg-blue); font-weight: 700; }
 .nav { display: flex; gap: 0.5rem; }
-.nav-btn { background: transparent; border: 2px solid var(--weg-blue); color: var(--weg-blue); padding: 0.6rem 1.2rem; cursor: pointer; border-radius: var(--radius); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+.nav-btn { background: transparent; border: 2px solid var(--weg-blue); color: var(--weg-blue); padding: 0.6rem 1.2rem; cursor: pointer; border-radius: var(--radius); font-size: 0.9rem; font-weight: 600; }
 .nav-btn.active { background: var(--weg-blue); color: white; }
 .btn-config { background: var(--weg-blue); border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1.3rem; color: white; display: flex; align-items: center; justify-content: center; }
 .main-content { flex: 1; padding: 2rem 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; }
@@ -52,7 +51,6 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .material-item .codigo { background: linear-gradient(135deg, var(--weg-blue), var(--weg-blue-dark)); color: white; padding: 0.5rem 0.8rem; border-radius: var(--radius); font-weight: 700; font-size: 0.9rem; white-space: nowrap; }
 .material-item .descricao { font-size: 0.95rem; font-weight: 600; }
 .material-item .dimensoes { font-size: 0.85rem; color: var(--text-secondary); }
-.material-item .arrow { font-size: 1.5rem; color: var(--weg-blue); }
 .camera-view { display: none; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start; }
 .camera-view.active { display: grid; }
 .camera-container { position: relative; background: #000; border-radius: var(--radius-lg); overflow: hidden; aspect-ratio: 16/9; box-shadow: var(--shadow-xl); touch-action: none; cursor: crosshair; }
@@ -62,7 +60,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .cam-btn { background: rgba(255,255,255,0.2); border: none; color: white; min-width: 45px; height: 45px; border-radius: var(--radius); cursor: pointer; font-size: 0.85rem; font-weight: 700; padding: 0 0.6rem; }
 .cam-btn.active { background: var(--warning); color: #000; }
 .contagem-panel { background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 2px solid var(--border-color); position: sticky; top: 100px; }
-.modo-ia { text-align: center; padding: 0.6rem; border-radius: var(--radius); font-weight: 800; font-size: 0.85rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.modo-ia { text-align: center; padding: 0.6rem; border-radius: var(--radius); font-weight: 800; font-size: 0.85rem; margin-bottom: 1rem; text-transform: uppercase; }
 .modo-ia.treinada { background: rgba(0,166,80,0.15); color: var(--weg-green); border: 2px solid var(--weg-green); }
 .modo-ia.basica { background: rgba(255,193,7,0.15); color: #856404; border: 2px solid var(--warning); }
 .material-info-box { background: linear-gradient(135deg, var(--weg-blue), var(--weg-blue-dark)); color: white; padding: 1.2rem; border-radius: var(--radius); margin-bottom: 1.2rem; }
@@ -80,7 +78,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .contagem-display .subtext { font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem; }
 .adjust-row { display: flex; gap: 0.8rem; margin-bottom: 0.8rem; }
 .adjust-row .btn { flex: 1; font-size: 1.1rem; padding: 0.5rem; font-weight: 800; }
-.grid-helper { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; background: var(--bg-main); padding: 0.8rem; border-radius: var(--radius); border: 2px solid var(--border-color); flex-wrap: wrap; }
+.grid-helper { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; background: var(--bg-main); padding: 0.8rem; border-radius: var(--radius); border: 2px solid var(--border-color); }
 .grid-helper input { width: 64px; text-align: center; padding: 0.5rem; }
 .grid-helper .btn { flex: 1; padding: 0.6rem; }
 .acoes-buttons { display: flex; flex-direction: column; gap: 0.8rem; }
@@ -122,7 +120,7 @@ form { padding: 1.5rem; }
 .settings-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; max-width: 1200px; }
 .setting-group { background: var(--bg-card); padding: 1.8rem; border-radius: var(--radius-lg); border: 2px solid var(--border-color); box-shadow: var(--shadow-lg); }
 .setting-group h3 { margin-bottom: 1.2rem; color: var(--weg-blue); font-size: 1.1rem; }
-.setting-item { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 0; border-bottom: 1px solid var(--border-color); gap: 1rem; }
+.setting-item { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 0; border-bottom: 1px solid var(--border-color); gap: 1rem; flex-wrap: wrap; }
 .setting-item:last-child { border-bottom: none; }
 .setting-item label { font-size: 0.95rem; font-weight: 600; }
 .setting-item input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--weg-blue); }
@@ -228,7 +226,7 @@ form { padding: 1.5rem; }
                             <button class="btn btn-warning" onclick="Vision.restart()">&#128260; Reanalisar</button>
                             <button class="btn btn-danger" onclick="Conference.backToTipo()">&#8592; Voltar</button>
                         </div>
-                        <p class="hint">Com o modelo <strong>barras.onnx</strong> treinado, tudo &#233; autom&#225;tico.<br>Sem modelo: toque na imagem para corrigir, use +/&#8722; ou grade.</p>
+                        <p class="hint">Com a IA configurada (Roboflow ou .onnx) tudo &#233; autom&#225;tico.<br>Sem IA: toque na imagem para corrigir, use +/&#8722; ou grade.</p>
                     </div>
                 </div>
             </div>
@@ -260,11 +258,29 @@ form { padding: 1.5rem; }
             </div>
             <div class="settings-container">
                 <div class="setting-group">
-                    <h3>&#129302; IA Treinada (YOLOv8 .onnx) &#8212; modo 100% autom&#225;tico</h3>
+                    <h3>&#127760; Roboflow &#8212; IA na nuvem (recomendado)</h3>
+                    <div class="setting-item">
+                        <label>API Key</label>
+                        <input type="text" id="config-rf-key" placeholder="Cole sua API key do Roboflow">
+                    </div>
+                    <div class="setting-item">
+                        <label>Modelo (projeto/vers&#227;o)</label>
+                        <input type="text" id="config-rf-model" placeholder="ex: contagem-barras/2">
+                    </div>
+                    <div class="setting-item">
+                        <button class="btn btn-primary" onclick="App.testarRoboflow()">&#128268; Testar conex&#227;o</button>
+                        <span id="rf-status" style="font-size:0.8rem;color:var(--text-secondary);"></span>
+                    </div>
+                    <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.5rem;">
+                        Com chave + modelo salvos, a contagem fica <strong>100% autom&#225;tica via nuvem</strong> (precisa de internet). Onde pegar: avatar &#8594; API Keys; e aba Deploy do projeto &#8594; <code>projeto/vers&#227;o</code>.
+                    </p>
+                </div>
+                <div class="setting-group">
+                    <h3>&#129302; IA local offline (.onnx)</h3>
                     <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:0.6rem;">
                         <label>Carregar modelo treinado (barras.onnx)</label>
                         <input type="file" id="input-modelo" accept=".onnx" onchange="App.carregarModeloArquivo(this)">
-                        <span style="font-size:0.8rem;color:var(--text-secondary);" id="status-modelo">Nenhum modelo carregado. Treine no Colab (guia abaixo) ou coloque barras.onnx na pasta do app.</span>
+                        <span style="font-size:0.8rem;color:var(--text-secondary);" id="status-modelo">Sem modelo local. Se tiver internet, prefira Roboflow acima. Para offline: baixe o .pt no Roboflow e exporte p/ ONNX no Colab.</span>
                     </div>
                     <div class="setting-item">
                         <label>Confian&#231;a m&#237;nima da IA (%)</label>
@@ -274,27 +290,16 @@ form { padding: 1.5rem; }
                         <label>Salvar sozinho ao estabilizar</label>
                         <input type="checkbox" id="config-autosave" checked>
                     </div>
-                    <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:0.5rem;border-bottom:none;">
-                        <label style="color:var(--weg-blue);">&#127891; Como treinar a IA (4 passos)</label>
-                        <ol style="font-size:0.82rem;color:var(--text-secondary);padding-left:1.2rem;line-height:1.7;">
-                            <li>Tire 150&#8211;300 fotos das pontas das barras (luz e pilhas variadas).</li>
-                            <li>Anote no <strong>Roboflow</strong> (gr&#225;tis), classe <code>barra</code>.</li>
-                            <li>Treine no <strong>Google Colab</strong>: <code>YOLO('yolov8n.pt').train(...)</code> e <code>.export(format='onnx')</code>.</li>
-                            <li>Baixe o <code>best.onnx</code>, renomeie para <strong>barras.onnx</strong> e carregue aqui.</li>
-                        </ol>
-                    </div>
                 </div>
                 <div class="setting-group">
-                    <h3>&#9881; Detector b&#225;sico (sem modelo)</h3>
+                    <h3>&#9881; Detector b&#225;sico (sem IA)</h3>
                     <div class="setting-item">
                         <label>Tamanho m&#237;nimo (px)</label>
                         <input type="number" id="config-minarea" min="5" max="500" value="25">
                     </div>
                     <div class="setting-item">
                         <label>Separa&#231;&#227;o entre barras</label>
-                        <select id="config-erosao">
-                            <option value="1">Leve</option><option value="2" selected>M&#233;dia</option><option value="3">Forte</option>
-                        </select>
+                        <select id="config-erosao"><option value="1">Leve</option><option value="2" selected>M&#233;dia</option><option value="3">Forte</option></select>
                     </div>
                     <div class="setting-item">
                         <label>Auto-parar ao estabilizar</label>
@@ -528,8 +533,72 @@ const Camera = {
 };
 
 /* =====================================================================
-   YOLOv8 NO NAVEGADOR (ONNX Runtime Web)
-   Carrega o modelo treinado (barras.onnx) e detecta as pontas de barra
+   ROBOFLOW (IA NA NUVEM) — envia o frame e recebe as barras detectadas
+   ===================================================================== */
+const ROBOFLOW = {
+    cap: null,
+    key: function() { return (localStorage.getItem('rf_key') || '').trim(); },
+    model: function() { return (localStorage.getItem('rf_model') || '').trim(); },
+    enabled: function() { return !!(this.key() && this.model()); },
+
+    classOk: function(cls, tipo) {
+        if (!cls) return true;
+        var c = String(cls).toLowerCase();
+        var isCobre = c.indexOf('cobre') >= 0 || c.indexOf('copper') >= 0;
+        var isAlum = c.indexOf('alumin') >= 0 || c.indexOf('alum') >= 0;
+        if (!isCobre && !isAlum) return true; /* classe genérica "barra" */
+        if (tipo === 'cobre') return isCobre;
+        if (tipo === 'aluminio') return isAlum;
+        return true;
+    },
+
+    detect: function(video, tipo) {
+        var self = this;
+        if (!video || video.readyState < 2) return Promise.resolve(null);
+        if (!this.cap) this.cap = document.createElement('canvas');
+        var vw = video.videoWidth, vh = video.videoHeight;
+        var sc = Math.min(1, 640 / vw);
+        this.cap.width = Math.round(vw * sc);
+        this.cap.height = Math.round(vh * sc);
+        this.cap.getContext('2d').drawImage(video, 0, 0, this.cap.width, this.cap.height);
+        var b64 = this.cap.toDataURL('image/jpeg', 0.85).split(',')[1];
+        var conf = ((parseInt(document.getElementById('config-confianca-ia').value) || 35) / 100);
+        var url = 'https://detect.roboflow.com/' + this.model() +
+                  '?api_key=' + encodeURIComponent(this.key()) +
+                  '&confidence=' + conf;
+        return fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'image=' + encodeURIComponent(b64)
+        }).then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        }).then(function(json) {
+            var preds = json.predictions || [];
+            var sx = vw / self.cap.width;
+            var boxes = [];
+            for (var i = 0; i < preds.length; i++) {
+                var p = preds[i];
+                if (!self.classOk(p['class'], tipo)) continue;
+                boxes.push({
+                    x1: (p.x - p.width / 2) * sx,
+                    y1: (p.y - p.height / 2) * sx,
+                    x2: (p.x + p.width / 2) * sx,
+                    y2: (p.y + p.height / 2) * sx,
+                    score: p.confidence,
+                    cls: p['class']
+                });
+            }
+            return boxes;
+        }).catch(function(e) {
+            console.warn('Roboflow:', e.message);
+            return null;
+        });
+    }
+};
+
+/* =====================================================================
+   YOLOv8 LOCAL (.onnx) — modo offline
    ===================================================================== */
 function iouBoxes(a, b) {
     var ix1 = Math.max(a.x1, b.x1), iy1 = Math.max(a.y1, b.y1);
@@ -539,11 +608,8 @@ function iouBoxes(a, b) {
     var aa = (a.x2 - a.x1) * (a.y2 - a.y1), bb = (b.x2 - b.x1) * (b.y2 - b.y1);
     return inter / ((aa + bb - inter) || 1);
 }
-
 const YOLO = {
-    session: null, loaded: false, loading: false,
-    inputSize: 640, iouThresh: 0.45, pc: null,
-
+    session: null, loaded: false, loading: false, inputSize: 640, pc: null,
     initORT: function() {
         if (typeof ort === 'undefined') return false;
         ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/';
@@ -555,11 +621,7 @@ const YOLO = {
         if (!this.initORT()) return Promise.resolve(false);
         this.loading = true;
         var self = this;
-        return this.loadFromUrl('barras.onnx').then(function(ok) {
-            self.loading = false;
-            if (ok) self.updateStatusTxt();
-            return ok;
-        });
+        return this.loadFromUrl('barras.onnx').then(function(ok) { self.loading = false; return ok; });
     },
     loadFromUrl: function(url) {
         var self = this;
@@ -572,20 +634,13 @@ const YOLO = {
         if (!this.initORT()) return Promise.resolve(false);
         return file.arrayBuffer().then(function(buf) {
             return ort.InferenceSession.create(buf, { executionProviders: ['wasm'] });
-        }).then(function(s) {
-            self.session = s; self.loaded = true; self.updateStatusTxt();
-            return true;
-        }).catch(function(e) { Toast.error('Falha no .onnx: ' + e.message); return false; });
+        }).then(function(s) { self.session = s; self.loaded = true; return true; })
+          .catch(function(e) { Toast.error('Falha no .onnx: ' + e.message); return false; });
     },
-    updateStatusTxt: function() {
-        var el = document.getElementById('status-modelo');
-        if (el && this.loaded) el.textContent = '\u2705 Modelo IA carregado \u2014 modo 100% autom\u00e1tico ativo.';
-    },
-    confThresh: function() {
-        return (parseInt(document.getElementById('config-confianca-ia').value) || 35) / 100;
-    },
-    preprocess: function(video) {
-        var S = this.inputSize;
+    confThresh: function() { return ((parseInt(document.getElementById('config-confianca-ia').value) || 35) / 100); },
+    detect: function(video) {
+        if (!this.session || !video || video.readyState < 2) return Promise.resolve(null);
+        var self = this, S = this.inputSize;
         if (!this.pc) this.pc = document.createElement('canvas');
         this.pc.width = S; this.pc.height = S;
         var ctx = this.pc.getContext('2d', { willReadFrequently: true });
@@ -596,79 +651,53 @@ const YOLO = {
         var ox = Math.round((S - dw) / 2), oy = Math.round((S - dh) / 2);
         ctx.drawImage(video, ox, oy, dw, dh);
         var img = ctx.getImageData(0, 0, S, S).data;
-        var n = S * S;
-        var data = new Float32Array(3 * n);
-        for (var i = 0; i < n; i++) {
-            data[i] = img[i * 4] / 255;
-            data[n + i] = img[i * 4 + 1] / 255;
-            data[2 * n + i] = img[i * 4 + 2] / 255;
+        var n = S * S, data = new Float32Array(3 * n);
+        for (var i0 = 0; i0 < n; i0++) {
+            data[i0] = img[i0 * 4] / 255;
+            data[n + i0] = img[i0 * 4 + 1] / 255;
+            data[2 * n + i0] = img[i0 * 4 + 2] / 255;
         }
-        return { data: data, sc: sc, ox: ox, oy: oy };
-    },
-    detect: function(video) {
-        if (!this.session || !video || video.readyState < 2) return Promise.resolve(null);
-        var self = this;
-        var pre = this.preprocess(video);
-        var S = this.inputSize;
         var feeds = {};
-        feeds[this.session.inputNames[0]] = new ort.Tensor('float32', pre.data, [1, 3, S, S]);
+        feeds[this.session.inputNames[0]] = new ort.Tensor('float32', data, [1, 3, S, S]);
         return this.session.run(feeds).then(function(res) {
             var out = res[self.session.outputNames[0]];
-            var boxes = self.parse(out, pre);
-            return self.nms(boxes);
-        }).catch(function(e) { console.error(e); return null; });
-    },
-    parse: function(out, pre) {
-        var d = out.dims, D = out.data, boxes = [];
-        var thr = this.confThresh();
-        var i, N;
-        if (d.length === 3 && d[1] <= 64) {
-            /* formato [1, 4+nc, N] (export padrão Ultralytics) */
-            var rows = d[1], N2 = d[2], nc = rows - 4;
-            for (i = 0; i < N2; i++) {
-                var best = 0, bs = 0;
-                for (var c = 0; c < nc; c++) { var s = D[(4 + c) * N2 + i]; if (s > bs) { bs = s; best = c; } }
-                if (bs < thr) continue;
-                var cx = D[i], cy = D[N2 + i], w = D[2 * N2 + i], h = D[3 * N2 + i];
-                boxes.push(this.unbox(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2, bs, pre));
+            var d = out.dims, D = out.data, boxes = [], thr = self.confThresh(), i;
+            if (d.length === 3 && d[1] <= 64) {
+                var N2 = d[2], nc = d[1] - 4;
+                for (i = 0; i < N2; i++) {
+                    var bs = 0;
+                    for (var c = 0; c < nc; c++) { var s = D[(4 + c) * N2 + i]; if (s > bs) bs = s; }
+                    if (bs < thr) continue;
+                    var cx = D[i], cy = D[N2 + i], w = D[2 * N2 + i], h = D[3 * N2 + i];
+                    boxes.push({ x1: (cx - w / 2 - ox) / sc, y1: (cy - h / 2 - oy) / sc, x2: (cx + w / 2 - ox) / sc, y2: (cy + h / 2 - oy) / sc, score: bs });
+                }
+            } else if (d.length === 3) {
+                var N = d[1], cols = d[2];
+                for (i = 0; i < N; i++) {
+                    var score = cols >= 5 ? D[i * cols + 4] : 1;
+                    if (score < thr) continue;
+                    boxes.push({ x1: (D[i * cols] - ox) / sc, y1: (D[i * cols + 1] - oy) / sc, x2: (D[i * cols + 2] - ox) / sc, y2: (D[i * cols + 3] - oy) / sc, score: score });
+                }
             }
-        } else if (d.length === 3) {
-            /* formato [1, N, 5..7] (alguns exports já com NMS) */
-            N = d[1]; var cols = d[2];
-            for (i = 0; i < N; i++) {
-                var score = cols >= 5 ? D[i * cols + 4] : 1;
-                if (score < thr) continue;
-                boxes.push(this.unbox(D[i * cols], D[i * cols + 1], D[i * cols + 2], D[i * cols + 3], score, pre));
-            }
-        }
-        return boxes.filter(function(b) { return (b.x2 - b.x1) > 6 && (b.y2 - b.y1) > 4; });
-    },
-    unbox: function(x1, y1, x2, y2, score, pre) {
-        return {
-            x1: (x1 - pre.ox) / pre.sc, y1: (y1 - pre.oy) / pre.sc,
-            x2: (x2 - pre.ox) / pre.sc, y2: (y2 - pre.oy) / pre.sc,
-            score: score
-        };
-    },
-    nms: function(boxes) {
-        boxes.sort(function(a, b) { return b.score - a.score; });
-        var keep = [];
-        while (boxes.length) {
-            var b = boxes.shift();
-            keep.push(b);
-            boxes = boxes.filter(function(o) { return iouBoxes(b, o) < 0.45; });
-        }
-        return keep;
+            boxes = boxes.filter(function(b) { return (b.x2 - b.x1) > 6 && (b.y2 - b.y1) > 4; });
+            boxes.sort(function(a, b) { return b.score - a.score; });
+            var keep = [];
+            while (boxes.length) { var b = boxes.shift(); keep.push(b); boxes = boxes.filter(function(o) { return iouBoxes(b, o) < 0.45; }); }
+            return keep;
+        }).catch(function(e) { console.warn('ONNX:', e); return null; });
     }
 };
 
 /* =====================================================================
-   VISÃO: usa IA treinada se houver; senão detector clássico (fallback)
+   VISÃO — prioridade: ONNX local → Roboflow nuvem → detector clássico
    ===================================================================== */
 const Vision = {
-    isRunning: false, materialType: null, markers: [], lastBoxes: null,
+    isRunning: false, materialType: null, markers: [], fail: 0,
     manualAdds: [], removedPts: [], manualOffset: 0,
-    counts: [], timeout: null, roi: null, roiMode: false, wc: null, dragStart: null, bound: false,
+    counts: [], roi: null, roiMode: false, wc: null, dragStart: null, bound: false,
+
+    trainedMode: function() { return YOLO.loaded || ROBOFLOW.enabled(); },
+    engine: function() { return YOLO.loaded ? 'onnx' : (ROBOFLOW.enabled() ? 'rf' : 'classic'); },
 
     start: function(tipo) {
         this.materialType = tipo;
@@ -679,34 +708,45 @@ const Vision = {
         this.updateModeBadge();
         this.loop();
     },
-    stop: function() { this.isRunning = false; if (this.timeout) clearTimeout(this.timeout); },
+    stop: function() { this.isRunning = false; },
     resetAdjust: function() { this.markers = []; this.manualAdds = []; this.removedPts = []; this.manualOffset = 0; this.counts = []; this.updateUI(); },
     restart: function() { this.counts = []; if (!this.isRunning) { this.isRunning = true; this.setStatus('running'); this.loop(); } Toast.success('Reanalisando...'); },
 
     updateModeBadge: function() {
         var el = document.getElementById('modo-ia');
-        if (YOLO.loaded) { el.className = 'modo-ia treinada'; el.innerHTML = '&#129302; IA TREINADA ATIVA \u2014 100% AUTOM\u00c1TICO'; }
-        else { el.className = 'modo-ia basica'; el.innerHTML = '&#9881; Detector b\u00e1sico (sem modelo treinado)'; }
+        if (YOLO.loaded) { el.className = 'modo-ia treinada'; el.innerHTML = '&#129302; IA LOCAL (ONNX) &#8212; 100% AUTOM\u00c1TICO'; }
+        else if (ROBOFLOW.enabled()) { el.className = 'modo-ia treinada'; el.innerHTML = '&#127760; IA ROBOFLOW (NUVEM) &#8212; 100% AUTOM\u00c1TICO'; }
+        else { el.className = 'modo-ia basica'; el.innerHTML = '&#9881; Detector b\u00e1sico (sem IA configurada)'; }
     },
     setStatus: function(mode) {
         var el = document.getElementById('status-detectando');
         el.style.display = 'flex';
-        if (mode === 'running') { el.classList.remove('stable'); document.getElementById('status-texto').textContent = YOLO.loaded ? 'IA contando sozinha... segure a c\u00e2mera firme' : 'Detectando automaticamente...'; }
-        else { el.classList.add('stable'); document.getElementById('status-texto').textContent = 'Contagem estabilizada \u2014 revise e confirme'; }
+        if (mode === 'running') {
+            el.classList.remove('stable');
+            document.getElementById('status-texto').textContent = this.trainedMode() ? 'IA contando sozinha... segure firme' : 'Detectando automaticamente...';
+        } else {
+            el.classList.add('stable');
+            document.getElementById('status-texto').textContent = 'Contagem estabilizada \u2014 revise e confirme';
+        }
     },
 
     loop: function() {
         if (!this.isRunning) return;
         var self = this;
-        var interval = YOLO.loaded ? 600 : 150;
-        var pr = YOLO.loaded ? YOLO.detect(Camera.video) : Promise.resolve(null);
+        var mode = this.engine();
+        var interval = mode === 'onnx' ? 600 : (mode === 'rf' ? 900 : 150);
+        var pr = mode === 'onnx' ? YOLO.detect(Camera.video)
+               : mode === 'rf' ? ROBOFLOW.detect(Camera.video, this.materialType)
+               : Promise.resolve(null);
         pr.then(function(boxes) {
             if (!self.isRunning) return;
             if (boxes) {
-                self.lastBoxes = boxes;
+                self.fail = 0;
                 self.markers = boxes.map(function(b) { return { x: (b.x1 + b.x2) / 2, y: (b.y1 + b.y2) / 2, box: b }; });
+            } else if (mode !== 'classic') {
+                self.fail++;
+                if (self.fail === 3) Toast.warning('IA indispon\u00edvel (internet/API?). Verifique a conex\u00e3o.');
             } else {
-                self.lastBoxes = null;
                 self.markers = self.detectClassical();
             }
             self.draw();
@@ -716,7 +756,7 @@ const Vision = {
         });
     },
 
-    /* ---------- detector clássico (fallback sem modelo) ---------- */
+    /* ---------- fallback clássico ---------- */
     detectClassical: function() {
         var v = Camera.video;
         if (!v || v.readyState < 2) return [];
@@ -860,9 +900,9 @@ const Vision = {
                 ctx.strokeStyle = '#00a650'; ctx.lineWidth = 3;
                 ctx.strokeRect(m.box.x1, m.box.y1, m.box.x2 - m.box.x1, m.box.y2 - m.box.y1);
                 ctx.fillStyle = '#00a650';
-                ctx.beginPath(); ctx.arc((m.box.x1 + m.box.x2) / 2, (m.box.y1 + m.box.y2) / 2, 12, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(m.x, m.y, 12, 0, Math.PI * 2); ctx.fill();
                 ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(String(num), (m.box.x1 + m.box.x2) / 2, (m.box.y1 + m.box.y2) / 2 + 1);
+                ctx.fillText(String(num), m.x, m.y + 1);
             } else {
                 ctx.beginPath(); ctx.arc(m.x, m.y, 14, 0, Math.PI * 2);
                 ctx.fillStyle = '#00a650'; ctx.fill();
@@ -908,8 +948,7 @@ const Vision = {
             for (var i = 0; i < this.counts.length; i++) if (this.counts[i] !== c) { allSame = false; break; }
             if (allSame) {
                 this.stop();
-                if (YOLO.loaded && document.getElementById('config-autosave').checked) {
-                    /* MODO 100% AUTOMÁTICO: IA treinada + salvar sozinho */
+                if (this.trainedMode() && document.getElementById('config-autosave').checked) {
                     this.beep();
                     Conference.save();
                 } else {
@@ -1040,11 +1079,12 @@ const Conference = {
         Camera.init();
         Camera.start().then(function(ok) {
             if (!ok) return;
-            YOLO.ensureModel().then(function(loaded) {
+            YOLO.ensureModel().then(function() {
                 Vision.updateModeBadge();
                 Vision.start(Conference.selectedTipo);
-                if (loaded) Toast.success('\uD83E\uDD16 IA treinada ativa: conte e salve sem tocar em nada.');
-                else Toast.warning('Sem modelo treinado. Modo b\u00e1sico ativo \u2014 veja nas Configura\u00e7\u00f5es como treinar a IA.');
+                if (YOLO.loaded) Toast.success('\uD83E\uDD16 IA local ativa: contagem 100% autom\u00e1tica.');
+                else if (ROBOFLOW.enabled()) Toast.success('\uD83C\uDF10 IA Roboflow ativa: contagem 100% autom\u00e1tica.');
+                else Toast.warning('Sem IA configurada. Modo b\u00e1sico ativo \u2014 configure o Roboflow nas Configura\u00e7\u00f5es.');
             });
         });
     },
@@ -1116,6 +1156,8 @@ const App = {
         if (localStorage.getItem('resolution')) document.getElementById('config-resolucao').value = localStorage.getItem('resolution');
         if (localStorage.getItem('estabilizacao')) document.getElementById('config-estabilizacao').value = localStorage.getItem('estabilizacao');
         if (localStorage.getItem('confiancaIA')) document.getElementById('config-confianca-ia').value = localStorage.getItem('confiancaIA');
+        if (localStorage.getItem('rf_key')) document.getElementById('config-rf-key').value = localStorage.getItem('rf_key');
+        if (localStorage.getItem('rf_model')) document.getElementById('config-rf-model').value = localStorage.getItem('rf_model');
         document.getElementById('config-auto-stop').checked = localStorage.getItem('autoStop') !== 'false';
         document.getElementById('config-autosave').checked = localStorage.getItem('autosave') !== 'false';
     },
@@ -1141,14 +1183,42 @@ const App = {
         document.querySelector('.nav-btn[data-page="conferencia"]').classList.add('active');
     },
     closeModal: function(id) { document.getElementById(id).classList.remove('active'); },
+
+    testarRoboflow: function() {
+        var key = document.getElementById('config-rf-key').value.trim();
+        var model = document.getElementById('config-rf-model').value.trim();
+        var st = document.getElementById('rf-status');
+        if (!key || !model) { Toast.warning('Preencha API Key e Modelo (projeto/vers\u00e3o)'); return; }
+        st.textContent = 'Testando...';
+        var c = document.createElement('canvas');
+        c.width = 64; c.height = 64;
+        var x = c.getContext('2d');
+        x.fillStyle = '#888'; x.fillRect(0, 0, 64, 64);
+        var b64 = c.toDataURL('image/jpeg', 0.7).split(',')[1];
+        fetch('https://detect.roboflow.com/' + model + '?api_key=' + encodeURIComponent(key), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'image=' + encodeURIComponent(b64)
+        }).then(function(r) {
+            if (r.status === 401) { st.textContent = '\u274C API Key inv\u00e1lida'; Toast.error('API Key inv\u00e1lida (401)'); }
+            else if (r.status === 404) { st.textContent = '\u274C Modelo n\u00e3o encontrado'; Toast.error('Modelo/vers\u00e3o n\u00e3o encontrados (404). Use o formato projeto/vers\u00e3o, ex: contagem-barras/2'); }
+            else if (r.ok) { st.textContent = '\u2705 Conex\u00e3o OK!'; Toast.success('Conex\u00e3o Roboflow OK! Salve as configura\u00e7\u00f5es.'); }
+            else { st.textContent = '\u26A0 HTTP ' + r.status; Toast.warning('HTTP ' + r.status); }
+        }).catch(function(e) { st.textContent = '\u274C Sem internet'; Toast.error('Falha de rede: ' + e.message); });
+    },
+
     carregarModeloArquivo: function(inp) {
         var f = inp.files[0];
         if (!f) return;
         Toast.show('Carregando modelo IA...');
         YOLO.loadFromFile(f).then(function(ok) {
-            if (ok) Toast.success('\uD83E\uDD16 Modelo carregado! Modo 100% autom\u00e1tico ativo.');
+            if (ok) {
+                document.getElementById('status-modelo').textContent = '\u2705 Modelo local carregado \u2014 modo offline ativo.';
+                Toast.success('\uD83E\uDD16 Modelo carregado! Modo 100% autom\u00e1tico offline.');
+            }
         });
     },
+
     zerarQuantidades: function() {
         if (confirm('ZERAR todas as quantidades? Os itens ser\u00e3o mantidos.')) {
             SheetsAPI.zerarQuantidades().then(function(r) { Toast.success('Quantidades zeradas (' + r.count + ' itens)'); });
@@ -1162,12 +1232,15 @@ const App = {
         localStorage.setItem('autosave', document.getElementById('config-autosave').checked);
         localStorage.setItem('estabilizacao', document.getElementById('config-estabilizacao').value);
         localStorage.setItem('confiancaIA', document.getElementById('config-confianca-ia').value);
+        localStorage.setItem('rf_key', document.getElementById('config-rf-key').value.trim());
+        localStorage.setItem('rf_model', document.getElementById('config-rf-model').value.trim());
         Toast.success('Configura\u00e7\u00f5es salvas!');
     }
 };
 
 window.addEventListener('DOMContentLoaded', function() { App.init(); });
-window.Conference = Conference; window.Materials = Materials; window.Camera = Camera; window.Vision = Vision; window.YOLO = YOLO; window.App = App;
+window.Conference = Conference; window.Materials = Materials; window.Camera = Camera;
+window.Vision = Vision; window.YOLO = YOLO; window.ROBOFLOW = ROBOFLOW; window.App = App;
 </script>
 </body>
 </html>
