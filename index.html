@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Estoque de Barras - WEG</title>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.2/dist/axios.min.js"></script>
 <script async src="https://docs.opencv.org/4.5.4/opencv.js" type="text/javascript"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -18,7 +19,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .app-container { display: flex; flex-direction: column; min-height: 100vh; }
 .header { background: var(--bg-card); padding: 0.9rem 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-bottom: 4px solid var(--weg-blue); position: sticky; top: 0; z-index: 100; }
 .logo { display: flex; align-items: center; gap: 0.8rem; }
-.logo-icon { width: 45px; height: 45px; object-fit: contain; border-radius: var(--radius); background: var(--bg-main); }
+.logo-icon { width: 45px; height: 45px; object-fit: contain; border-radius: var(--radius); }
 .logo h1 { font-size: 1.2rem; color: var(--weg-blue); font-weight: 700; }
 .nav { display: flex; gap: 0.5rem; }
 .nav-btn { background: transparent; border: 2px solid var(--weg-blue); color: var(--weg-blue); padding: 0.6rem 1.2rem; cursor: pointer; border-radius: var(--radius); font-size: 0.9rem; font-weight: 600; }
@@ -32,13 +33,13 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .tipo-selector { background: var(--bg-card); padding: 2.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); text-align: center; border: 2px solid var(--border-color); }
 .tipo-selector h2 { margin-bottom: 2rem; font-size: 1.5rem; color: var(--weg-blue); }
 .tipo-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
-.tipo-card { background: var(--bg-card); border: 3px solid var(--border-color); border-radius: var(--radius-lg); padding: 2.5rem 1.5rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 1rem; transition: all 0.2s; }
+.tipo-card { background: var(--bg-card); border: 3px solid var(--border-color); border-radius: var(--radius-lg); padding: 2.5rem 1.5rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
 .tipo-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-xl); border-color: var(--weg-blue); }
 .tipo-card .icon { font-size: 4rem; line-height: 1; }
 .tipo-card .label { font-size: 1.2rem; font-weight: 700; }
 .tipo-card .count { font-size: 0.9rem; color: var(--text-secondary); background: var(--bg-main); padding: 0.3rem 0.8rem; border-radius: 20px; font-weight: 600; }
 .zerar-area { margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--border-color); }
-.btn-zerar { background: transparent; border: 2px solid var(--danger); color: var(--danger); padding: 0.7rem 1.6rem; border-radius: var(--radius); font-weight: 700; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.btn-zerar { background: transparent; border: 2px solid var(--danger); color: var(--danger); padding: 0.7rem 1.6rem; border-radius: var(--radius); font-weight: 700; cursor: pointer; font-size: 0.9rem; }
 .btn-zerar:hover { background: var(--danger); color: white; }
 .materiais-lista { display: none; margin-top: 1.5rem; background: var(--bg-card); padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 2px solid var(--border-color); }
 .materiais-lista.active { display: block; }
@@ -46,7 +47,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .btn-voltar { background: var(--text-secondary); color: white; border: none; padding: 0.5rem 1rem; border-radius: var(--radius); cursor: pointer; font-weight: 600; }
 .material-search { width: 100%; padding: 1rem 1.2rem; border: 2px solid var(--border-color); border-radius: var(--radius); font-size: 1rem; margin-bottom: 1.5rem; }
 .materiais-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; max-height: 55vh; overflow-y: auto; }
-.material-item { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: var(--radius); padding: 1.2rem 1.5rem; cursor: pointer; display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: center; transition: all 0.15s; }
+.material-item { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: var(--radius); padding: 1.2rem 1.5rem; cursor: pointer; display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: center; }
 .material-item:hover { border-color: var(--weg-blue); transform: translateX(4px); }
 .material-item .codigo { background: linear-gradient(135deg, var(--weg-blue), var(--weg-blue-dark)); color: white; padding: 0.5rem 0.8rem; border-radius: var(--radius); font-weight: 700; font-size: 0.9rem; white-space: nowrap; }
 .material-item .descricao { font-size: 0.95rem; font-weight: 600; }
@@ -57,8 +58,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 #video, #photoCanvas { width: 100%; height: 100%; object-fit: contain; display: block; }
 #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
 .camera-controls { position: absolute; bottom: 0.8rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.4rem; background: rgba(0,0,0,0.65); padding: 0.45rem; border-radius: var(--radius); z-index: 5; }
-.cam-btn { background: rgba(255,255,255,0.2); border: none; color: white; min-width: 44px; height: 44px; border-radius: var(--radius); cursor: pointer; font-size: 1.1rem; padding: 0 0.6rem; }
-.cam-btn:active { background: rgba(255,255,255,0.4); }
+.cam-btn { background: rgba(255,255,255,0.2); border: none; color: white; min-width: 44px; height: 44px; border-radius: var(--radius); cursor: pointer; font-size: 0.8rem; font-weight: 700; padding: 0 0.6rem; }
 .contagem-panel { background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 2px solid var(--border-color); position: sticky; top: 90px; }
 .material-info-box { background: linear-gradient(135deg, var(--weg-blue), var(--weg-blue-dark)); color: white; padding: 1.1rem; border-radius: var(--radius); margin-bottom: 1.1rem; }
 .material-info-box .titulo { font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; }
@@ -74,10 +74,9 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .contagem-display .numero { font-size: 4rem; font-weight: 800; color: var(--weg-blue); line-height: 1; }
 .contagem-display .subtext { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.4rem; }
 .acoes-buttons { display: flex; flex-direction: column; gap: 0.8rem; }
-.btn { padding: 0.9rem 1.5rem; border: none; border-radius: var(--radius); cursor: pointer; font-size: 0.95rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.15s; }
+.btn { padding: 0.9rem 1.5rem; border: none; border-radius: var(--radius); cursor: pointer; font-size: 0.95rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-primary { background: var(--weg-blue); color: white; }
-.btn-primary:hover:not(:disabled) { background: var(--weg-blue-dark); }
 .btn-success { background: var(--weg-green); color: white; }
 .btn-danger { background: var(--danger); color: white; }
 .btn-secondary { background: var(--text-secondary); color: white; }
@@ -184,7 +183,7 @@ form { padding: 1.5rem; }
                         <div class="camera-controls">
                             <button class="cam-btn" onclick="Vision.snap()" title="Analisar agora">&#128248;</button>
                             <button class="cam-btn" onclick="document.getElementById('file-input').click()" title="Foto da galeria">&#128193;</button>
-                            <button class="cam-btn" onclick="Vision.restart()" title="Recomeçar">&#128257;</button>
+                            <button class="cam-btn" onclick="Vision.restart()" title="Recomeçar / voltar à câmera">&#128257;</button>
                         </div>
                         <input type="file" id="file-input" accept="image/*" style="display:none" onchange="Vision.loadPhoto(this)">
                     </div>
@@ -243,17 +242,16 @@ form { padding: 1.5rem; }
             </div>
             <div class="settings-container">
                 <div class="setting-group">
-                    <h3>IA e Visão</h3>
+                    <h3>IA na Nuvem (Roboflow)</h3>
                     <div class="setting-item"><label>Usar IA treinada (Roboflow)</label><input type="checkbox" id="config-cloud-enabled" checked></div>
+                    <div class="setting-item"><label>URL do modelo</label><input type="text" id="config-roboflow-url" class="wide"></div>
+                    <div class="setting-item"><label>API Key</label><input type="text" id="config-roboflow-key" class="wide"></div>
                     <div class="setting-item"><label>Confiança mínima (0–1)</label><input type="number" id="config-roboflow-conf" step="0.05" min="0" max="1"></div>
                     <div class="setting-item"><label>Intervalo de análise (s)</label><input type="number" id="config-roboflow-interval" min="2" value="3"></div>
-                    <div class="setting-item">
-                        <button class="btn btn-secondary" onclick="App.testConnection()">Testar Conexão IA</button>
-                    </div>
                 </div>
                 <div class="setting-group">
                     <h3>Conectividade</h3>
-                    <div class="setting-item"><label>URL do Apps Script</label><input type="text" id="config-api-url" class="wide" placeholder="https://script.google.com/..."></div>
+                    <div class="setting-item"><label>URL do Google Apps Script</label><input type="text" id="config-api-url" class="wide" placeholder="https://script.google.com/..."></div>
                     <div class="setting-item"><button class="btn btn-primary" onclick="App.salvarConfig()">Salvar Configurações</button></div>
                 </div>
                 <div class="setting-group">
@@ -330,17 +328,17 @@ var CONFIG_SENHA = "123";
 var DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbyjTylJtCPqw5XRirzvK-dKEwBxc3Ypp1JeKfDhqHyUcmCaMJaiLJAAind8egh1mgw4/exec";
 var APP_CONFIG = { api: localStorage.getItem('apiUrl') || DEFAULT_API_URL };
 var CLOUD = {
-    enabled: localStorage.getItem('roboflowEnabled') !== '0',
+    url: localStorage.getItem('roboflowUrl') || 'https://serverless.roboflow.com/controle-de-estoque-de-barras-me/2',
+    key: localStorage.getItem('roboflowKey') || 'U7LIVjFcRppUcPzLv9rC',
     conf: parseFloat(localStorage.getItem('roboflowConf') || '0.5'),
     interval: parseFloat(localStorage.getItem('roboflowInterval') || '3')
 };
-
 var cvReady = false;
 var checkCv = setInterval(function() {
     if (window.cv && window.cv.Mat) { cvReady = true; clearInterval(checkCv); }
 }, 500);
 
-// ================= LOGO =================
+// ================= LOGO (procura o arquivo salvo junto do index.html no GitHub) =================
 var LOGO_FILES = ['logo-weg.png', 'logo.png', 'logo.svg', 'logo.jpg', 'weg.png', 'weg-logo.png', 'WEG.png', 'logo-weg.svg'];
 function initLogo() {
     var el = document.getElementById('logo-weg');
@@ -357,7 +355,7 @@ function initLogo() {
     })();
 }
 
-// ================= CACHE LOCAL =================
+// ================= CACHE LOCAL DE MATERIAIS (abre instantâneo) =================
 var MatsStore = {
     cache: [],
     load: function() { try { this.cache = JSON.parse(localStorage.getItem('matsCache') || '[]'); } catch (e) { this.cache = []; } return this.cache; },
@@ -374,54 +372,27 @@ var Utils = {
     uuid: function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); }); }
 };
 
-// ================= SHEETS API (formato esperado pelo Apps Script v7) =================
-// POST envia { data: {...} } no body — o script faz body.data || {}
+// ================= SHEETS (rápido: text/plain evita preflight; keepalive; otimista) =================
 var SheetsAPI = {
-    _call: function(action, body) {
-        if (!APP_CONFIG.api) return Promise.resolve(null);
-        return fetch(APP_CONFIG.api + '?action=' + action, {
-            method: 'POST',
-            mode: 'no-cors',
-            keepalive: true,
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(body || {})
-        }).catch(function(e) { console.warn('SheetsAPI falha em', action, e); });
-    },
     getMateriais: function() {
         if (!APP_CONFIG.api) return Promise.resolve(MatsStore.cache);
-        return fetch(APP_CONFIG.api + '?action=getMateriais', { cache: 'no-cache' })
+        return fetch(APP_CONFIG.api + '?action=getMateriais')
             .then(function(r) { return r.json(); })
             .then(function(res) {
-                if (res && res.ok && Array.isArray(res.data)) { MatsStore.set(res.data); return res.data; }
+                if (res.ok && res.data) { MatsStore.set(res.data); return res.data; }
                 return MatsStore.cache;
             })
             .catch(function() { return MatsStore.cache; });
     },
-    saveMaterial: function(item) {
-        return this._call('saveMaterial', { data: item });
-    },
-    saveConferencia: function(item) {
-        return this._call('saveConferencia', { data: item });
-    },
-    zerarQuantidades: function() {
-        return this._call('zerarQuantidades', {})
-            .then(function(r) { return r; });
-    },
-    inferIA: function(base64, confidence) {
-        // Retorna Promise com { ok, predictions } do proxy Roboflow no Apps Script
-        if (!APP_CONFIG.api) return Promise.resolve({ ok: false, predictions: [] });
-        return fetch(APP_CONFIG.api + '?action=inferIA', {
+    save: function(data, type) {
+        if (!APP_CONFIG.api) return Promise.resolve();
+        var action = 'save' + type.charAt(0).toUpperCase() + type.slice(1);
+        return fetch(APP_CONFIG.api + '?action=' + action, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: base64, confidence: confidence })
-        }).then(function(r) { return r.json(); })
-          .catch(function(e) { return { ok: false, error: e.message, predictions: [] }; });
-    },
-    testConnection: function() {
-        if (!APP_CONFIG.api) return Promise.resolve({ ok: false, error: 'sem api' });
-        return fetch(APP_CONFIG.api + '?action=testConnection')
-            .then(function(r) { return r.json(); })
-            .catch(function(e) { return { ok: false, error: e.message }; });
+            keepalive: true,
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(data)
+        }).catch(function(e) { console.error('Sheets save:', e); });
     }
 };
 
@@ -451,20 +422,22 @@ var Camera = {
     stop: function() { if (this.stream) this.stream.getTracks().forEach(function(t) { t.stop(); }); this.stream = null; }
 };
 
-// ================= VISÃO =================
+// ================= VISÃO (Roboflow + fallback local) =================
 var Vision = {
     isRunning: false, materialType: 'cobre', markers: [],
     counts: [], photoMode: false, photoMat: null, srcW: 0, srcH: 0,
     lastProcess: 0, totalDetected: 0, inFlight: false, cloudFail: false, stabilized: false,
 
-    cloudEnabled: function() { return CLOUD.enabled; },
+    cloudEnabled: function() {
+        return document.getElementById('config-cloud-enabled').checked && CLOUD.url && CLOUD.key && window.axios;
+    },
 
     start: function(tipo) {
         this.materialType = tipo;
         this.counts = [];
         this.stabilized = false;
-        this.cloudFail = false;
         this.isRunning = true;
+        this.cloudFail = false;
         this.setStatus('running');
         requestAnimationFrame(this.loop.bind(this));
     },
@@ -473,6 +446,7 @@ var Vision = {
         if (this.photoMode) { this.exitPhoto(); return; }
         this.counts = []; this.stabilized = false; this.cloudFail = false;
         if (!this.isRunning) { this.isRunning = true; this.setStatus('running'); requestAnimationFrame(this.loop.bind(this)); }
+        Toast.success('Reanalisando...');
     },
 
     setStatus: function(mode) {
@@ -508,7 +482,7 @@ var Vision = {
 
     snap: function() {
         if (this.cloudEnabled()) this.cloudAnalyze();
-        else this.processLocal();
+        else { this.processLocal(); }
     },
 
     captureBase64: function() {
@@ -530,29 +504,30 @@ var Vision = {
         var image = this.captureBase64();
         if (!image) return;
         this.inFlight = true;
-        SheetsAPI.inferIA(image, CLOUD.conf).then(function(res) {
+        axios({
+            method: "POST",
+            url: CLOUD.url,
+            params: { api_key: CLOUD.key },
+            data: image,
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            timeout: 20000
+        }).then(function(response) {
             self.inFlight = false;
-            if (res && res.ok) {
-                self.cloudFail = false;
-                self.applyCloud(res);
-            } else {
-                if (!self.cloudFail) { self.cloudFail = true; Toast.warning('IA indisponível — modo local'); }
-                self.processLocal();
-            }
+            self.applyCloud(response.data);
             self.checkAuto();
-        }).catch(function() {
+        }).catch(function(error) {
             self.inFlight = false;
-            if (!self.cloudFail) self.cloudFail = true;
+            if (!self.cloudFail) { self.cloudFail = true; Toast.error('Nuvem indisponível — análise local ativada'); }
             self.processLocal();
             self.checkAuto();
         });
     },
 
     applyCloud: function(data) {
-        var preds = data.predictions || [];
-        var iw = (data.image && data.image.width) ? data.image.width : 1280;
+        var preds = (data && data.predictions) ? data.predictions : [];
+        var iw = (data.image && data.image.width) ? data.image.width : 1;
         var d = this.sourceDims();
-        var f = d.w / Math.max(1, iw);
+        var f = d.w / iw;
         this.markers = [];
         var seq = 1;
         for (var i = 0; i < preds.length; ++i) {
@@ -586,7 +561,7 @@ var Vision = {
                 self.srcW = pc.width; self.srcH = pc.height;
                 if (self.cloudEnabled()) self.cloudAnalyze();
                 else if (cvReady) self.processLocal();
-                else Toast.warning('Motor ainda carregando...');
+                else Toast.warning('OpenCV ainda carregando...');
             } catch (e) { Toast.error('Erro ao processar foto'); }
         };
         img.src = URL.createObjectURL(file);
@@ -601,6 +576,7 @@ var Vision = {
         Camera.start().then(function(ok) { if (ok) { self.isRunning = true; self.setStatus('running'); requestAnimationFrame(self.loop.bind(self)); } });
     },
 
+    // ---------- Fallback local (OpenCV.js) ----------
     processLocal: function() {
         if (!cvReady) return;
         var src = null, ownSrc = false;
@@ -619,8 +595,8 @@ var Vision = {
             var mask = new cv.Mat();
             if (this.materialType === 'cobre') {
                 var rgb = new cv.Mat(), hsv = new cv.Mat(), m1 = new cv.Mat(), m2 = new cv.Mat();
-                cv.cvtColor(small, rgb, cv.COLOR_RGBA2RGB);
-                cv.cvtColor(rgb, hsv, cv.COLOR_RGB2HSV);
+                cv.cvtColor(work0(rgb, small), hsv, cv.COLOR_RGB2HSV);
+                function work0(r, s) { cv.cvtColor(s, r, cv.COLOR_RGBA2RGB); return r; }
                 cv.inRange(hsv, new cv.Scalar(0, 45, 45, 0), new cv.Scalar(25, 255, 255, 0), m1);
                 cv.inRange(hsv, new cv.Scalar(160, 45, 45, 0), new cv.Scalar(179, 255, 255, 0), m2);
                 cv.bitwise_or(m1, m2, mask);
@@ -759,8 +735,8 @@ var Conference = {
             var filt = MatsStore.cache.filter(function(m) { return m.material === Conference.selectedTipo && (String(m.codigo).includes(f) || String(m.descricao).toLowerCase().includes(f.toLowerCase())); });
             grid.innerHTML = filt.map(function(m) { return '<div class="material-item" onclick="Conference.selectMaterial(\'' + m.codigo + '\')"><div class="codigo">' + m.codigo + '</div><div style="flex:1; margin: 0 1rem"><div class="descricao">' + m.descricao + '</div><div class="dimensoes">' + (m.dimensoes || '-') + ' | Estoque: ' + (m.quantidade || 0) + '</div></div><div>➔</div></div>'; }).join('') || '<div style="text-align:center;color:#6c757d;padding:1rem">Nenhum material</div>';
         };
-        render();
-        SheetsAPI.getMateriais().then(render);
+        render(); // instantâneo (cache local)
+        SheetsAPI.getMateriais().then(render); // atualiza em segundo plano
     },
     selectMaterial: function(codigo) {
         var mat = MatsStore.cache.find(function(m) { return String(m.codigo) === String(codigo); });
@@ -781,16 +757,13 @@ var Conference = {
         var nova = reg + det;
         var item = Object.assign({}, md, { quantidade: nova });
 
-        // Atualiza a tela na hora e grava no Sheets em segundo plano
+        // Atualiza a tela na hora (otimista) e grava no Sheets em segundo plano
         MatsStore.update(item);
         this.selectedMaterial = item;
         Vision.stop();
 
-        SheetsAPI.saveMaterial(item);
-        SheetsAPI.saveConferencia({
-            id: Utils.uuid(), material: md.codigo, descricao: md.descricao,
-            detectada: det, antes: reg, depois: nova, adicionado: det
-        });
+        SheetsAPI.save(item, 'material');
+        SheetsAPI.save({ id: Utils.uuid(), material: md.codigo, descricao: md.descricao, detectada: det, antes: reg, depois: nova, adicionado: det }, 'conferencia');
 
         Toast.success(det + ' barras lançadas! Total: ' + nova);
         Conference.backToTipo();
@@ -806,7 +779,7 @@ var Materials = {
             .map(function(m) { return '<tr><td>' + m.codigo + '</td><td>' + m.descricao + '</td><td>' + (m.dimensoes || '-') + '</td><td><span class="badge ' + (m.material === 'cobre' ? 'badge-cobre' : 'badge-aluminio') + '">' + m.material + '</span></td><td>' + (m.quantidade || 0) + '</td><td><span class="badge badge-success">OK</span></td><td><button class="btn-icon" onclick="Materials.edit(\'' + m.id + '\')">✎</button></td></tr>'; }).join('');
         document.querySelector('#table-materiais tbody').innerHTML = html || '<tr><td colspan="7">Nenhum material</td></tr>';
     },
-    load: function() { this.render(); SheetsAPI.getMateriais().then(this.render); },
+    load: function() { this.render(); SheetsAPI.getMateriais().then(function() { Materials.render(); }); },
     openModal: function() { document.getElementById('modal-material').classList.add('active'); },
     edit: function(id) {
         var m = MatsStore.cache.find(function(x) { return String(x.id) === String(id); });
@@ -830,8 +803,8 @@ var Materials = {
             material: document.getElementById('input-material').value,
             quantidade: parseInt(document.getElementById('input-quantidade').value) || 0
         };
-        MatsStore.update(data);
-        SheetsAPI.saveMaterial(data);
+        MatsStore.update(data); // otimista
+        SheetsAPI.save(data, 'material');
         Toast.success('Salvo!');
         App.closeModal('modal-material');
         Materials.render();
@@ -843,11 +816,13 @@ var App = {
     init: function() {
         initLogo();
         document.getElementById('config-api-url').value = APP_CONFIG.api;
-        document.getElementById('config-cloud-enabled').checked = CLOUD.enabled;
+        document.getElementById('config-cloud-enabled').checked = (localStorage.getItem('roboflowEnabled') !== '0');
+        document.getElementById('config-roboflow-url').value = CLOUD.url;
+        document.getElementById('config-roboflow-key').value = CLOUD.key;
         document.getElementById('config-roboflow-conf').value = CLOUD.conf;
         document.getElementById('config-roboflow-interval').value = CLOUD.interval;
         this.updateCounters();
-        SheetsAPI.getMateriais().then(this.updateCounters);
+        SheetsAPI.getMateriais().then(this.updateCounters); // sincroniza em fundo
     },
     updateCounters: function() {
         var mats = MatsStore.cache;
@@ -868,33 +843,33 @@ var App = {
     closeModal: function(id) { document.getElementById(id).classList.remove('active'); },
     abrirZerar: function() { document.getElementById('modal-zerar').classList.add('active'); },
     zerarEstoque: function() {
-        this.closeModal('modal-zerar');
         var list = MatsStore.cache.slice();
+        this.closeModal('modal-zerar');
         if (!list.length) { Toast.warning('Nenhum material carregado'); return; }
-        // Atualiza cache local primeiro (otimista)
         list.forEach(function(m) { m.quantidade = 0; });
         MatsStore.set(list);
         this.updateCounters();
         Toast.warning('Zerando quantidades no Sheets...');
-        // Chama o Apps Script que faz em uma única operação (rápido)
-        SheetsAPI.zerarQuantidades().then(function() {
-            Toast.success('Quantidades zeradas. Boa contagem!');
+        var chunks = [];
+        for (var i = 0; i < list.length; i += 5) chunks.push(list.slice(i, i + 5));
+        var p = Promise.resolve();
+        chunks.forEach(function(ch) {
+            p = p.then(function() {
+                return Promise.all(ch.map(function(m) { return SheetsAPI.save(Object.assign({}, m, { quantidade: 0 }), 'material'); }));
+            });
         });
-    },
-    testConnection: function() {
-        Toast.show('Testando IA...', 'warning');
-        SheetsAPI.testConnection().then(function(res) {
-            if (res && res.ok) Toast.success('IA OK: ' + (res.formato || '-') + ' em ' + (res.endpoint || '-'));
-            else Toast.error('IA falhou: ' + (res && res.error || 'sem resposta'));
-        });
+        p.then(function() { Toast.success('Quantidades zeradas. Boa contagem!'); });
     },
     salvarConfig: function() {
         localStorage.setItem('apiUrl', document.getElementById('config-api-url').value.trim());
         APP_CONFIG.api = localStorage.getItem('apiUrl');
         localStorage.setItem('roboflowEnabled', document.getElementById('config-cloud-enabled').checked ? '1' : '0');
+        localStorage.setItem('roboflowUrl', document.getElementById('config-roboflow-url').value.trim());
+        localStorage.setItem('roboflowKey', document.getElementById('config-roboflow-key').value.trim());
         localStorage.setItem('roboflowConf', document.getElementById('config-roboflow-conf').value);
         localStorage.setItem('roboflowInterval', document.getElementById('config-roboflow-interval').value);
-        CLOUD.enabled = localStorage.getItem('roboflowEnabled') !== '0';
+        CLOUD.url = localStorage.getItem('roboflowUrl');
+        CLOUD.key = localStorage.getItem('roboflowKey');
         CLOUD.conf = parseFloat(localStorage.getItem('roboflowConf')) || 0.5;
         CLOUD.interval = parseFloat(localStorage.getItem('roboflowInterval')) || 3;
         Toast.success('Configurações salvas!');
