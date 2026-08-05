@@ -189,7 +189,7 @@ form { padding: 1.5rem; }
                     
                     <div class="contagem-panel">
                         <div class="modo-ia treinada" id="modo-ia">
-                            &#128640; OPENCV.JS - CONTAGEM POR VISÃO
+                            &#128640; OPENCV.JS ONLINE - ATIVO
                         </div>
                         <div class="material-info-box">
                             <div class="titulo">Material Selecionado</div>
@@ -352,8 +352,10 @@ form { padding: 1.5rem; }
 <script>
 // Variáveis Globais e Configurações
 var VERSAO_ESPERADA = "1.0.0";
-var CONFIG_SENHA = "123"; // Senha padrão
-var APP_CONFIG = { api: localStorage.getItem('apiUrl') || '' };
+var CONFIG_SENHA = "123"; 
+// URL DA SUA API DO GOOGLE SHEETS DEFINIDA COMO PADRÃO
+var DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbyjTylJtCPqw5XRirzvK-dKEwBxc3Ypp1JeKfDhqHyUcmCaMJaiLJAAind8egh1mgw4/exec";
+var APP_CONFIG = { api: localStorage.getItem('apiUrl') || DEFAULT_API_URL };
 var cvReady = false;
 
 // Inicialização do OpenCV.js
