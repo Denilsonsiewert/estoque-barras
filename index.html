@@ -139,7 +139,7 @@ form { padding: 1.5rem; }
 <div class="app-container">
     <header class="header">
         <div class="logo">
-            <img src="logo-weg.png" alt="WEG" class="logo-icon">
+            <img src="https://www.weg.net/institutional/common/images/logo-weg.png" alt="WEG" class="logo-icon">
             <h1>Estoque de Barras</h1>
         </div>
         <nav class="nav">
@@ -160,12 +160,12 @@ form { padding: 1.5rem; }
                         <button class="tipo-card" onclick="Conference.selectTipo('cobre')">
                             <span class="icon">&#128996;</span>
                             <span class="label">Barras de Cobre</span>
-                            <span class="count" id="count-cobre">0 itens</span>
+                            <span class="count" id="count-cobre">...</span>
                         </button>
                         <button class="tipo-card" onclick="Conference.selectTipo('aluminio')">
                             <span class="icon">&#9898;</span>
                             <span class="label">Barras de Alumínio</span>
-                            <span class="count" id="count-aluminio">0 itens</span>
+                            <span class="count" id="count-aluminio">...</span>
                         </button>
                     </div>
                 </div>
@@ -353,7 +353,6 @@ form { padding: 1.5rem; }
 // Variáveis Globais e Configurações
 var VERSAO_ESPERADA = "1.0.0";
 var CONFIG_SENHA = "123"; 
-// URL DA SUA API DO GOOGLE SHEETS DEFINIDA COMO PADRÃO
 var DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbyjTylJtCPqw5XRirzvK-dKEwBxc3Ypp1JeKfDhqHyUcmCaMJaiLJAAind8egh1mgw4/exec";
 var APP_CONFIG = { api: localStorage.getItem('apiUrl') || DEFAULT_API_URL };
 var cvReady = false;
@@ -377,19 +376,30 @@ var Utils = {
     uuid: function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); }); }
 };
 
-// Integração Google Sheets
+// Integração Google Sheets - AJUSTADO PARA O FORMATO DO SEU SCRIPT
 var SheetsAPI = {
     getMateriais: function() {
         if (!APP_CONFIG.api) return Promise.resolve([]);
-        return fetch(APP_CONFIG.api + '?action=getMateriais').then(function(r) { return r.json(); });
+        return fetch(APP_CONFIG.api + '?action=getMateriais')
+            .then(function(r) { return r.json(); })
+            .then(function(res) { 
+                if (res.ok && res.data) return res.data;
+                return [];
+            })
+            .catch(function(err) {
+                console.error('Erro ao carregar materiais:', err);
+                return [];
+            });
     },
     save: function(data, type) {
         if (!APP_CONFIG.api) return Promise.reject(new Error('URL da API não configurada'));
-        return fetch(APP_CONFIG.api, {
+        // Usando o formato de ação que o seu script espera no doPost
+        var action = 'save' + type.charAt(0).toUpperCase() + type.slice(1);
+        return fetch(APP_CONFIG.api + '?action=' + action, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'save' + type.charAt(0).toUpperCase() + type.slice(1), data: data })
+            body: JSON.stringify(data)
         });
     }
 };
@@ -595,20 +605,21 @@ var Conference = {
         document.getElementById('materiais-lista').classList.remove('active');
         document.getElementById('tipo-selector').style.display = 'block';
         document.getElementById('status-detectando').style.display = 'none';
+        App.init(); // Atualiza contadores
     },
     renderMateriais: function(f) {
         SheetsAPI.getMateriais().then(function(mats) {
             Conference.matsCache = mats;
             var grid = document.getElementById('materiais-grid');
-            var filt = mats.filter(function(m) { return m.material === Conference.selectedTipo && (m.codigo.includes(f) || m.descricao.toLowerCase().includes(f.toLowerCase())); });
-            grid.innerHTML = filt.map(function(m) { return '<div class="material-item" onclick="Conference.selectMaterial(\'' + m.codigo + '\')"><div class="codigo">' + m.codigo + '</div><div style="flex:1; margin: 0 1rem"><div class="descricao">' + m.descricao + '</div><div class="dimensoes">' + m.dimensoes + '</div></div><div>➔</div></div>'; }).join('');
+            var filt = mats.filter(function(m) { return m.material === Conference.selectedTipo && (String(m.codigo).includes(f) || String(m.descricao).toLowerCase().includes(f.toLowerCase())); });
+            grid.innerHTML = filt.map(function(m) { return '<div class="material-item" onclick="Conference.selectMaterial(\'' + m.codigo + '\')"><div class="codigo">' + m.codigo + '</div><div style="flex:1; margin: 0 1rem"><div class="descricao">' + m.descricao + '</div><div class="dimensoes">' + (m.dimensoes || '-') + '</div></div><div>➔</div></div>'; }).join('');
         });
     },
     selectMaterial: function(codigo) {
-        var mat = this.matsCache.find(function(m) { return m.codigo === codigo; });
+        var mat = this.matsCache.find(function(m) { return String(m.codigo) === String(codigo); });
         this.selectedMaterial = mat;
         document.getElementById('conf-material-nome').textContent = mat.descricao;
-        document.getElementById('conf-material-dim').textContent = mat.codigo + ' | ' + mat.dimensoes;
+        document.getElementById('conf-material-dim').textContent = mat.codigo + ' | ' + (mat.dimensoes || '-');
         document.getElementById('materiais-lista').classList.remove('active');
         document.getElementById('camera-view').classList.add('active');
         Vision.bindPointer();
@@ -618,10 +629,28 @@ var Conference = {
     save: function() {
         var det = Vision.finalCount();
         if (det <= 0) { Toast.warning('Nenhuma barra detectada!'); return; }
-        SheetsAPI.save({ codigo: this.selectedMaterial.codigo, detectada: det }, 'conferencia').then(function() {
-            Toast.success(det + ' barras lançadas!');
+        
+        var md = this.selectedMaterial;
+        var reg = parseInt(md.quantidade) || 0;
+        var nova = reg + det;
+        
+        var item = {
+            id: md.id, codigo: md.codigo, descricao: md.descricao, dimensoes: md.dimensoes,
+            tipo: md.tipo || 'barra', material: md.material, quantidade: nova,
+            minimo: md.minimo || 20, status: md.status || 'ativo', dataCadastro: md.dataCadastro
+        };
+
+        SheetsAPI.save(item, 'material').then(function() {
+            return SheetsAPI.save({
+                id: Utils.uuid(), material: md.codigo, descricao: md.descricao,
+                detectada: det, antes: reg, depois: nova, adicionado: det
+            }, 'conferencia');
+        }).then(function() {
+            Toast.success(det + ' barras lançadas! Total: ' + nova);
             Conference.backToTipo();
-        }).catch(function() { Toast.error('Falha ao salvar no Sheets'); });
+        }).catch(function(e) {
+            Toast.error('Falha ao salvar no Sheets');
+        });
     }
 };
 
@@ -631,18 +660,50 @@ var Materials = {
     render: function() {
         var s = document.getElementById('search-material').value.toLowerCase();
         var f = document.getElementById('filter-tipo').value;
-        var html = this.data.filter(function(m) { return (!s || (m.codigo + m.descricao).toLowerCase().includes(s)) && (!f || m.material === f); })
-            .map(function(m) { return '<tr><td>' + m.codigo + '</td><td>' + m.descricao + '</td><td>' + m.dimensoes + '</td><td><span class="badge ' + (m.material === 'cobre' ? 'badge-cobre' : 'badge-aluminio') + '">' + m.material + '</span></td><td>' + (m.quantidade || 0) + '</td><td><span class="badge badge-success">OK</span></td><td><button class="btn-icon" onclick="Materials.edit(\'' + m.id + '\')">✎</button></td></tr>'; }).join('');
+        var html = this.data.filter(function(m) { return (!s || (String(m.codigo) + String(m.descricao)).toLowerCase().includes(s)) && (!f || m.material === f); })
+            .map(function(m) { return '<tr><td>' + m.codigo + '</td><td>' + m.descricao + '</td><td>' + (m.dimensoes || '-') + '</td><td><span class="badge ' + (m.material === 'cobre' ? 'badge-cobre' : 'badge-aluminio') + '">' + m.material + '</span></td><td>' + (m.quantidade || 0) + '</td><td><span class="badge badge-success">OK</span></td><td><button class="btn-icon" onclick="Materials.edit(\'' + m.id + '\')">✎</button></td></tr>'; }).join('');
         document.querySelector('#table-materiais tbody').innerHTML = html || '<tr><td colspan="7">Nenhum material</td></tr>';
     },
     openModal: function() { document.getElementById('modal-material').classList.add('active'); },
-    edit: function(id) { Toast.show('Edição em breve'); }
+    edit: function(id) { 
+        var m = this.data.find(function(x) { return x.id === id; });
+        if (!m) return;
+        document.getElementById('modal-title').textContent = 'Editar Material';
+        document.getElementById('input-id').value = m.id;
+        document.getElementById('input-codigo').value = m.codigo;
+        document.getElementById('input-descricao').value = m.descricao;
+        document.getElementById('input-dimensoes').value = m.dimensoes;
+        document.getElementById('input-material').value = m.material;
+        document.getElementById('input-quantidade').value = m.quantidade;
+        this.openModal();
+    },
+    save: function(e) {
+        e.preventDefault();
+        var data = {
+            id: document.getElementById('input-id').value || Utils.uuid(),
+            codigo: document.getElementById('input-codigo').value,
+            descricao: document.getElementById('input-descricao').value,
+            dimensoes: document.getElementById('input-dimensoes').value,
+            material: document.getElementById('input-material').value,
+            quantidade: parseInt(document.getElementById('input-quantidade').value) || 0
+        };
+        SheetsAPI.save(data, 'material').then(function() {
+            Toast.success('Salvo!');
+            App.closeModal('modal-material');
+            Materials.load();
+        });
+    }
 };
 
 var App = {
     init: function() {
         document.getElementById('config-api-url').value = APP_CONFIG.api;
         SheetsAPI.getMateriais().then(function(mats) {
+            if (!mats || mats.length === 0) {
+                document.getElementById('count-cobre').textContent = '0 itens';
+                document.getElementById('count-aluminio').textContent = '0 itens';
+                return;
+            }
             var c = mats.filter(function(m) { return m.material === 'cobre'; }).length;
             var a = mats.filter(function(m) { return m.material === 'aluminio'; }).length;
             document.getElementById('count-cobre').textContent = c + ' itens';
