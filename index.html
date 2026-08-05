@@ -365,12 +365,19 @@ var Utils = {
 };
 
 // ================= SHEETS API =================
-// CORPO FLAT (sem {data:...}) -> o Apps Script atualiza a linha existente
-// e preenche a aba Conferencias corretamente.
+// CORREÇÃO: envia os campos TAMBÉM como parâmetros na URL (e.parameter),
+// além do corpo JSON. Assim o Apps Script atualiza a linha existente
+// (soma na quantidade) e preenche a aba Conferencias corretamente.
 var SheetsAPI = {
     _post: function(action, payload) {
         if (!APP_CONFIG.api) return Promise.resolve(null);
-        return fetch(APP_CONFIG.api + '?action=' + action, {
+        var qs = '?action=' + encodeURIComponent(action);
+        Object.keys(payload || {}).forEach(function(k) {
+            var v = payload[k];
+            if (v === undefined || v === null || typeof v === 'object') return;
+            qs += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(String(v));
+        });
+        return fetch(APP_CONFIG.api + qs, {
             method: 'POST',
             mode: 'no-cors',
             keepalive: true,
@@ -421,8 +428,8 @@ var Camera = {
 // ================= VISÃO =================
 var Vision = {
     isRunning: false, materialType: 'cobre', markers: [],
-    counts: [], srcW: 0, srcH: 0,
-    lastProcess: 0, totalDetected: 0, inFlight: false, cloudFail: false, stabilized: false,
+    counts: [], lastProcess: 0, totalDetected: 0,
+    inFlight: false, cloudFail: false, stabilized: false,
 
     cloudEnabled: function() { return CLOUD.enabled && CLOUD.url && CLOUD.key; },
 
@@ -728,7 +735,7 @@ var Conference = {
         document.getElementById('camera-container').style.display = 'block';
         document.getElementById('materiais-lista').classList.remove('active');
         document.getElementById('camera-view').classList.add('active');
-        Vision.reset(); // limpa marcações/contagem anteriores antes de abrir a câmera
+        Vision.reset();
         Camera.init();
         Camera.start().then(function() { Vision.start(Conference.selectedTipo); });
     },
@@ -736,7 +743,7 @@ var Conference = {
     enterManual: function() {
         this.manualMode = true;
         Vision.stop();
-        Vision.stabilized = true; // bloqueia autosave enquanto digita
+        Vision.stabilized = true;
         document.getElementById('camera-container').style.display = 'none';
         document.getElementById('acoes-principais').style.display = 'none';
         document.getElementById('manual-box').style.display = 'block';
@@ -774,7 +781,6 @@ var Conference = {
         this.selectedMaterial = item;
         Vision.stop();
 
-        // Corpo FLAT: o Apps Script atualiza a linha existente e preenche Conferencias
         SheetsAPI.saveMaterial(item);
         SheetsAPI.saveConferencia({
             id: Utils.uuid(), material: md.codigo, descricao: md.descricao,
