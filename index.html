@@ -4,22 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Estoque de Barras - WEG</title>
-<!-- axios via CDN (mesma biblioteca do seu snippet Node, adaptada ao navegador) -->
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.2/dist/axios.min.js"></script>
-<!-- OpenCV.js como fallback offline -->
 <script async src="https://docs.opencv.org/4.5.4/opencv.js" type="text/javascript"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 :root {
     --weg-blue: #0055a4; --weg-blue-dark: #003d7a; --weg-green: #00a650; --weg-green-dark: #008f44;
-    --danger: #dc3545; --warning: #ffc107; --warning-dark: #e0a800;
+    --danger: #dc3545; --warning: #ffc107;
     --bg-main: #f5f7fa; --bg-card: #ffffff; --text-primary: #212529; --text-secondary: #6c757d;
     --border-color: #dee2e6; --shadow-lg: 0 8px 24px rgba(0,85,164,0.12); --shadow-xl: 0 12px 40px rgba(0,85,164,0.16);
     --radius: 8px; --radius-lg: 12px;
 }
 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-main); color: var(--text-primary); min-height: 100vh; }
 .app-container { display: flex; flex-direction: column; min-height: 100vh; }
-.header { background: var(--bg-card); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-bottom: 4px solid var(--weg-blue); position: sticky; top: 0; z-index: 100; }
+.header { background: var(--bg-card); padding: 0.9rem 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-bottom: 4px solid var(--weg-blue); position: sticky; top: 0; z-index: 100; }
 .logo { display: flex; align-items: center; gap: 0.8rem; }
 .logo-icon { width: 45px; height: 45px; object-fit: contain; border-radius: var(--radius); }
 .logo h1 { font-size: 1.2rem; color: var(--weg-blue); font-weight: 700; }
@@ -40,6 +38,9 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .tipo-card .icon { font-size: 4rem; line-height: 1; }
 .tipo-card .label { font-size: 1.2rem; font-weight: 700; }
 .tipo-card .count { font-size: 0.9rem; color: var(--text-secondary); background: var(--bg-main); padding: 0.3rem 0.8rem; border-radius: 20px; font-weight: 600; }
+.zerar-area { margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--border-color); }
+.btn-zerar { background: transparent; border: 2px solid var(--danger); color: var(--danger); padding: 0.7rem 1.6rem; border-radius: var(--radius); font-weight: 700; cursor: pointer; font-size: 0.9rem; }
+.btn-zerar:hover { background: var(--danger); color: white; }
 .materiais-lista { display: none; margin-top: 1.5rem; background: var(--bg-card); padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 2px solid var(--border-color); }
 .materiais-lista.active { display: block; }
 .materiais-lista h3 { margin-bottom: 1.5rem; font-size: 1.3rem; color: var(--weg-blue); display: flex; align-items: center; justify-content: space-between; }
@@ -53,41 +54,33 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .material-item .dimensoes { font-size: 0.85rem; color: var(--text-secondary); }
 .camera-view { display: none; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start; }
 .camera-view.active { display: grid; }
-.camera-container { position: relative; background: #000; border-radius: var(--radius-lg); overflow: hidden; aspect-ratio: 16/9; box-shadow: var(--shadow-xl); touch-action: none; cursor: crosshair; }
-#video, #photoCanvas { width: 100%; height: 100%; object-fit: fill; display: block; }
+.camera-container { position: relative; background: #000; border-radius: var(--radius-lg); overflow: hidden; aspect-ratio: 16/9; max-height: 62vh; box-shadow: var(--shadow-xl); }
+#video, #photoCanvas { width: 100%; height: 100%; object-fit: contain; display: block; }
 #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-.camera-controls { position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.4rem; background: rgba(0,0,0,0.7); padding: 0.5rem; border-radius: var(--radius); z-index: 5; flex-wrap: wrap; justify-content: center; }
-.cam-btn { background: rgba(255,255,255,0.2); border: none; color: white; min-width: 45px; height: 45px; border-radius: var(--radius); cursor: pointer; font-size: 0.8rem; font-weight: 700; padding: 0 0.6rem; }
-.cam-btn.active { background: var(--warning); color: #000; }
-.contagem-panel { background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 2px solid var(--border-color); position: sticky; top: 100px; }
-.modo-ia { text-align: center; padding: 0.6rem; border-radius: var(--radius); font-weight: 800; font-size: 0.8rem; margin-bottom: 1rem; text-transform: uppercase; }
-.modo-ia.treinada { background: rgba(0,85,164,0.15); color: var(--weg-blue); border: 2px solid var(--weg-blue); }
-.modo-ia.basica { background: rgba(255,193,7,0.15); color: #856404; border: 2px solid var(--warning); }
-.material-info-box { background: linear-gradient(135deg, var(--weg-blue), var(--weg-blue-dark)); color: white; padding: 1.2rem; border-radius: var(--radius); margin-bottom: 1.2rem; }
-.material-info-box .titulo { font-size: 0.8rem; opacity: 0.9; text-transform: uppercase; }
-.material-info-box .nome { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+.camera-controls { position: absolute; bottom: 0.8rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.4rem; background: rgba(0,0,0,0.65); padding: 0.45rem; border-radius: var(--radius); z-index: 5; }
+.cam-btn { background: rgba(255,255,255,0.2); border: none; color: white; min-width: 44px; height: 44px; border-radius: var(--radius); cursor: pointer; font-size: 0.8rem; font-weight: 700; padding: 0 0.6rem; }
+.contagem-panel { background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 2px solid var(--border-color); position: sticky; top: 90px; }
+.material-info-box { background: linear-gradient(135deg, var(--weg-blue), var(--weg-blue-dark)); color: white; padding: 1.1rem; border-radius: var(--radius); margin-bottom: 1.1rem; }
+.material-info-box .titulo { font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; }
+.material-info-box .nome { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
 .material-info-box .codigo-dim { font-size: 0.85rem; opacity: 0.9; }
-.status-detectando { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.8rem; background: rgba(0,166,80,0.1); border-radius: var(--radius); margin-bottom: 1.2rem; color: var(--weg-green); font-weight: 600; font-size: 0.9rem; }
+.status-detectando { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.8rem; background: rgba(0,166,80,0.1); border-radius: var(--radius); margin-bottom: 1.1rem; color: var(--weg-green); font-weight: 600; font-size: 0.9rem; }
 .status-detectando .pulse { width: 8px; height: 8px; background: var(--weg-green); border-radius: 50%; animation: pulse 1.5s infinite; }
 .status-detectando.stable { background: rgba(255,193,7,0.15); color: #856404; }
 .status-detectando.stable .pulse { background: #856404; animation: none; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-.contagem-display { text-align: center; margin: 1.2rem 0; padding: 1.2rem; background: var(--bg-main); border-radius: var(--radius); border: 2px solid var(--border-color); }
+.contagem-display { text-align: center; margin: 1.1rem 0; padding: 1.1rem; background: var(--bg-main); border-radius: var(--radius); border: 2px solid var(--border-color); }
 .contagem-display .label { font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; }
 .contagem-display .numero { font-size: 4rem; font-weight: 800; color: var(--weg-blue); line-height: 1; }
-.contagem-display .subtext { font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem; }
-.adjust-row { display: flex; gap: 0.8rem; margin-bottom: 0.8rem; }
-.adjust-row .btn { flex: 1; font-size: 1.1rem; padding: 0.5rem; font-weight: 800; }
+.contagem-display .subtext { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.4rem; }
 .acoes-buttons { display: flex; flex-direction: column; gap: 0.8rem; }
 .btn { padding: 0.9rem 1.5rem; border: none; border-radius: var(--radius); cursor: pointer; font-size: 0.95rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-primary { background: var(--weg-blue); color: white; }
 .btn-success { background: var(--weg-green); color: white; }
 .btn-danger { background: var(--danger); color: white; }
-.btn-warning { background: var(--warning); color: #000; }
 .btn-secondary { background: var(--text-secondary); color: white; }
 .btn-icon { background: var(--bg-card); border: 2px solid var(--border-color); width: 38px; height: 38px; border-radius: var(--radius); cursor: pointer; margin-right: 0.3rem; }
-.hint { font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem; text-align: center; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
 .page-header h2 { font-size: 1.5rem; color: var(--weg-blue); }
 .filters { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; background: var(--bg-card); padding: 1.2rem; border-radius: var(--radius-lg); border: 2px solid var(--border-color); }
@@ -99,7 +92,6 @@ th { padding: 1rem; text-align: left; font-size: 0.8rem; text-transform: upperca
 td { padding: 1rem; border-bottom: 1px solid var(--border-color); }
 .badge { display: inline-flex; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
 .badge-success { background: rgba(0,166,80,0.15); color: var(--weg-green); }
-.badge-danger { background: rgba(220,53,69,0.15); color: var(--danger); }
 .badge-cobre { background: rgba(184,115,51,0.15); color: #b87333; }
 .badge-aluminio { background: rgba(127,140,141,0.15); color: #7f8c8d; }
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 1.5rem; }
@@ -133,6 +125,7 @@ form { padding: 1.5rem; }
     .header { padding: 0.9rem 1rem; flex-wrap: wrap; }
     .camera-view { grid-template-columns: 1fr; }
     .contagem-panel { position: static; }
+    .camera-container { max-height: 45vh; }
     .main-content { padding: 1rem; }
     .tipo-buttons { grid-template-columns: 1fr; }
 }
@@ -142,7 +135,7 @@ form { padding: 1.5rem; }
 <div class="app-container">
     <header class="header">
         <div class="logo">
-            <img src="https://www.weg.net/institutional/common/images/logo-weg.png" alt="WEG" class="logo-icon">
+            <img id="logo-weg" src="" alt="WEG" class="logo-icon">
             <h1>Estoque de Barras</h1>
         </div>
         <nav class="nav">
@@ -171,6 +164,9 @@ form { padding: 1.5rem; }
                             <span class="count" id="count-aluminio">...</span>
                         </button>
                     </div>
+                    <div class="zerar-area">
+                        <button class="btn-zerar" onclick="App.abrirZerar()">&#128465; Zerar Quantidades (contagem do zero)</button>
+                    </div>
                 </div>
 
                 <div class="materiais-lista" id="materiais-lista">
@@ -185,18 +181,14 @@ form { padding: 1.5rem; }
                         <canvas id="photoCanvas" style="display:none"></canvas>
                         <canvas id="overlay"></canvas>
                         <div class="camera-controls">
-                            <button class="cam-btn" onclick="Vision.snap()" title="Analisar agora com a IA treinada">&#128248; Analisar</button>
-                            <button class="cam-btn" id="btn-roi" onclick="Vision.toggleROI()" title="ROI (usado pelo motor local de fallback)">&#128208; ROI</button>
-                            <button class="cam-btn" id="btn-calib" onclick="Vision.toggleCalib()" title="Calibrar 1 barra (motor local)">&#128207; 1 Barra</button>
-                            <button class="cam-btn" onclick="document.getElementById('file-input').click()" title="Analisar foto da galeria">&#128193; Foto</button>
-                            <button class="cam-btn" onclick="Vision.clearROI()" title="Limpar área/calibração">&#128465;</button>
+                            <button class="cam-btn" onclick="Vision.snap()" title="Analisar agora">&#128248;</button>
+                            <button class="cam-btn" onclick="document.getElementById('file-input').click()" title="Foto da galeria">&#128193;</button>
                             <button class="cam-btn" onclick="Vision.restart()" title="Recomeçar / voltar à câmera">&#128257;</button>
                         </div>
                         <input type="file" id="file-input" accept="image/*" style="display:none" onchange="Vision.loadPhoto(this)">
                     </div>
 
                     <div class="contagem-panel">
-                        <div class="modo-ia treinada" id="modo-ia">&#129302; IA TREINADA (ROBOFLOW) — ATIVA</div>
                         <div class="material-info-box">
                             <div class="titulo">Material Selecionado</div>
                             <div class="nome" id="conf-material-nome">-</div>
@@ -204,22 +196,17 @@ form { padding: 1.5rem; }
                         </div>
                         <div class="status-detectando" id="status-detectando">
                             <div class="pulse"></div>
-                            <span id="status-texto">IA treinada contando... segure firme</span>
+                            <span id="status-texto">Contando... mantenha a câmera firme</span>
                         </div>
                         <div class="contagem-display">
                             <div class="label">Total Identificado</div>
                             <div class="numero" id="qtd-detectada">0</div>
-                            <div class="subtext">Ajuste manualmente se necessário</div>
-                        </div>
-                        <div class="adjust-row">
-                            <button class="btn btn-danger" onclick="Vision.nudge(-1)">-1</button>
-                            <button class="btn btn-success" onclick="Vision.nudge(1)">+1</button>
+                            <div class="subtext" id="contagem-subtext">Ao estabilizar, confirma e salva automaticamente</div>
                         </div>
                         <div class="acoes-buttons">
                             <button class="btn btn-primary" id="btn-confirmar" onclick="Conference.save()">CONFIRMAR E SALVAR</button>
                             <button class="btn btn-secondary" onclick="Conference.backToTipo()">CANCELAR</button>
                         </div>
-                        <div class="hint">A foto/frame é enviada à <b>IA treinada no Roboflow</b> e as barras detectadas são marcadas em verde. Use <b>📸 Analisar</b> p/ contagem imediata. Sem internet ou se a nuvem falhar, o <b>motor local OpenCV</b> assume (use ROI + 📏 1 Barra nele).</div>
                     </div>
                 </div>
             </div>
@@ -241,9 +228,7 @@ form { padding: 1.5rem; }
             <div class="table-container">
                 <table id="table-materiais">
                     <thead>
-                        <tr>
-                            <th>Código</th><th>Descrição</th><th>Dimensões</th><th>Material</th><th>Estoque</th><th>Status</th><th>Ações</th>
-                        </tr>
+                        <tr><th>Código</th><th>Descrição</th><th>Dimensões</th><th>Material</th><th>Estoque</th><th>Status</th><th>Ações</th></tr>
                     </thead>
                     <tbody></tbody>
                 </table>
@@ -258,54 +243,21 @@ form { padding: 1.5rem; }
             <div class="settings-container">
                 <div class="setting-group">
                     <h3>IA na Nuvem (Roboflow)</h3>
-                    <div class="setting-item">
-                        <label>Usar IA treinada (Roboflow)</label>
-                        <input type="checkbox" id="config-cloud-enabled" checked>
-                    </div>
-                    <div class="setting-item">
-                        <label>URL do modelo</label>
-                        <input type="text" id="config-roboflow-url" class="wide">
-                    </div>
-                    <div class="setting-item">
-                        <label>API Key</label>
-                        <input type="text" id="config-roboflow-key" class="wide">
-                    </div>
-                    <div class="setting-item">
-                        <label>Confiança mínima (0–1)</label>
-                        <input type="number" id="config-roboflow-conf" step="0.05" min="0" max="1">
-                    </div>
-                    <div class="setting-item">
-                        <label>Intervalo auto na câmera (s)</label>
-                        <input type="number" id="config-roboflow-interval" min="2" value="5">
-                    </div>
+                    <div class="setting-item"><label>Usar IA treinada (Roboflow)</label><input type="checkbox" id="config-cloud-enabled" checked></div>
+                    <div class="setting-item"><label>URL do modelo</label><input type="text" id="config-roboflow-url" class="wide"></div>
+                    <div class="setting-item"><label>API Key</label><input type="text" id="config-roboflow-key" class="wide"></div>
+                    <div class="setting-item"><label>Confiança mínima (0–1)</label><input type="number" id="config-roboflow-conf" step="0.05" min="0" max="1"></div>
+                    <div class="setting-item"><label>Intervalo de análise (s)</label><input type="number" id="config-roboflow-interval" min="2" value="3"></div>
                 </div>
                 <div class="setting-group">
                     <h3>Conectividade</h3>
-                    <div class="setting-item">
-                        <label>URL do Google Apps Script</label>
-                        <input type="text" id="config-api-url" class="wide" placeholder="https://script.google.com/...">
-                    </div>
-                    <div class="setting-item">
-                        <button class="btn btn-primary" onclick="App.salvarConfig()">Salvar Configurações</button>
-                    </div>
+                    <div class="setting-item"><label>URL do Google Apps Script</label><input type="text" id="config-api-url" class="wide" placeholder="https://script.google.com/..."></div>
+                    <div class="setting-item"><button class="btn btn-primary" onclick="App.salvarConfig()">Salvar Configurações</button></div>
                 </div>
                 <div class="setting-group">
-                    <h3>Câmera e Visão</h3>
-                    <div class="setting-item">
-                        <label>Resolução da Câmera</label>
-                        <select id="config-resolucao">
-                            <option value="720">HD (720p)</option>
-                            <option value="1080">Full HD (1080p)</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>Parar contagem automaticamente</label>
-                        <input type="checkbox" id="config-auto-stop" checked>
-                    </div>
-                    <div class="setting-item">
-                        <label>Salvar automaticamente ao estabilizar</label>
-                        <input type="checkbox" id="config-autosave">
-                    </div>
+                    <h3>Contagem</h3>
+                    <div class="setting-item"><label>Parar contagem automaticamente</label><input type="checkbox" id="config-auto-stop" checked></div>
+                    <div class="setting-item"><label>Confirmar e salvar ao estabilizar</label><input type="checkbox" id="config-autosave" checked></div>
                 </div>
             </div>
         </div>
@@ -337,6 +289,22 @@ form { padding: 1.5rem; }
     </div>
 </div>
 
+<div id="modal-zerar" class="modal">
+    <div class="modal-content" style="max-width:430px">
+        <div class="modal-header">
+            <h3>Zerar Quantidades</h3>
+            <button class="btn-close" onclick="App.closeModal('modal-zerar')">&times;</button>
+        </div>
+        <div style="padding:1.5rem; text-align:center">
+            <p style="margin-bottom:1.2rem">Todas as quantidades do estoque serão definidas como <b>0</b> para iniciar uma contagem do zero. Deseja continuar?</p>
+            <div style="display:flex; gap:0.8rem; justify-content:center">
+                <button class="btn btn-secondary" onclick="App.closeModal('modal-zerar')">Cancelar</button>
+                <button class="btn btn-danger" onclick="App.zerarEstoque()">ZERAR TUDO</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="modal-senha" class="modal senha-modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -355,46 +323,76 @@ form { padding: 1.5rem; }
 <div id="toast-container" class="toast-container"></div>
 
 <script>
-// ================= CONFIG GERAL =================
-var VERSAO_ESPERADA = "3.0.0";
+// ================= CONFIG =================
 var CONFIG_SENHA = "123";
 var DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbyjTylJtCPqw5XRirzvK-dKEwBxc3Ypp1JeKfDhqHyUcmCaMJaiLJAAind8egh1mgw4/exec";
 var APP_CONFIG = { api: localStorage.getItem('apiUrl') || DEFAULT_API_URL };
-
-// ===== IA TREINADA (ROBOFLOW) — adaptado do seu snippet Node.js =====
 var CLOUD = {
     url: localStorage.getItem('roboflowUrl') || 'https://serverless.roboflow.com/controle-de-estoque-de-barras-me/2',
     key: localStorage.getItem('roboflowKey') || 'U7LIVjFcRppUcPzLv9rC',
     conf: parseFloat(localStorage.getItem('roboflowConf') || '0.5'),
-    interval: parseFloat(localStorage.getItem('roboflowInterval') || '5')
+    interval: parseFloat(localStorage.getItem('roboflowInterval') || '3')
 };
-
 var cvReady = false;
-function onOpenCvReady() { cvReady = true; Vision.updateModeBadge(); }
 var checkCv = setInterval(function() {
-    if (window.cv && window.cv.Mat) { onOpenCvReady(); clearInterval(checkCv); }
+    if (window.cv && window.cv.Mat) { cvReady = true; clearInterval(checkCv); }
 }, 500);
+
+// ================= LOGO (procura o arquivo salvo junto do index.html no GitHub) =================
+var LOGO_FILES = ['logo-weg.png', 'logo.png', 'logo.svg', 'logo.jpg', 'weg.png', 'weg-logo.png', 'WEG.png', 'logo-weg.svg'];
+function initLogo() {
+    var el = document.getElementById('logo-weg');
+    var fallback = function() {
+        el.src = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90"><rect width="90" height="90" rx="14" fill="#0055a4"/><text x="45" y="59" font-family="Arial,sans-serif" font-size="30" font-weight="bold" fill="#ffffff" text-anchor="middle">WEG</text></svg>');
+    };
+    var i = 0;
+    (function tryNext() {
+        if (i >= LOGO_FILES.length) { fallback(); return; }
+        var t = new Image();
+        t.onload = function() { el.src = t.src; };
+        t.onerror = function() { i++; tryNext(); };
+        t.src = LOGO_FILES[i];
+    })();
+}
+
+// ================= CACHE LOCAL DE MATERIAIS (abre instantâneo) =================
+var MatsStore = {
+    cache: [],
+    load: function() { try { this.cache = JSON.parse(localStorage.getItem('matsCache') || '[]'); } catch (e) { this.cache = []; } return this.cache; },
+    set: function(l) { this.cache = l; try { localStorage.setItem('matsCache', JSON.stringify(l)); } catch (e) {} },
+    update: function(item) {
+        var i = this.cache.findIndex(function(x) { return String(x.id) === String(item.id); });
+        if (i >= 0) this.cache[i] = item; else this.cache.push(item);
+        this.set(this.cache);
+    }
+};
+MatsStore.load();
 
 var Utils = {
     uuid: function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); }); }
 };
 
+// ================= SHEETS (rápido: text/plain evita preflight; keepalive; otimista) =================
 var SheetsAPI = {
     getMateriais: function() {
-        if (!APP_CONFIG.api) return Promise.resolve([]);
+        if (!APP_CONFIG.api) return Promise.resolve(MatsStore.cache);
         return fetch(APP_CONFIG.api + '?action=getMateriais')
             .then(function(r) { return r.json(); })
-            .then(function(res) { if (res.ok && res.data) return res.data; return []; })
-            .catch(function(err) { console.error('Erro ao carregar materiais:', err); return []; });
+            .then(function(res) {
+                if (res.ok && res.data) { MatsStore.set(res.data); return res.data; }
+                return MatsStore.cache;
+            })
+            .catch(function() { return MatsStore.cache; });
     },
     save: function(data, type) {
-        if (!APP_CONFIG.api) return Promise.reject(new Error('URL da API não configurada'));
+        if (!APP_CONFIG.api) return Promise.resolve();
         var action = 'save' + type.charAt(0).toUpperCase() + type.slice(1);
         return fetch(APP_CONFIG.api + '?action=' + action, {
-            method: 'POST', mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+            keepalive: true,
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(data)
-        });
+        }).catch(function(e) { console.error('Sheets save:', e); });
     }
 };
 
@@ -416,28 +414,19 @@ var Camera = {
     video: null, stream: null,
     init: function() { this.video = document.getElementById('video'); },
     start: function() {
-        var res = localStorage.getItem('resolution') || '720';
-        var constraints = { video: { facingMode: 'environment', width: { ideal: res === '1080' ? 1920 : 1280 }, height: { ideal: res === '1080' ? 1080 : 720 } } };
+        var constraints = { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } };
         return navigator.mediaDevices.getUserMedia(constraints).then(function(s) {
-            Camera.stream = s; Camera.video.srcObject = s;
-            Camera.video.onloadedmetadata = function() {
-                if (Camera.video.videoWidth) {
-                    document.getElementById('camera-container').style.aspectRatio = Camera.video.videoWidth + '/' + Camera.video.videoHeight;
-                }
-            };
-            return true;
+            Camera.stream = s; Camera.video.srcObject = s; return true;
         }).catch(function() { Toast.error('Erro ao acessar câmera.'); return false; });
     },
     stop: function() { if (this.stream) this.stream.getTracks().forEach(function(t) { t.stop(); }); this.stream = null; }
 };
 
-// ================= VISÃO (NUVEM + LOCAL) =================
+// ================= VISÃO (Roboflow + fallback local) =================
 var Vision = {
-    isRunning: false, materialType: 'cobre', markers: [], manualOffset: 0,
-    counts: [], roi: null, roiMode: false, calibMode: false, dragStart: null,
-    photoMode: false, photoMat: null, srcW: 0, srcH: 0,
-    calibArea: 0, lastProcess: 0, totalDetected: 0,
-    inFlight: false, cloudFail: false,
+    isRunning: false, materialType: 'cobre', markers: [],
+    counts: [], photoMode: false, photoMat: null, srcW: 0, srcH: 0,
+    lastProcess: 0, totalDetected: 0, inFlight: false, cloudFail: false, stabilized: false,
 
     cloudEnabled: function() {
         return document.getElementById('config-cloud-enabled').checked && CLOUD.url && CLOUD.key && window.axios;
@@ -445,35 +434,19 @@ var Vision = {
 
     start: function(tipo) {
         this.materialType = tipo;
-        this.manualOffset = 0;
         this.counts = [];
+        this.stabilized = false;
         this.isRunning = true;
         this.cloudFail = false;
         this.setStatus('running');
-        this.updateModeBadge();
         requestAnimationFrame(this.loop.bind(this));
     },
     stop: function() { this.isRunning = false; },
-
     restart: function() {
         if (this.photoMode) { this.exitPhoto(); return; }
-        this.manualOffset = 0; this.counts = []; this.cloudFail = false;
+        this.counts = []; this.stabilized = false; this.cloudFail = false;
         if (!this.isRunning) { this.isRunning = true; this.setStatus('running'); requestAnimationFrame(this.loop.bind(this)); }
         Toast.success('Reanalisando...');
-    },
-
-    updateModeBadge: function() {
-        var el = document.getElementById('modo-ia');
-        if (this.cloudEnabled() && !this.cloudFail) {
-            el.className = 'modo-ia treinada';
-            el.innerHTML = '&#129302; IA TREINADA (ROBOFLOW) — ATIVA';
-        } else if (this.cloudFail) {
-            el.className = 'modo-ia basica';
-            el.innerHTML = '&#9888; NUVEM INDISPONÍVEL — MOTOR LOCAL ATIVO';
-        } else {
-            el.className = 'modo-ia basica';
-            el.innerHTML = '&#9881; MOTOR LOCAL OPENCV.JS (IA NUVEM DESATIVADA)';
-        }
     },
 
     setStatus: function(mode) {
@@ -481,10 +454,10 @@ var Vision = {
         el.style.display = 'flex';
         if (mode === 'running') {
             el.classList.remove('stable');
-            document.getElementById('status-texto').textContent = this.cloudEnabled() ? 'IA treinada contando... segure firme' : 'Motor local contando... segure firme';
+            document.getElementById('status-texto').textContent = 'Contando... mantenha a câmera firme';
         } else {
             el.classList.add('stable');
-            document.getElementById('status-texto').textContent = 'Contagem estabilizada — revise e confirme';
+            document.getElementById('status-texto').textContent = 'Contagem concluída — salvando...';
         }
     },
 
@@ -497,7 +470,7 @@ var Vision = {
     loop: function(ts) {
         if (!this.isRunning) return;
         if (!this.photoMode && !this.inFlight) {
-            var intervalMs = this.cloudEnabled() ? Math.max(2, CLOUD.interval || 5) * 1000 : 400;
+            var intervalMs = this.cloudEnabled() ? Math.max(2, CLOUD.interval || 3) * 1000 : 400;
             if (ts - this.lastProcess > intervalMs) {
                 this.lastProcess = ts;
                 if (this.cloudEnabled()) this.cloudAnalyze();
@@ -509,29 +482,26 @@ var Vision = {
 
     snap: function() {
         if (this.cloudEnabled()) this.cloudAnalyze();
-        else { this.processLocal(); this.updateUI(); }
+        else { this.processLocal(); }
     },
 
-    // ---------- Captura base64 (substitui fs.readFileSync do snippet Node) ----------
     captureBase64: function() {
         var d = this.sourceDims();
         var cap = document.createElement('canvas');
         var sc = Math.min(1, 1280 / d.w);
         cap.width = Math.round(d.w * sc); cap.height = Math.round(d.h * sc);
         var ctx = cap.getContext('2d');
-        if (this.photoMode) {
-            ctx.drawImage(document.getElementById('photoCanvas'), 0, 0, cap.width, cap.height);
-        } else {
+        if (this.photoMode) ctx.drawImage(document.getElementById('photoCanvas'), 0, 0, cap.width, cap.height);
+        else {
             if (!Camera.video || !Camera.video.videoWidth) return null;
             ctx.drawImage(Camera.video, 0, 0, cap.width, cap.height);
         }
         return cap.toDataURL('image/jpeg', 0.9).split(',')[1];
     },
 
-    // ---------- Chamada Roboflow (idêntica ao seu snippet, via axios) ----------
     cloudAnalyze: function() {
         var self = this;
-        var image = this.captureBase64();   // <- equivale ao fs.readFileSync(..., 'base64')
+        var image = this.captureBase64();
         if (!image) return;
         this.inFlight = true;
         axios({
@@ -543,17 +513,11 @@ var Vision = {
             timeout: 20000
         }).then(function(response) {
             self.inFlight = false;
-            self.cloudFail = false;
             self.applyCloud(response.data);
             self.checkAuto();
         }).catch(function(error) {
             self.inFlight = false;
-            console.error('Roboflow:', error.message);
-            if (!self.cloudFail) {
-                self.cloudFail = true;
-                Toast.error('IA Roboflow falhou — motor local assumiu');
-                self.updateModeBadge();
-            }
+            if (!self.cloudFail) { self.cloudFail = true; Toast.error('Nuvem indisponível — análise local ativada'); }
             self.processLocal();
             self.checkAuto();
         });
@@ -569,19 +533,13 @@ var Vision = {
         for (var i = 0; i < preds.length; ++i) {
             var p = preds[i];
             if ((p.confidence || 0) < CLOUD.conf) continue;
-            this.markers.push({
-                x: (p.x - p.width / 2) * f, y: (p.y - p.height / 2) * f,
-                w: p.width * f, h: p.height * f,
-                n: 1, seq: seq++, conf: p.confidence, cls: p.class || ''
-            });
+            this.markers.push({ x: (p.x - p.width / 2) * f, y: (p.y - p.height / 2) * f, w: p.width * f, h: p.height * f, n: 1, seq: seq++ });
         }
         this.totalDetected = this.markers.length;
         this.draw();
         this.updateUI();
-        if (this.photoMode) this.setStatus('stable');
     },
 
-    // ---------- FOTO ----------
     loadPhoto: function(input) {
         var file = input.files && input.files[0];
         input.value = '';
@@ -598,22 +556,13 @@ var Vision = {
                 pc.getContext('2d').drawImage(img, 0, 0, pc.width, pc.height);
                 pc.style.display = 'block';
                 document.getElementById('video').style.display = 'none';
-                document.getElementById('camera-container').style.aspectRatio = pc.width + '/' + pc.height;
                 if (cvReady && self.photoMat) { self.photoMat.delete(); self.photoMat = null; }
                 self.photoMode = true;
                 self.srcW = pc.width; self.srcH = pc.height;
-                self.manualOffset = 0;
-                if (self.cloudEnabled()) {
-                    self.setStatus('running');
-                    self.cloudAnalyze();
-                } else if (cvReady) {
-                    self.processLocal();
-                    self.setStatus('stable');
-                } else {
-                    Toast.warning('OpenCV ainda carregando...');
-                }
-                Toast.success('Foto carregada — analisando com IA treinada');
-            } catch (e) { console.error(e); Toast.error('Erro ao processar foto'); }
+                if (self.cloudEnabled()) self.cloudAnalyze();
+                else if (cvReady) self.processLocal();
+                else Toast.warning('OpenCV ainda carregando...');
+            } catch (e) { Toast.error('Erro ao processar foto'); }
         };
         img.src = URL.createObjectURL(file);
     },
@@ -627,13 +576,13 @@ var Vision = {
         Camera.start().then(function(ok) { if (ok) { self.isRunning = true; self.setStatus('running'); requestAnimationFrame(self.loop.bind(self)); } });
     },
 
-    // ---------- MOTOR LOCAL (fallback offline — OpenCV.js) ----------
+    // ---------- Fallback local (OpenCV.js) ----------
     processLocal: function() {
         if (!cvReady) return;
         var src = null, ownSrc = false;
         try {
             if (this.photoMode) {
-                if (!this.photoMat) { this.photoMat = cv.imread(document.getElementById('photoCanvas')); }
+                if (!this.photoMat) this.photoMat = cv.imread(document.getElementById('photoCanvas'));
                 src = this.photoMat;
             } else {
                 if (!Camera.video || !Camera.video.videoWidth) return;
@@ -643,28 +592,18 @@ var Vision = {
             var small = new cv.Mat();
             cv.resize(src, small, new cv.Size(Math.round(src.cols * scale), Math.round(src.rows * scale)), 0, 0, cv.INTER_AREA);
 
-            var work = small, roiOff = { x: 0, y: 0 };
-            if (this.roi) {
-                var rx = Math.max(0, Math.round(this.roi.x * scale)), ry = Math.max(0, Math.round(this.roi.y * scale));
-                var rw = Math.min(small.cols - rx, Math.round(this.roi.w * scale)), rh = Math.min(small.rows - ry, Math.round(this.roi.h * scale));
-                if (rw > 20 && rh > 20) {
-                    work = small.rowRange(ry, ry + rh).colRange(rx, rx + rw).clone();
-                    roiOff = { x: rx, y: ry };
-                }
-            }
-
             var mask = new cv.Mat();
             if (this.materialType === 'cobre') {
                 var rgb = new cv.Mat(), hsv = new cv.Mat(), m1 = new cv.Mat(), m2 = new cv.Mat();
-                cv.cvtColor(work, rgb, cv.COLOR_RGBA2RGB);
-                cv.cvtColor(rgb, hsv, cv.COLOR_RGB2HSV);
+                cv.cvtColor(work0(rgb, small), hsv, cv.COLOR_RGB2HSV);
+                function work0(r, s) { cv.cvtColor(s, r, cv.COLOR_RGBA2RGB); return r; }
                 cv.inRange(hsv, new cv.Scalar(0, 45, 45, 0), new cv.Scalar(25, 255, 255, 0), m1);
                 cv.inRange(hsv, new cv.Scalar(160, 45, 45, 0), new cv.Scalar(179, 255, 255, 0), m2);
                 cv.bitwise_or(m1, m2, mask);
                 rgb.delete(); hsv.delete(); m1.delete(); m2.delete();
             } else {
                 var gray = new cv.Mat();
-                cv.cvtColor(work, gray, cv.COLOR_RGBA2GRAY);
+                cv.cvtColor(small, gray, cv.COLOR_RGBA2GRAY);
                 cv.equalizeHist(gray, gray);
                 cv.threshold(gray, mask, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
                 gray.delete();
@@ -681,70 +620,64 @@ var Vision = {
             var contours = new cv.MatVector(), hierarchy = new cv.Mat();
             cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
-            var smallArea = work.cols * work.rows;
-            var U = this.calibArea ? this.calibArea * scale * scale : 0;
-            var minA = U > 0 ? U * 0.35 : Math.max(50, smallArea * 0.0007);
-
+            var minA = Math.max(50, small.cols * small.rows * 0.0007);
             var comps = [];
             for (var i = 0; i < contours.size(); ++i) {
                 var a = cv.contourArea(contours.get(i));
                 if (a >= minA) comps.push({ a: a, r: cv.boundingRect(contours.get(i)) });
             }
-            if (!U) {
-                if (comps.length === 0) U = 1;
-                else {
-                    var sorted = comps.map(function(c) { return c.a; }).sort(function(x, y) { return x - y; });
-                    U = sorted[Math.max(0, Math.floor((sorted.length - 1) * 0.25))];
-                }
+            var U = 1;
+            if (comps.length) {
+                var sorted = comps.map(function(c) { return c.a; }).sort(function(x, y) { return x - y; });
+                U = sorted[Math.max(0, Math.floor((sorted.length - 1) * 0.25))];
             }
-
             this.markers = [];
             var total = 0, seq = 1;
             for (var j = 0; j < comps.length; ++j) {
                 var c = comps[j];
                 var n = Math.max(1, Math.min(500, Math.round(c.a / U)));
                 total += n;
-                this.markers.push({ x: (roiOff.x + c.r.x) / scale, y: (roiOff.y + c.r.y) / scale, w: c.r.width / scale, h: c.r.height / scale, n: n, seq: seq });
+                this.markers.push({ x: c.r.x / scale, y: c.r.y / scale, w: c.r.width / scale, h: c.r.height / scale, n: n, seq: seq });
                 seq += n;
             }
             this.totalDetected = total;
             this.draw();
             this.updateUI();
 
-            mask.delete(); contours.delete(); hierarchy.delete();
-            if (work !== small) work.delete();
-            small.delete();
+            mask.delete(); contours.delete(); hierarchy.delete(); small.delete();
             if (ownSrc) src.delete();
         } catch (e) {
-            console.error('Erro no processamento local:', e);
+            console.error('Análise local:', e);
             if (ownSrc && src) { try { src.delete(); } catch (e2) {} }
         }
     },
 
     draw: function() {
         var o = document.getElementById('overlay');
-        var d = this.sourceDims();
-        if (o.width !== d.w || o.height !== d.h) { o.width = d.w; o.height = d.h; }
+        var cw = o.clientWidth, ch = o.clientHeight;
+        if (!cw || !ch) return;
+        if (o.width !== cw || o.height !== ch) { o.width = cw; o.height = ch; }
         var ctx = o.getContext('2d');
-        ctx.clearRect(0, 0, o.width, o.height);
-
-        if (this.roi) { ctx.strokeStyle = '#ffc107'; ctx.lineWidth = 3; ctx.strokeRect(this.roi.x, this.roi.y, this.roi.w, this.roi.h); }
+        ctx.clearRect(0, 0, cw, ch);
+        var d = this.sourceDims();
+        var sc = Math.min(cw / d.w, ch / d.h);
+        var ox = (cw - d.w * sc) / 2, oy = (ch - d.h * sc) / 2;
 
         this.markers.forEach(function(m) {
+            var X = ox + m.x * sc, Y = oy + m.y * sc, W = m.w * sc, H = m.h * sc;
             ctx.strokeStyle = '#00a650'; ctx.lineWidth = 3;
-            ctx.strokeRect(m.x, m.y, m.w, m.h);
+            ctx.strokeRect(X, Y, W, H);
             ctx.fillStyle = '#00a650';
-            ctx.beginPath(); ctx.arc(m.x + m.w / 2, m.y + m.h / 2, 13, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(X + W / 2, Y + H / 2, 13, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = 'white';
             ctx.font = 'bold 12px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            var label = m.n > 1 ? ('x' + m.n) : String(m.seq);
-            ctx.fillText(label, m.x + m.w / 2, m.y + m.h / 2 + 1);
+            ctx.fillText(m.n > 1 ? ('x' + m.n) : String(m.seq), X + W / 2, Y + H / 2 + 1);
         });
     },
 
-    finalCount: function() { return Math.max(0, this.totalDetected + this.manualOffset); },
+    finalCount: function() { return Math.max(0, this.totalDetected); },
     updateUI: function() {
         var c = this.finalCount();
         document.getElementById('qtd-detectada').textContent = c;
@@ -752,60 +685,20 @@ var Vision = {
     },
 
     checkAuto: function() {
-        if (!document.getElementById('config-auto-stop').checked) return;
+        if (this.stabilized || !document.getElementById('config-auto-stop').checked) return;
         var c = this.finalCount();
         this.counts.push(c);
-        if (this.counts.length > 6) this.counts.shift();
-        if (this.counts.length >= 6 && c > 0) {
-            var allSame = this.counts.every(function(v) { return v === c; });
-            if (allSame) {
-                this.stop();
-                this.setStatus('stable');
-                if (document.getElementById('config-autosave').checked) Conference.save();
-                else Toast.success('Contagem estabilizada em ' + c);
+        if (this.counts.length > 3) this.counts.shift();
+        if (this.counts.length >= 3 && c > 0 && this.counts.every(function(v) { return v === c; })) {
+            this.stabilized = true;
+            this.stop();
+            this.setStatus('stable');
+            if (document.getElementById('config-autosave').checked) {
+                setTimeout(function() { Conference.save(); }, 700);
+            } else {
+                document.getElementById('status-texto').textContent = 'Contagem concluída — confirme para salvar';
             }
         }
-    },
-
-    nudge: function(v) { this.manualOffset += v; this.updateUI(); },
-
-    toggleROI: function() { this.roiMode = !this.roiMode; this.calibMode = false; this.syncBtns(); Toast.warning(this.roiMode ? 'ROI: arraste na tela p/ isolar a pilha' : 'Modo ROI desativado'); },
-    toggleCalib: function() { this.calibMode = !this.calibMode; this.roiMode = false; this.syncBtns(); Toast.warning(this.calibMode ? 'Arraste sobre UMA face de barra p/ calibrar' : 'Calibração desativada'); },
-    syncBtns: function() {
-        document.getElementById('btn-roi').classList.toggle('active', this.roiMode);
-        document.getElementById('btn-calib').classList.toggle('active', this.calibMode);
-    },
-    clearROI: function() { this.roi = null; this.calibArea = 0; this.draw(); if (this.photoMode && !this.cloudEnabled()) this.processLocal(); Toast.success('Área e calibração limpas'); },
-
-    bindPointer: function() {
-        var el = document.getElementById('camera-container');
-        el.onpointerdown = function(e) { Vision.dragStart = Vision.videoCoords(e); };
-        el.onpointerup = function(e) {
-            if (!Vision.dragStart) return;
-            var end = Vision.videoCoords(e);
-            var x = Math.min(Vision.dragStart.x, end.x), y = Math.min(Vision.dragStart.y, end.y);
-            var w = Math.abs(end.x - Vision.dragStart.x), h = Math.abs(end.y - Vision.dragStart.y);
-            if (w > 10 && h > 10) {
-                if (Vision.calibMode) {
-                    Vision.calibArea = w * h;
-                    Vision.calibMode = Vision.roiMode = false; Vision.syncBtns();
-                    Toast.success('Barra calibrada');
-                    if (Vision.photoMode && !Vision.cloudEnabled()) Vision.processLocal();
-                } else if (Vision.roiMode) {
-                    Vision.roi = { x: x, y: y, w: w, h: h };
-                    Vision.roiMode = false; Vision.syncBtns();
-                    Toast.success('Área definida');
-                    if (Vision.photoMode && !Vision.cloudEnabled()) Vision.processLocal();
-                }
-            }
-            Vision.dragStart = null;
-        };
-    },
-
-    videoCoords: function(ev) {
-        var rect = document.getElementById('camera-container').getBoundingClientRect();
-        var d = this.sourceDims();
-        return { x: (ev.clientX - rect.left) * (d.w / rect.width), y: (ev.clientY - rect.top) * (d.h / rect.height) };
     },
 
     cleanup: function() {
@@ -814,13 +707,13 @@ var Vision = {
         this.photoMode = false;
         document.getElementById('photoCanvas').style.display = 'none';
         document.getElementById('video').style.display = 'block';
-        this.roi = null; this.calibArea = 0; this.markers = []; this.totalDetected = 0;
+        this.markers = []; this.totalDetected = 0;
     }
 };
 
 // ================= CONFERÊNCIA =================
 var Conference = {
-    selectedTipo: null, selectedMaterial: null, matsCache: [],
+    selectedTipo: null, selectedMaterial: null,
     selectTipo: function(tipo) {
         this.selectedTipo = tipo;
         document.getElementById('tipo-selector').style.display = 'none';
@@ -837,21 +730,22 @@ var Conference = {
         App.init();
     },
     renderMateriais: function(f) {
-        SheetsAPI.getMateriais().then(function(mats) {
-            Conference.matsCache = mats;
+        var render = function() {
             var grid = document.getElementById('materiais-grid');
-            var filt = mats.filter(function(m) { return m.material === Conference.selectedTipo && (String(m.codigo).includes(f) || String(m.descricao).toLowerCase().includes(f.toLowerCase())); });
-            grid.innerHTML = filt.map(function(m) { return '<div class="material-item" onclick="Conference.selectMaterial(\'' + m.codigo + '\')"><div class="codigo">' + m.codigo + '</div><div style="flex:1; margin: 0 1rem"><div class="descricao">' + m.descricao + '</div><div class="dimensoes">' + (m.dimensoes || '-') + '</div></div><div>➔</div></div>'; }).join('');
-        });
+            var filt = MatsStore.cache.filter(function(m) { return m.material === Conference.selectedTipo && (String(m.codigo).includes(f) || String(m.descricao).toLowerCase().includes(f.toLowerCase())); });
+            grid.innerHTML = filt.map(function(m) { return '<div class="material-item" onclick="Conference.selectMaterial(\'' + m.codigo + '\')"><div class="codigo">' + m.codigo + '</div><div style="flex:1; margin: 0 1rem"><div class="descricao">' + m.descricao + '</div><div class="dimensoes">' + (m.dimensoes || '-') + ' | Estoque: ' + (m.quantidade || 0) + '</div></div><div>➔</div></div>'; }).join('') || '<div style="text-align:center;color:#6c757d;padding:1rem">Nenhum material</div>';
+        };
+        render(); // instantâneo (cache local)
+        SheetsAPI.getMateriais().then(render); // atualiza em segundo plano
     },
     selectMaterial: function(codigo) {
-        var mat = this.matsCache.find(function(m) { return String(m.codigo) === String(codigo); });
+        var mat = MatsStore.cache.find(function(m) { return String(m.codigo) === String(codigo); });
+        if (!mat) return;
         this.selectedMaterial = mat;
         document.getElementById('conf-material-nome').textContent = mat.descricao;
         document.getElementById('conf-material-dim').textContent = mat.codigo + ' | ' + (mat.dimensoes || '-');
         document.getElementById('materiais-lista').classList.remove('active');
         document.getElementById('camera-view').classList.add('active');
-        Vision.bindPointer();
         Camera.init();
         Camera.start().then(function() { Vision.start(Conference.selectedTipo); });
     },
@@ -861,37 +755,34 @@ var Conference = {
         var md = this.selectedMaterial;
         var reg = parseInt(md.quantidade) || 0;
         var nova = reg + det;
-        var item = {
-            id: md.id, codigo: md.codigo, descricao: md.descricao, dimensoes: md.dimensoes,
-            tipo: md.tipo || 'barra', material: md.material, quantidade: nova,
-            minimo: md.minimo || 20, status: md.status || 'ativo', dataCadastro: md.dataCadastro
-        };
-        SheetsAPI.save(item, 'material').then(function() {
-            return SheetsAPI.save({
-                id: Utils.uuid(), material: md.codigo, descricao: md.descricao,
-                detectada: det, antes: reg, depois: nova, adicionado: det
-            }, 'conferencia');
-        }).then(function() {
-            Toast.success(det + ' barras lançadas! Total: ' + nova);
-            Conference.backToTipo();
-        }).catch(function(e) { Toast.error('Falha ao salvar no Sheets'); });
+        var item = Object.assign({}, md, { quantidade: nova });
+
+        // Atualiza a tela na hora (otimista) e grava no Sheets em segundo plano
+        MatsStore.update(item);
+        this.selectedMaterial = item;
+        Vision.stop();
+
+        SheetsAPI.save(item, 'material');
+        SheetsAPI.save({ id: Utils.uuid(), material: md.codigo, descricao: md.descricao, detectada: det, antes: reg, depois: nova, adicionado: det }, 'conferencia');
+
+        Toast.success(det + ' barras lançadas! Total: ' + nova);
+        Conference.backToTipo();
     }
 };
 
 // ================= MATERIAIS =================
 var Materials = {
-    data: [],
-    load: function() { SheetsAPI.getMateriais().then(function(d) { Materials.data = d; Materials.render(); }); },
     render: function() {
         var s = document.getElementById('search-material').value.toLowerCase();
         var f = document.getElementById('filter-tipo').value;
-        var html = this.data.filter(function(m) { return (!s || (String(m.codigo) + String(m.descricao)).toLowerCase().includes(s)) && (!f || m.material === f); })
+        var html = MatsStore.cache.filter(function(m) { return (!s || (String(m.codigo) + String(m.descricao)).toLowerCase().includes(s)) && (!f || m.material === f); })
             .map(function(m) { return '<tr><td>' + m.codigo + '</td><td>' + m.descricao + '</td><td>' + (m.dimensoes || '-') + '</td><td><span class="badge ' + (m.material === 'cobre' ? 'badge-cobre' : 'badge-aluminio') + '">' + m.material + '</span></td><td>' + (m.quantidade || 0) + '</td><td><span class="badge badge-success">OK</span></td><td><button class="btn-icon" onclick="Materials.edit(\'' + m.id + '\')">✎</button></td></tr>'; }).join('');
         document.querySelector('#table-materiais tbody').innerHTML = html || '<tr><td colspan="7">Nenhum material</td></tr>';
     },
+    load: function() { this.render(); SheetsAPI.getMateriais().then(function() { Materials.render(); }); },
     openModal: function() { document.getElementById('modal-material').classList.add('active'); },
     edit: function(id) {
-        var m = this.data.find(function(x) { return x.id === id; });
+        var m = MatsStore.cache.find(function(x) { return String(x.id) === String(id); });
         if (!m) return;
         document.getElementById('modal-title').textContent = 'Editar Material';
         document.getElementById('input-id').value = m.id;
@@ -912,34 +803,33 @@ var Materials = {
             material: document.getElementById('input-material').value,
             quantidade: parseInt(document.getElementById('input-quantidade').value) || 0
         };
-        SheetsAPI.save(data, 'material').then(function() {
-            Toast.success('Salvo!');
-            App.closeModal('modal-material');
-            Materials.load();
-        });
+        MatsStore.update(data); // otimista
+        SheetsAPI.save(data, 'material');
+        Toast.success('Salvo!');
+        App.closeModal('modal-material');
+        Materials.render();
     }
 };
 
 // ================= APP =================
 var App = {
     init: function() {
+        initLogo();
         document.getElementById('config-api-url').value = APP_CONFIG.api;
         document.getElementById('config-cloud-enabled').checked = (localStorage.getItem('roboflowEnabled') !== '0');
         document.getElementById('config-roboflow-url').value = CLOUD.url;
         document.getElementById('config-roboflow-key').value = CLOUD.key;
         document.getElementById('config-roboflow-conf').value = CLOUD.conf;
         document.getElementById('config-roboflow-interval').value = CLOUD.interval;
-        SheetsAPI.getMateriais().then(function(mats) {
-            if (!mats || mats.length === 0) {
-                document.getElementById('count-cobre').textContent = '0 itens';
-                document.getElementById('count-aluminio').textContent = '0 itens';
-                return;
-            }
-            var c = mats.filter(function(m) { return m.material === 'cobre'; }).length;
-            var a = mats.filter(function(m) { return m.material === 'aluminio'; }).length;
-            document.getElementById('count-cobre').textContent = c + ' itens';
-            document.getElementById('count-aluminio').textContent = a + ' itens';
-        });
+        this.updateCounters();
+        SheetsAPI.getMateriais().then(this.updateCounters); // sincroniza em fundo
+    },
+    updateCounters: function() {
+        var mats = MatsStore.cache;
+        var c = mats.filter(function(m) { return m.material === 'cobre'; }).length;
+        var a = mats.filter(function(m) { return m.material === 'aluminio'; }).length;
+        document.getElementById('count-cobre').textContent = c + ' itens';
+        document.getElementById('count-aluminio').textContent = a + ' itens';
     },
     navegar: function(p) {
         document.querySelectorAll('.page').forEach(function(el) { el.classList.remove('active'); });
@@ -951,9 +841,28 @@ var App = {
     verificarSenha: function() { if (document.getElementById('input-senha').value === CONFIG_SENHA) { this.closeModal('modal-senha'); this.navegar('configuracoes'); } else { document.getElementById('senha-erro').style.display = 'block'; } },
     sairConfig: function() { this.navegar('conferencia'); },
     closeModal: function(id) { document.getElementById(id).classList.remove('active'); },
+    abrirZerar: function() { document.getElementById('modal-zerar').classList.add('active'); },
+    zerarEstoque: function() {
+        var list = MatsStore.cache.slice();
+        this.closeModal('modal-zerar');
+        if (!list.length) { Toast.warning('Nenhum material carregado'); return; }
+        list.forEach(function(m) { m.quantidade = 0; });
+        MatsStore.set(list);
+        this.updateCounters();
+        Toast.warning('Zerando quantidades no Sheets...');
+        var chunks = [];
+        for (var i = 0; i < list.length; i += 5) chunks.push(list.slice(i, i + 5));
+        var p = Promise.resolve();
+        chunks.forEach(function(ch) {
+            p = p.then(function() {
+                return Promise.all(ch.map(function(m) { return SheetsAPI.save(Object.assign({}, m, { quantidade: 0 }), 'material'); }));
+            });
+        });
+        p.then(function() { Toast.success('Quantidades zeradas. Boa contagem!'); });
+    },
     salvarConfig: function() {
-        localStorage.setItem('apiUrl', document.getElementById('config-api-url').value);
-        APP_CONFIG.api = document.getElementById('config-api-url').value;
+        localStorage.setItem('apiUrl', document.getElementById('config-api-url').value.trim());
+        APP_CONFIG.api = localStorage.getItem('apiUrl');
         localStorage.setItem('roboflowEnabled', document.getElementById('config-cloud-enabled').checked ? '1' : '0');
         localStorage.setItem('roboflowUrl', document.getElementById('config-roboflow-url').value.trim());
         localStorage.setItem('roboflowKey', document.getElementById('config-roboflow-key').value.trim());
@@ -962,8 +871,7 @@ var App = {
         CLOUD.url = localStorage.getItem('roboflowUrl');
         CLOUD.key = localStorage.getItem('roboflowKey');
         CLOUD.conf = parseFloat(localStorage.getItem('roboflowConf')) || 0.5;
-        CLOUD.interval = parseFloat(localStorage.getItem('roboflowInterval')) || 5;
-        Vision.updateModeBadge();
+        CLOUD.interval = parseFloat(localStorage.getItem('roboflowInterval')) || 3;
         Toast.success('Configurações salvas!');
     }
 };
