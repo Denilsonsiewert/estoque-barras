@@ -249,15 +249,14 @@ form { padding: 1.5rem; }
                     <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:0.5rem;">
                         <label>URL do Web App</label>
                         <input type="text" id="config-api-url" readonly style="font-size:0.72rem;">
-                        <span style="font-size:0.8rem;color:var(--text-secondary);">Para alterar, edite <code>APP_CONFIG.api</code> no index.html e fa&#231;a commit no GitHub.</span>
                     </div>
                     <div class="setting-item">
                         <button class="btn btn-primary" onclick="App.testarRoboflow()">&#128268; Testar conex&#227;o</button>
                         <span id="rf-status" style="font-size:0.8rem;color:var(--text-secondary);"></span>
                     </div>
                     <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.5rem;">
-                        &#9989; API key protegida no servidor (n&#227;o aparece no GitHub).<br>
-                        &#128202; Materiais e Confer&#234;ncias s&#227;o salvos no Google Sheets.
+                        &#9989; API key protegida no servidor.<br>
+                        &#128202; Dados salvos no Google Sheets.
                     </p>
                 </div>
                 <div class="setting-group">
@@ -345,13 +344,14 @@ form { padding: 1.5rem; }
 
 <script>
 /* =====================================================================
-   CONFIGURAÇÃO DO APP — cole aqui a URL do Web App do Apps Script
+   URL DO WEB APP (Apps Script) — já preenchida com a sua URL
    ===================================================================== */
 var APP_CONFIG = {
     api: 'https://script.google.com/macros/s/AKfycbyjTylJtCPqw5XRirzvK-dKEwBxc3Ypp1JeKfDhqHyUcmCaMJaiLJAAind8egh1mgw4/exec',
     token: ''
 };
 var CONFIG_SENHA = '10032001';
+var VERSAO_ESPERADA = '5';
 
 var Utils = {
     uuid: function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0; return (c === 'x') ? r : (r & 0x3 | 0x8); }); },
@@ -363,20 +363,17 @@ var Toast = {
         var el = document.createElement('div');
         el.className = 'toast ' + t; el.textContent = m;
         document.getElementById('toast-container').appendChild(el);
-        setTimeout(function() { el.style.opacity = '0'; setTimeout(function() { el.remove(); }, 300); }, 4500);
+        setTimeout(function() { el.style.opacity = '0'; setTimeout(function() { el.remove(); }, 300); }, 5000);
     },
     success: function(m) { this.show(m, 'success'); },
     error: function(m) { this.show(m, 'error'); },
     warning: function(m) { this.show(m, 'warning'); }
 };
 
-/* =====================================================================
-   SHEETS API — chama o Google Apps Script
-   ===================================================================== */
 var SheetsAPI = {
     configured: function() { return APP_CONFIG.api && APP_CONFIG.api.indexOf('script.google.com') >= 0; },
     call: function(action, body) {
-        if (!this.configured()) return Promise.reject(new Error('API n\u00e3o configurada (APP_CONFIG.api)'));
+        if (!this.configured()) return Promise.reject(new Error('API nao configurada'));
         var url = APP_CONFIG.api + '?action=' + encodeURIComponent(action);
         if (APP_CONFIG.token) url += '&token=' + encodeURIComponent(APP_CONFIG.token);
         var opts = { method: body ? 'POST' : 'GET' };
@@ -418,7 +415,7 @@ var Camera = {
                         o.width = self.video.videoWidth; o.height = self.video.videoHeight;
                         resolve(true);
                     };
-                }).catch(function(e) { Toast.error('Erro c\u00e2mera: ' + e.message); resolve(false); });
+                }).catch(function(e) { Toast.error('Erro camera: ' + e.message); resolve(false); });
         });
     },
     stop: function() { if (this.stream) { this.stream.getTracks().forEach(function(t) { t.stop(); }); this.stream = null; } },
@@ -427,8 +424,8 @@ var Camera = {
         try {
             var caps = this.track.getCapabilities();
             if (caps.torch) { this.flashOn = !this.flashOn; this.track.applyConstraints({ advanced: [{ torch: this.flashOn }] }); }
-            else Toast.warning('Flash n\u00e3o dispon\u00edvel');
-        } catch (e) { Toast.warning('Flash n\u00e3o dispon\u00edvel'); }
+            else Toast.warning('Flash nao disponivel');
+        } catch (e) { Toast.warning('Flash nao disponivel'); }
     },
     zoomIn: function() { this.zoom = Math.min(this.zoom + 0.2, 3); this.applyZoom(); },
     zoomOut: function() { this.zoom = Math.max(this.zoom - 0.2, 1); this.applyZoom(); },
@@ -441,9 +438,6 @@ var Camera = {
     }
 };
 
-/* =====================================================================
-   ROBOFLOW — via proxy no Apps Script (sem CORS / sem HTTP 400)
-   ===================================================================== */
 function polyArea(pts) {
     var a = 0;
     for (var i = 0; i < pts.length; i++) {
@@ -462,7 +456,6 @@ function normPoints(raw) {
 var ROBOFLOW = {
     cap: null,
     enabled: function() { return SheetsAPI.configured(); },
-
     classOk: function(cls, tipo) {
         if (!cls) return true;
         var c = String(cls).toLowerCase();
@@ -473,7 +466,6 @@ var ROBOFLOW = {
         if (tipo === 'aluminio') return isAlum;
         return true;
     },
-
     grab: function(video) {
         if (!this.cap) this.cap = document.createElement('canvas');
         var vw = video.videoWidth, vh = video.videoHeight;
@@ -484,7 +476,6 @@ var ROBOFLOW = {
         var b64 = this.cap.toDataURL('image/jpeg', 0.85).split(',')[1].replace(/\r?\n/g, '');
         return { b64: b64, sx: vw / this.cap.width };
     },
-
     detect: function(video, tipo) {
         if (!video || video.readyState < 2) return Promise.resolve(null);
         var self = this;
@@ -497,7 +488,6 @@ var ROBOFLOW = {
             return null;
         });
     },
-
     parse: function(preds, tipo, sx) {
         var items = [];
         for (var i = 0; i < preds.length; i++) {
@@ -539,11 +529,8 @@ var ROBOFLOW = {
     }
 };
 
-/* =====================================================================
-   VISÃO — loop de detecção + estabilização + ajustes manuais
-   ===================================================================== */
 var Vision = {
-    isRunning: false, materialType: null, markers: [], fail: 0,
+    isRunning: false, busy: false, materialType: null, markers: [], fail: 0,
     manualAdds: [], removedPts: [], manualOffset: 0,
     counts: [], roi: null, roiMode: false, dragStart: null, bound: false,
 
@@ -578,9 +565,11 @@ var Vision = {
     },
 
     loop: function() {
-        if (!this.isRunning) return;
+        if (!this.isRunning || this.busy) return;
         var self = this;
+        this.busy = true;
         ROBOFLOW.detect(Camera.video, this.materialType).then(function(boxes) {
+            self.busy = false;
             if (!self.isRunning) return;
             if (boxes) {
                 self.fail = 0;
@@ -594,7 +583,7 @@ var Vision = {
                 self.markers = ms;
             } else {
                 self.fail++;
-                if (self.fail === 3) Toast.warning('IA indispon\u00edvel. Verifique internet/proxy.');
+                if (self.fail === 3) Toast.warning('IA indisponivel. Verifique internet/proxy.');
             }
             self.draw();
             self.updateUI();
@@ -721,7 +710,7 @@ var Vision = {
                 self.roi = { x: Math.min(start.x, end.x), y: Math.min(start.y, end.y), w: Math.abs(end.x - start.x), h: Math.abs(end.y - start.y) };
                 self.roiMode = false;
                 document.getElementById('btn-roi').classList.remove('active');
-                Toast.success('\u00c1rea definida');
+                Toast.success('Area definida');
                 return;
             }
             if (dist <= 15 && !self.roiMode) self.tap(end);
@@ -754,9 +743,6 @@ var Vision = {
     }
 };
 
-/* =====================================================================
-   CONFERÊNCIA
-   ===================================================================== */
 var Conference = {
     selectedTipo: null, selectedMaterial: null, matsCache: [],
 
@@ -819,7 +805,7 @@ var Conference = {
             if (!ok) return;
             Vision.updateModeBadge();
             Vision.start(Conference.selectedTipo);
-            if (ROBOFLOW.enabled()) Toast.success('\uD83C\uDF10 RF-DETR Roboflow ativo: contagem autom\u00e1tica.');
+            if (ROBOFLOW.enabled()) Toast.success('\uD83C\uDF10 RF-DETR Roboflow ativo: contagem automatica.');
         });
     },
 
@@ -842,7 +828,7 @@ var Conference = {
             }, 'conferencia');
         }).then(function() {
             md.quantidade = nova;
-            Toast.success('\u2705 ' + det + ' barras lan\u00e7adas! Total: ' + nova);
+            Toast.success('\u2705 ' + det + ' barras lancadas! Total: ' + nova);
             self.backToTipo();
         }).catch(function(e) {
             Toast.error('Falha ao salvar no Sheets: ' + e.message);
@@ -850,9 +836,6 @@ var Conference = {
     }
 };
 
-/* =====================================================================
-   MATERIAIS (página de cadastro)
-   ===================================================================== */
 var Materials = {
     data: [],
     load: function() {
@@ -908,13 +891,10 @@ var Materials = {
     del: function(id) {
         if (!confirm('Excluir este material?')) return;
         var self = this;
-        SheetsAPI.delete(id).then(function() { Toast.success('Exclu\u00eddo'); self.load(); });
+        SheetsAPI.delete(id).then(function() { Toast.success('Excluido'); self.load(); });
     }
 };
 
-/* =====================================================================
-   APP
-   ===================================================================== */
 var App = {
     init: function() {
         document.getElementById('config-api-url').value = APP_CONFIG.api;
@@ -923,6 +903,13 @@ var App = {
         if (localStorage.getItem('confiancaIA')) document.getElementById('config-confianca-ia').value = localStorage.getItem('confiancaIA');
         document.getElementById('config-auto-stop').checked = localStorage.getItem('autoStop') !== 'false';
         document.getElementById('config-autosave').checked = localStorage.getItem('autosave') !== 'false';
+
+        /* Verifica versao do Apps Script e carrega materiais */
+        fetch(APP_CONFIG.api + '?action=ping').then(function(r) { return r.json(); }).then(function(j) {
+            if (j && j.v !== VERSAO_ESPERADA) {
+                Toast.warning('Apps Script desatualizado (v' + (j.v || '?') + '). Publique NOVA VERSAO no Apps Script (passo 3).');
+            }
+        }).catch(function() { Toast.error('Nao conectou ao Apps Script. Verifique a URL.'); });
 
         SheetsAPI.getMateriais().then(function(mats) {
             var c = 0, a = 0;
@@ -961,7 +948,7 @@ var App = {
         var st = document.getElementById('rf-status');
         st.textContent = 'Testando via proxy...';
         SheetsAPI.testConnection().then(function(res) {
-            if (res.ok) { st.textContent = '\u2705 OK via ' + (res.endpoint || 'proxy'); Toast.success('Conex\u00e3o Roboflow OK pelo proxy!'); }
+            if (res.ok) { st.textContent = '\u2705 OK via ' + (res.endpoint || 'proxy'); Toast.success('Conexao Roboflow OK!'); }
             else { st.textContent = '\u274C ' + (res.message || 'Falha'); Toast.error('Falha: ' + (res.message || '')); }
         }).catch(function(e) {
             st.textContent = '\u274C ' + e.message;
@@ -970,7 +957,7 @@ var App = {
     },
 
     zerarQuantidades: function() {
-        if (confirm('ZERAR todas as quantidades no Google Sheets? Os itens ser\u00e3o mantidos.')) {
+        if (confirm('ZERAR todas as quantidades no Google Sheets?')) {
             SheetsAPI.zerarQuantidades().then(function(r) { Toast.success('Quantidades zeradas (' + r.count + ' itens)'); })
                 .catch(function(e) { Toast.error('Falha: ' + e.message); });
         }
@@ -982,7 +969,7 @@ var App = {
         localStorage.setItem('autosave', document.getElementById('config-autosave').checked);
         localStorage.setItem('estabilizacao', document.getElementById('config-estabilizacao').value);
         localStorage.setItem('confiancaIA', document.getElementById('config-confianca-ia').value);
-        Toast.success('Configura\u00e7\u00f5es salvas!');
+        Toast.success('Configuracoes salvas!');
     }
 };
 
