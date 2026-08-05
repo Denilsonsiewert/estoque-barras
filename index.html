@@ -226,7 +226,7 @@ form { padding: 1.5rem; }
                             <button class="btn btn-warning" onclick="Vision.restart()">&#128260; Reanalisar</button>
                             <button class="btn btn-danger" onclick="Conference.backToTipo()">&#8592; Voltar</button>
                         </div>
-                        <p class="hint">Com a IA configurada (RF-DETR Roboflow) tudo &#233; autom&#225;tico.<br>Sem IA: toque na imagem para corrigir, use +/&#8722; ou grade.</p>
+                        <p class="hint">Modelo RF-DETR Nano (segmenta&#231;&#227;o) ativo.<br>Ajuste manual: toque, +/&#8722; ou grade.</p>
                     </div>
                 </div>
             </div>
@@ -265,10 +265,10 @@ form { padding: 1.5rem; }
                     </div>
                     <div class="setting-item">
                         <label>Modelo</label>
-                        <input type="text" id="config-rf-model" placeholder="nuvem: projeto/vers&#227;o">
+                        <input type="text" id="config-rf-model" placeholder="projeto/vers&#227;o">
                     </div>
                     <div class="setting-item">
-                        <label>URL Inference (offline, opcional)</label>
+                        <label>URL Inference (local, opcional)</label>
                         <input type="text" id="config-rf-url" placeholder="ex: http://192.168.0.10:9001">
                     </div>
                     <div class="setting-item">
@@ -276,8 +276,9 @@ form { padding: 1.5rem; }
                         <span id="rf-status" style="font-size:0.8rem;color:var(--text-secondary);"></span>
                     </div>
                     <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.5rem;">
-                        Nuvem: deixe URL vazio e use <code>projeto/vers&#227;o</code> (aba Deploy).<br>
-                        Offline (sem internet no galp&#227;o): rode o Docker Roboflow Inference num PC e use <code>workspace/projeto/vers&#227;o</code> + URL <code>http://IP:9001</code>.
+                        Endpoints tentados automaticamente:<br>
+                        <code>serverless.roboflow.com</code> &#8594; <code>segment.roboflow.com</code> &#8594; <code>detect.roboflow.com</code>.<br>
+                        <strong style="color:var(--danger);">&#9888; N&#227;o publique este HTML na web:</strong> a API key fica vis&#237;vel no c&#243;digo.
                     </p>
                 </div>
                 <div class="setting-group">
@@ -297,11 +298,6 @@ form { padding: 1.5rem; }
                     <div class="setting-item">
                         <label>Estabiliza&#231;&#227;o (seg)</label>
                         <input type="number" id="config-estabilizacao" min="1" max="10" value="3">
-                    </div>
-                    <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:0.6rem;border-bottom:none;">
-                        <label>Modelo local .onnx (alternativa offline)</label>
-                        <input type="file" id="input-modelo" accept=".onnx" onchange="App.carregarModeloArquivo(this)">
-                        <span style="font-size:0.8rem;color:var(--text-secondary);" id="status-modelo">Opcional. Com RF-DETR via Roboflow, n&#227;o precisa disso.</span>
                     </div>
                 </div>
                 <div class="setting-group">
@@ -443,6 +439,15 @@ const MATERIAIS_DATABASE = {
 };
 const CONFIG_SENHA = '10032001';
 
+/* =====================================================================
+   CREDENCIAIS DO MODELO TREINADO (pré-configuradas)
+   Modelo: controle-de-estoque-de-barras-me/2 (Instance Segmentation / RF-DETR Nano)
+   ===================================================================== */
+const RF_DEFAULTS = {
+    key: 'U7LIVjFcRppUcPzLv9rC',
+    model: 'controle-de-estoque-de-barras-me/2'
+};
+
 const Utils = {
     uuid: function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0; return (c === 'x') ? r : (r & 0x3 | 0x8); }); },
     now: function() { var d = new Date(); return { date: d.toISOString().split('T')[0], full: d.toLocaleString('pt-BR') }; }
@@ -539,8 +544,8 @@ const Camera = {
 
 /* =====================================================================
    ROBOFLOW — RF-DETR Instance Segmentation (Nano)
-   Aceita resposta de SEGMENTAÇÃO (polígonos/máscaras) e de DETECÇÃO.
-   Endpoints: nuvem (segment/detect.roboflow.com) ou servidor local Docker.
+   Usa a mesma API REST que o InferenceHTTPClient do Python usa internamente.
+   Endpoints tentados em ordem: serverless → segment → detect (ou URL local).
    ===================================================================== */
 function polyArea(pts) {
     var a = 0;
@@ -559,15 +564,22 @@ function normPoints(raw) {
 
 const ROBOFLOW = {
     cap: null, base: null,
-    key: function() { return (localStorage.getItem('rf_key') || '').trim(); },
-    model: function() { return (localStorage.getItem('rf_model') || '').trim(); },
+    key: function() {
+        var k = (localStorage.getItem('rf_key') || '').trim();
+        return k || RF_DEFAULTS.key;
+    },
+    model: function() {
+        var m = (localStorage.getItem('rf_model') || '').trim();
+        return m || RF_DEFAULTS.model;
+    },
     url: function() { return (localStorage.getItem('rf_url') || '').trim().replace(/\/+$/, ''); },
     enabled: function() { return !!(this.key() && this.model()); },
 
     endpoints: function() {
         var u = this.url();
         if (u) return [u];
-        return ['https://segment.roboflow.com', 'https://detect.roboflow.com'];
+        /* Ordem: serverless (mais rápido p/ modelos Nano/DETR) → segment → detect */
+        return ['https://serverless.roboflow.com', 'https://segment.roboflow.com', 'https://detect.roboflow.com'];
     },
 
     classOk: function(cls, tipo) {
@@ -588,7 +600,7 @@ const ROBOFLOW = {
         this.cap.width = Math.round(vw * sc);
         this.cap.height = Math.round(vh * sc);
         this.cap.getContext('2d').drawImage(video, 0, 0, this.cap.width, this.cap.height);
-        return { b64: this.cap.toDataURL('image/jpeg', 0.85).split(',')[1], sx: vw / this.cap.width, w: this.cap.width };
+        return { b64: this.cap.toDataURL('image/jpeg', 0.85).split(',')[1], sx: vw / this.cap.width };
     },
 
     detect: function(video, tipo) {
@@ -599,6 +611,7 @@ const ROBOFLOW = {
         var eps = this.endpoints();
         var attempt = function(i) {
             if (i >= eps.length) return Promise.resolve(null);
+            /* Mesma URL que o InferenceHTTPClient Python usa internamente */
             var url = eps[i] + '/' + self.model() +
                       '?api_key=' + encodeURIComponent(self.key()) +
                       '&confidence=' + conf;
@@ -620,8 +633,7 @@ const ROBOFLOW = {
         return attempt(0);
     },
 
-    /* parse da resposta: máscaras (points) ou caixas; área da máscara
-       detecta máscara fundida (2 barras em 1) e conta como 2 */
+    /* Parse da resposta — suporta máscaras (pontos/polígonos) e caixas */
     parse: function(json, tipo, sx) {
         var preds = json.predictions || [];
         var items = [];
@@ -651,6 +663,7 @@ const ROBOFLOW = {
             });
         }
         if (!items.length) return [];
+        /* Detecta máscaras "fundidas" (duas barras em uma máscara) pela área */
         var areas = items.map(function(o) { return o.area; }).sort(function(a, b) { return a - b; });
         var med = areas[Math.floor(areas.length / 2)];
         var cands = items.filter(function(o) { return o.area <= 1.7 * med; })
@@ -664,107 +677,13 @@ const ROBOFLOW = {
     }
 };
 
-/* =====================================================================
-   YOLOv8 LOCAL (.onnx) — alternativa offline
-   ===================================================================== */
-function iouBoxes(a, b) {
-    var ix1 = Math.max(a.x1, b.x1), iy1 = Math.max(a.y1, b.y1);
-    var ix2 = Math.min(a.x2, b.x2), iy2 = Math.min(a.y2, b.y2);
-    var iw = Math.max(0, ix2 - ix1), ih = Math.max(0, iy2 - iy1);
-    var inter = iw * ih;
-    var aa = (a.x2 - a.x1) * (a.y2 - a.y1), bb = (b.x2 - b.x1) * (b.y2 - b.y1);
-    return inter / ((aa + bb - inter) || 1);
-}
-const YOLO = {
-    session: null, loaded: false, loading: false, inputSize: 640, pc: null,
-    initORT: function() {
-        if (typeof ort === 'undefined') return false;
-        ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/';
-        ort.env.wasm.numThreads = 1;
-        return true;
-    },
-    ensureModel: function() {
-        if (this.loaded || this.loading) return Promise.resolve(this.loaded);
-        if (!this.initORT()) return Promise.resolve(false);
-        this.loading = true;
-        var self = this;
-        return this.loadFromUrl('barras.onnx').then(function(ok) { self.loading = false; return ok; });
-    },
-    loadFromUrl: function(url) {
-        var self = this;
-        return ort.InferenceSession.create(url, { executionProviders: ['wasm'] })
-            .then(function(s) { self.session = s; self.loaded = true; return true; })
-            .catch(function() { return false; });
-    },
-    loadFromFile: function(file) {
-        var self = this;
-        if (!this.initORT()) return Promise.resolve(false);
-        return file.arrayBuffer().then(function(buf) {
-            return ort.InferenceSession.create(buf, { executionProviders: ['wasm'] });
-        }).then(function(s) { self.session = s; self.loaded = true; return true; })
-          .catch(function(e) { Toast.error('Falha no .onnx: ' + e.message); return false; });
-    },
-    confThresh: function() { return ((parseInt(document.getElementById('config-confianca-ia').value) || 35) / 100); },
-    detect: function(video) {
-        if (!this.session || !video || video.readyState < 2) return Promise.resolve(null);
-        var self = this, S = this.inputSize;
-        if (!this.pc) this.pc = document.createElement('canvas');
-        this.pc.width = S; this.pc.height = S;
-        var ctx = this.pc.getContext('2d', { willReadFrequently: true });
-        ctx.fillStyle = '#808080'; ctx.fillRect(0, 0, S, S);
-        var vw = video.videoWidth, vh = video.videoHeight;
-        var sc = Math.min(S / vw, S / vh);
-        var dw = Math.round(vw * sc), dh = Math.round(vh * sc);
-        var ox = Math.round((S - dw) / 2), oy = Math.round((S - dh) / 2);
-        ctx.drawImage(video, ox, oy, dw, dh);
-        var img = ctx.getImageData(0, 0, S, S).data;
-        var n = S * S, data = new Float32Array(3 * n);
-        for (var i0 = 0; i0 < n; i0++) {
-            data[i0] = img[i0 * 4] / 255;
-            data[n + i0] = img[i0 * 4 + 1] / 255;
-            data[2 * n + i0] = img[i0 * 4 + 2] / 255;
-        }
-        var feeds = {};
-        feeds[this.session.inputNames[0]] = new ort.Tensor('float32', data, [1, 3, S, S]);
-        return this.session.run(feeds).then(function(res) {
-            var out = res[self.session.outputNames[0]];
-            var d = out.dims, D = out.data, boxes = [], thr = self.confThresh(), i;
-            if (d.length === 3 && d[1] <= 64) {
-                var N2 = d[2], nc = d[1] - 4;
-                for (i = 0; i < N2; i++) {
-                    var bs = 0;
-                    for (var c = 0; c < nc; c++) { var s = D[(4 + c) * N2 + i]; if (s > bs) bs = s; }
-                    if (bs < thr) continue;
-                    var cx = D[i], cy = D[N2 + i], w = D[2 * N2 + i], h = D[3 * N2 + i];
-                    boxes.push({ x1: (cx - w / 2 - ox) / sc, y1: (cy - h / 2 - oy) / sc, x2: (cx + w / 2 - ox) / sc, y2: (cy + h / 2 - oy) / sc, score: bs, n: 1 });
-                }
-            } else if (d.length === 3) {
-                var N = d[1], cols = d[2];
-                for (i = 0; i < N; i++) {
-                    var score = cols >= 5 ? D[i * cols + 4] : 1;
-                    if (score < thr) continue;
-                    boxes.push({ x1: (D[i * cols] - ox) / sc, y1: (D[i * cols + 1] - oy) / sc, x2: (D[i * cols + 2] - ox) / sc, y2: (D[i * cols + 3] - oy) / sc, score: score, n: 1 });
-                }
-            }
-            boxes = boxes.filter(function(b) { return (b.x2 - b.x1) > 6 && (b.y2 - b.y1) > 4; });
-            boxes.sort(function(a, b) { return b.score - a.score; });
-            var keep = [];
-            while (boxes.length) { var b = boxes.shift(); keep.push(b); boxes = boxes.filter(function(o) { return iouBoxes(b, o) < 0.45; }); }
-            return keep;
-        }).catch(function(e) { console.warn('ONNX:', e); return null; });
-    }
-};
-
-/* =====================================================================
-   VISÃO — prioridade: RF-DETR Roboflow → ONNX local → detector clássico
-   ===================================================================== */
 const Vision = {
     isRunning: false, materialType: null, markers: [], fail: 0,
     manualAdds: [], removedPts: [], manualOffset: 0,
     counts: [], roi: null, roiMode: false, wc: null, dragStart: null, bound: false,
 
-    trainedMode: function() { return ROBOFLOW.enabled() || YOLO.loaded; },
-    engine: function() { return ROBOFLOW.enabled() ? 'rf' : (YOLO.loaded ? 'onnx' : 'classic'); },
+    trainedMode: function() { return ROBOFLOW.enabled(); },
+    engine: function() { return ROBOFLOW.enabled() ? 'rf' : 'classic'; },
 
     start: function(tipo) {
         this.materialType = tipo;
@@ -781,16 +700,20 @@ const Vision = {
 
     updateModeBadge: function() {
         var el = document.getElementById('modo-ia');
-        if (ROBOFLOW.enabled()) { el.className = 'modo-ia treinada'; el.innerHTML = '&#127760; RF-DETR ROBOFLOW &#8212; 100% AUTOM\u00c1TICO'; }
-        else if (YOLO.loaded) { el.className = 'modo-ia treinada'; el.innerHTML = '&#129302; IA LOCAL (ONNX) &#8212; 100% AUTOM\u00c1TICO'; }
-        else { el.className = 'modo-ia basica'; el.innerHTML = '&#9881; Detector b\u00e1sico (sem IA configurada)'; }
+        if (ROBOFLOW.enabled()) {
+            el.className = 'modo-ia treinada';
+            el.innerHTML = '&#127760; RF-DETR ROBOFLOW &#8212; 100% AUTOM\u00c1TICO';
+        } else {
+            el.className = 'modo-ia basica';
+            el.innerHTML = '&#9881; Detector b\u00e1sico (sem IA configurada)';
+        }
     },
     setStatus: function(mode) {
         var el = document.getElementById('status-detectando');
         el.style.display = 'flex';
         if (mode === 'running') {
             el.classList.remove('stable');
-            document.getElementById('status-texto').textContent = this.trainedMode() ? 'IA contando sozinha... segure firme' : 'Detectando automaticamente...';
+            document.getElementById('status-texto').textContent = 'IA contando sozinha... segure firme';
         } else {
             el.classList.add('stable');
             document.getElementById('status-texto').textContent = 'Contagem estabilizada \u2014 revise e confirme';
@@ -800,151 +723,23 @@ const Vision = {
     loop: function() {
         if (!this.isRunning) return;
         var self = this;
-        var mode = this.engine();
-        var interval = mode === 'rf' ? 900 : (mode === 'onnx' ? 600 : 150);
-        var pr = mode === 'rf' ? ROBOFLOW.detect(Camera.video, this.materialType)
-               : mode === 'onnx' ? YOLO.detect(Camera.video)
-               : Promise.resolve(null);
-        pr.then(function(boxes) {
+        var interval = 900;
+        ROBOFLOW.detect(Camera.video, this.materialType).then(function(boxes) {
             if (!self.isRunning) return;
             if (boxes) {
                 self.fail = 0;
                 self.markers = boxes.map(function(b) {
                     return { x: (b.x1 + b.x2) / 2, y: (b.y1 + b.y2) / 2, box: b, poly: b.poly || null, n: b.n || 1 };
                 });
-            } else if (mode !== 'classic') {
-                self.fail++;
-                if (self.fail === 3) Toast.warning('IA indispon\u00edvel (internet/API?). Verifique a conex\u00e3o.');
             } else {
-                self.markers = self.detectClassical().map(function(m) { m.n = 1; return m; });
+                self.fail++;
+                if (self.fail === 3) Toast.warning('IA indispon\u00edvel. Verifique internet ou configura\u00e7\u00e3o.');
             }
             self.draw();
             self.updateUI();
             self.checkAuto(interval);
             setTimeout(function() { self.loop(); }, interval);
         });
-    },
-
-    detectClassical: function() {
-        var v = Camera.video;
-        if (!v || v.readyState < 2) return [];
-        if (!this.wc) this.wc = document.createElement('canvas');
-        var scale = 0.5;
-        var W = Math.max(4, Math.round(v.videoWidth * scale)), H = Math.max(4, Math.round(v.videoHeight * scale));
-        if (this.wc.width !== W) this.wc.width = W;
-        if (this.wc.height !== H) this.wc.height = H;
-        var ctx = this.wc.getContext('2d', { willReadFrequently: true });
-        ctx.drawImage(v, 0, 0, W, H);
-        var img; try { img = ctx.getImageData(0, 0, W, H); } catch (e) { return []; }
-        var d = img.data, N = W * H;
-        var mask = new Uint8Array(N), val = new Uint8Array(N);
-        var copper = this.materialType === 'cobre';
-        var p, i;
-        for (p = 0, i = 0; p < N; p++, i += 4) {
-            var r = d[i], g = d[i + 1], b = d[i + 2];
-            var mx = r > g ? (r > b ? r : b) : (g > b ? g : b);
-            var mn = r < g ? (r < b ? r : b) : (g < b ? g : b);
-            val[p] = mx;
-            if (copper) {
-                if (r > 110 && (r - g) > 35 && (r - b) > 55) {
-                    var delta = mx - mn, h = 0;
-                    if (delta > 0) {
-                        if (mx === r) h = ((g - b) / delta) % 6;
-                        else if (mx === g) h = (b - r) / delta + 2;
-                        else h = (r - g) / delta + 4;
-                        h *= 60; if (h < 0) h += 360;
-                    }
-                    if (h <= 25 || h >= 345) mask[p] = 1;
-                }
-            } else {
-                var sat = mx === 0 ? 0 : (mx - mn) / mx;
-                if (mx > 90 && mx < 240 && sat < 0.20) mask[p] = 1;
-            }
-        }
-        if (this.roi) {
-            var rx = Math.max(0, Math.floor(this.roi.x * scale)), ry = Math.max(0, Math.floor(this.roi.y * scale));
-            var rx2 = Math.min(W, Math.ceil((this.roi.x + this.roi.w) * scale)), ry2 = Math.min(H, Math.ceil((this.roi.y + this.roi.h) * scale));
-            for (var y = 0; y < H; y++) {
-                if (y < ry || y >= ry2) { for (var xa = 0; xa < W; xa++) mask[y * W + xa] = 0; continue; }
-                for (var xb = 0; xb < rx; xb++) mask[y * W + xb] = 0;
-                for (var xc = rx2; xc < W; xc++) mask[y * W + xc] = 0;
-            }
-        }
-        var hist = new Float64Array(256), total = 0, sum = 0;
-        for (p = 0; p < N; p++) if (mask[p]) { hist[val[p]]++; total++; }
-        var thr = 100;
-        if (total > 100) {
-            for (p = 0; p < 256; p++) sum += p * hist[p];
-            var sumB = 0, wB = 0, best = 0;
-            for (p = 0; p < 256; p++) {
-                wB += hist[p]; if (!wB) continue;
-                var wF = total - wB; if (!wF) break;
-                sumB += p * hist[p];
-                var mB = sumB / wB, mF = (sum - sumB) / wF;
-                var bt = wB * wF * (mB - mF) * (mB - mF);
-                if (bt > best) { best = bt; thr = p; }
-            }
-        }
-        var mask2 = new Uint8Array(N);
-        for (p = 0; p < N; p++) if (mask[p] && val[p] >= thr) mask2[p] = 1;
-        var ero = parseInt(localStorage.getItem('erosion') || '2', 10);
-        for (var e = 0; e < ero; e++) {
-            var nm = new Uint8Array(N);
-            for (var y2 = 1; y2 < H - 1; y2++) for (var x2 = 1; x2 < W - 1; x2++) {
-                var q = y2 * W + x2;
-                if (mask2[q] && mask2[q - 1] && mask2[q + 1] && mask2[q - W] && mask2[q + W]) nm[q] = 1;
-            }
-            mask2 = nm;
-        }
-        var minArea = parseInt(localStorage.getItem('minArea') || '25', 10);
-        var labels = new Int32Array(N), queue = new Int32Array(N), comps = [];
-        for (p = 0; p < N; p++) {
-            if (!mask2[p] || labels[p]) continue;
-            var compId = comps.length + 1, head = 0, tail = 0;
-            queue[tail++] = p; labels[p] = compId;
-            var area = 0, minX = W, minY = H, maxX = 0, maxY = 0;
-            while (head < tail) {
-                var q2 = queue[head++]; area++;
-                var qx = q2 % W, qy = (q2 - qx) / W;
-                if (qx < minX) minX = qx; if (qx > maxX) maxX = qx;
-                if (qy < minY) minY = qy; if (qy > maxY) maxY = qy;
-                if (qx > 0 && mask2[q2 - 1] && !labels[q2 - 1]) { labels[q2 - 1] = compId; queue[tail++] = q2 - 1; }
-                if (qx < W - 1 && mask2[q2 + 1] && !labels[q2 + 1]) { labels[q2 + 1] = compId; queue[tail++] = q2 + 1; }
-                if (qy > 0 && mask2[q2 - W] && !labels[q2 - W]) { labels[q2 - W] = compId; queue[tail++] = q2 - W; }
-                if (qy < H - 1 && mask2[q2 + W] && !labels[q2 + W]) { labels[q2 + W] = compId; queue[tail++] = q2 + W; }
-            }
-            if (area >= minArea) comps.push({ area: area, minX: minX, minY: minY, maxX: maxX, maxY: maxY });
-        }
-        if (!comps.length) return [];
-        var areas = comps.map(function(c) { return c.area; }).sort(function(a, b) { return a - b; });
-        var med = areas[Math.floor(areas.length / 2)];
-        var cands = comps.filter(function(c) { return c.area <= 1.7 * med; }).map(function(c) { return c.area; }).sort(function(a, b) { return a - b; });
-        var typical = Math.max(cands.length ? cands[Math.floor(cands.length / 2)] : med, minArea);
-        var inv = 1 / scale, out = [];
-        for (p = 0; p < comps.length; p++) {
-            var c = comps[p];
-            var n = Math.max(1, Math.round(c.area / typical));
-            var bw = c.maxX - c.minX + 1, bh = c.maxY - c.minY + 1;
-            if (n === 1) out.push({ x: (c.minX + bw / 2) * inv, y: (c.minY + bh / 2) * inv });
-            else {
-                var cols = Math.max(1, Math.round(Math.sqrt((n * bw / bh) / 3)));
-                if (cols > n) cols = n;
-                var rows = Math.ceil(n / cols), placed = 0;
-                for (var rr = 0; rr < rows && placed < n; rr++)
-                    for (var cc = 0; cc < cols && placed < n; cc++) {
-                        out.push({ x: (c.minX + (cc + 0.5) * bw / cols) * inv, y: (c.minY + (rr + 0.5) * bh / rows) * inv });
-                        placed++;
-                    }
-            }
-        }
-        var R = 30, kept = [];
-        for (p = 0; p < out.length; p++) {
-            var m = out[p], rem = false;
-            for (var k = 0; k < this.removedPts.length; k++)
-                if (Math.abs(this.removedPts[k].x - m.x) < R && Math.abs(this.removedPts[k].y - m.y) < R) { rem = true; break; }
-            if (!rem) kept.push(m);
-        }
-        return kept;
     },
 
     draw: function() {
@@ -963,7 +758,6 @@ const Vision = {
         var num = 0;
         for (var i = 0; i < this.markers.length; i++) {
             var m = this.markers[i];
-            /* desenha máscara (polígono) se a IA for de segmentação */
             if (m.poly && m.poly.length > 2) {
                 ctx.beginPath();
                 ctx.moveTo(m.poly[0].x, m.poly[0].y);
@@ -1159,13 +953,10 @@ const Conference = {
         Camera.init();
         Camera.start().then(function(ok) {
             if (!ok) return;
-            YOLO.ensureModel().then(function() {
-                Vision.updateModeBadge();
-                Vision.start(Conference.selectedTipo);
-                if (ROBOFLOW.enabled()) Toast.success('\uD83C\uDF10 RF-DETR Roboflow ativo: contagem 100% autom\u00e1tica.');
-                else if (YOLO.loaded) Toast.success('\uD83E\uDD16 IA local ativa: contagem 100% autom\u00e1tica.');
-                else Toast.warning('Sem IA configurada. Modo b\u00e1sico ativo \u2014 configure o Roboflow nas Configura\u00e7\u00f5es.');
-            });
+            Vision.updateModeBadge();
+            Vision.start(Conference.selectedTipo);
+            if (ROBOFLOW.enabled()) Toast.success('\uD83C\uDF10 RF-DETR Roboflow ativo: contagem 100% autom\u00e1tica.');
+            else Toast.warning('Sem IA configurada.');
         });
     },
     save: function() {
@@ -1231,16 +1022,19 @@ const App = {
     init: function() {
         document.getElementById('count-cobre').textContent = MATERIAIS_DATABASE.cobre.length + ' itens';
         document.getElementById('count-aluminio').textContent = MATERIAIS_DATABASE.aluminio.length + ' itens';
+        /* Carrega credenciais: preferindo valores salvos, senão usa os defaults do modelo treinado */
+        document.getElementById('config-rf-key').value = localStorage.getItem('rf_key') || RF_DEFAULTS.key;
+        document.getElementById('config-rf-model').value = localStorage.getItem('rf_model') || RF_DEFAULTS.model;
+        document.getElementById('config-rf-url').value = localStorage.getItem('rf_url') || '';
         if (localStorage.getItem('minArea')) document.getElementById('config-minarea').value = localStorage.getItem('minArea');
         if (localStorage.getItem('erosion')) document.getElementById('config-erosao').value = localStorage.getItem('erosion');
         if (localStorage.getItem('resolution')) document.getElementById('config-resolucao').value = localStorage.getItem('resolution');
         if (localStorage.getItem('estabilizacao')) document.getElementById('config-estabilizacao').value = localStorage.getItem('estabilizacao');
         if (localStorage.getItem('confiancaIA')) document.getElementById('config-confianca-ia').value = localStorage.getItem('confiancaIA');
-        if (localStorage.getItem('rf_key')) document.getElementById('config-rf-key').value = localStorage.getItem('rf_key');
-        if (localStorage.getItem('rf_model')) document.getElementById('config-rf-model').value = localStorage.getItem('rf_model');
-        if (localStorage.getItem('rf_url')) document.getElementById('config-rf-url').value = localStorage.getItem('rf_url');
         document.getElementById('config-auto-stop').checked = localStorage.getItem('autoStop') !== 'false';
         document.getElementById('config-autosave').checked = localStorage.getItem('autosave') !== 'false';
+        /* Auto-teste da conexão ao iniciar (silencioso) */
+        if (ROBOFLOW.enabled()) this.testarRoboflowSilencioso();
     },
     navegar: function(page) {
         document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -1266,13 +1060,13 @@ const App = {
     closeModal: function(id) { document.getElementById(id).classList.remove('active'); },
 
     testarRoboflow: function() {
-        var key = document.getElementById('config-rf-key').value.trim();
-        var model = document.getElementById('config-rf-model').value.trim();
+        var key = document.getElementById('config-rf-key').value.trim() || RF_DEFAULTS.key;
+        var model = document.getElementById('config-rf-model').value.trim() || RF_DEFAULTS.model;
         var url = document.getElementById('config-rf-url').value.trim().replace(/\/+$/, '');
         var st = document.getElementById('rf-status');
         if (!key || !model) { Toast.warning('Preencha API Key e Modelo'); return; }
         st.textContent = 'Testando...';
-        var eps = url ? [url] : ['https://segment.roboflow.com', 'https://detect.roboflow.com'];
+        var eps = url ? [url] : ['https://serverless.roboflow.com', 'https://segment.roboflow.com', 'https://detect.roboflow.com'];
         var c = document.createElement('canvas');
         c.width = 64; c.height = 64;
         var x = c.getContext('2d');
@@ -1287,8 +1081,8 @@ const App = {
             }).then(function(r) {
                 if (r.status === 401) { st.textContent = '\u274C API Key inv\u00e1lida'; Toast.error('API Key inv\u00e1lida (401)'); }
                 else if (r.status === 404 && i + 1 < eps.length) { attempt(i + 1); }
-                else if (r.status === 404) { st.textContent = '\u274C Modelo n\u00e3o encontrado'; Toast.error('Modelo n\u00e3o encontrado (404). Nuvem: projeto/vers\u00e3o. Local: workspace/projeto/vers\u00e3o.'); }
-                else if (r.ok) { st.textContent = '\u2705 OK via ' + eps[i].replace('https://', ''); Toast.success('Conex\u00e3o Roboflow OK! Salve as configura\u00e7\u00f5es.'); }
+                else if (r.status === 404) { st.textContent = '\u274C Modelo n\u00e3o encontrado'; Toast.error('Modelo n\u00e3o encontrado (404).'); }
+                else if (r.ok) { st.textContent = '\u2705 OK via ' + eps[i].replace('https://', ''); Toast.success('Conex\u00e3o Roboflow OK!'); }
                 else { st.textContent = '\u26A0 HTTP ' + r.status; Toast.warning('HTTP ' + r.status); }
             }).catch(function(e) {
                 if (i + 1 < eps.length) attempt(i + 1);
@@ -1298,16 +1092,26 @@ const App = {
         attempt(0);
     },
 
-    carregarModeloArquivo: function(inp) {
-        var f = inp.files[0];
-        if (!f) return;
-        Toast.show('Carregando modelo IA...');
-        YOLO.loadFromFile(f).then(function(ok) {
-            if (ok) {
-                document.getElementById('status-modelo').textContent = '\u2705 Modelo local carregado.';
-                Toast.success('\uD83E\uDD16 Modelo carregado!');
-            }
-        });
+    testarRoboflowSilencioso: function() {
+        var key = ROBOFLOW.key(), model = ROBOFLOW.model();
+        var eps = ROBOFLOW.endpoints();
+        var c = document.createElement('canvas');
+        c.width = 64; c.height = 64;
+        c.getContext('2d').fillStyle = '#b87333'; c.getContext('2d').fillRect(0, 0, 64, 64);
+        var b64 = c.toDataURL('image/jpeg', 0.7).split(',')[1];
+        var attempt = function(i) {
+            if (i >= eps.length) { console.warn('Roboflow: todos os endpoints falharam'); return; }
+            fetch(eps[i] + '/' + model + '?api_key=' + encodeURIComponent(key), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'image=' + encodeURIComponent(b64)
+            }).then(function(r) {
+                if (r.ok) console.log('Roboflow OK via', eps[i]);
+                else if (r.status === 404 && i + 1 < eps.length) attempt(i + 1);
+                else console.warn('Roboflow [' + eps[i] + ']: HTTP', r.status);
+            }).catch(function() { if (i + 1 < eps.length) attempt(i + 1); });
+        };
+        attempt(0);
     },
 
     zerarQuantidades: function() {
@@ -1332,7 +1136,7 @@ const App = {
 
 window.addEventListener('DOMContentLoaded', function() { App.init(); });
 window.Conference = Conference; window.Materials = Materials; window.Camera = Camera;
-window.Vision = Vision; window.YOLO = YOLO; window.ROBOFLOW = ROBOFLOW; window.App = App;
+window.Vision = Vision; window.ROBOFLOW = ROBOFLOW; window.App = App;
 </script>
 </body>
 </html>
