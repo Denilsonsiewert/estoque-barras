@@ -361,28 +361,25 @@ var MatsStore = {
 MatsStore.load();
 
 var Utils = {
-    uuid: function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0.3 | 0x8); return v.toString(16); }); }
+    uuid: function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); }); }
 };
 
-// ================= SHEETS API =================
-// CORREÇÃO: envia os campos TAMBÉM como parâmetros na URL (e.parameter),
-// além do corpo JSON. Assim o Apps Script atualiza a linha existente
-// (soma na quantidade) e preenche a aba Conferencias corretamente.
+// =====================================================================
+// SHEETS API — CONTRATO EXATO DO APPS SCRIPT v7
+//  - saveMaterial / saveConferencia: corpo = { data: {...} }
+//  - zerarQuantidades: uma única chamada (zera tudo no servidor)
+//  - getMateriais: GET ?action=getMateriais
+// =====================================================================
 var SheetsAPI = {
-    _post: function(action, payload) {
+    _post: function(action, payload, wrapInData) {
         if (!APP_CONFIG.api) return Promise.resolve(null);
-        var qs = '?action=' + encodeURIComponent(action);
-        Object.keys(payload || {}).forEach(function(k) {
-            var v = payload[k];
-            if (v === undefined || v === null || typeof v === 'object') return;
-            qs += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(String(v));
-        });
-        return fetch(APP_CONFIG.api + qs, {
+        var body = wrapInData ? { data: payload || {} } : (payload || {});
+        return fetch(APP_CONFIG.api + '?action=' + encodeURIComponent(action), {
             method: 'POST',
             mode: 'no-cors',
             keepalive: true,
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload || {})
+            body: JSON.stringify(body)
         }).catch(function(e) { console.warn('SheetsAPI falha em', action, e); });
     },
     getMateriais: function() {
@@ -395,8 +392,9 @@ var SheetsAPI = {
             })
             .catch(function() { return MatsStore.cache; });
     },
-    saveMaterial: function(item) { return this._post('saveMaterial', item); },
-    saveConferencia: function(item) { return this._post('saveConferencia', item); }
+    saveMaterial: function(item) { return this._post('saveMaterial', item, true); },
+    saveConferencia: function(item) { return this._post('saveConferencia', item, true); },
+    zerarQuantidades: function() { return this._post('zerarQuantidades', {}); }
 };
 
 var Toast = {
@@ -781,6 +779,7 @@ var Conference = {
         this.selectedMaterial = item;
         Vision.stop();
 
+        // Contrato v7: { data: item } -> atualiza a linha pelo id (SOMA, não cria nova)
         SheetsAPI.saveMaterial(item);
         SheetsAPI.saveConferencia({
             id: Utils.uuid(), material: md.codigo, descricao: md.descricao,
@@ -887,18 +886,17 @@ var App = {
         }
     },
     zerarEstoque: function() {
-        var list = MatsStore.cache.slice();
-        if (!list.length) { Toast.warning('Nenhum material carregado'); return; }
-        list.forEach(function(m) { m.quantidade = 0; });
-        MatsStore.set(list);
+        if (!MatsStore.cache.length) { Toast.warning('Nenhum material carregado'); return; }
+        // Atualiza a tela na hora
+        MatsStore.cache.forEach(function(m) { m.quantidade = 0; });
+        MatsStore.set(MatsStore.cache);
         this.updateCounters();
         Toast.warning('Zerando quantidades no Sheets...');
-        var queue = list.slice();
-        (function next() {
-            var m = queue.shift();
-            if (!m) { Toast.success('Quantidades zeradas. Boa contagem!'); return; }
-            SheetsAPI.saveMaterial(Object.assign({}, m, { quantidade: 0 })).then(function() { setTimeout(next, 250); });
-        })();
+        // UMA única chamada: o script zera a coluna quantidade inteira no servidor
+        SheetsAPI.zerarQuantidades().then(function() {
+            Toast.success('Quantidades zeradas. Boa contagem!');
+            SheetsAPI.getMateriais().then(App.updateCounters);
+        });
     },
     sairConfig: function() { this.navegar('conferencia'); },
     closeModal: function(id) { document.getElementById(id).classList.remove('active'); },
