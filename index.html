@@ -4,15 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Estoque de Barras - WEG</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf_plugin_autotable.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/ort.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 :root {
     --weg-blue: #0055a4; --weg-blue-dark: #003d7a; --weg-green: #00a650; --weg-green-dark: #008f44;
-    --danger: #dc3545; --warning: #ffc107; --warning-dark: #e0a800; --info: #17a2b8;
+    --danger: #dc3545; --warning: #ffc107; --warning-dark: #e0a800;
     --bg-main: #f5f7fa; --bg-card: #ffffff; --text-primary: #212529; --text-secondary: #6c757d;
     --border-color: #dee2e6; --shadow-lg: 0 8px 24px rgba(0,85,164,0.12); --shadow-xl: 0 12px 40px rgba(0,85,164,0.16);
     --radius: 8px; --radius-lg: 12px;
@@ -78,9 +74,6 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .contagem-display .subtext { font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem; }
 .adjust-row { display: flex; gap: 0.8rem; margin-bottom: 0.8rem; }
 .adjust-row .btn { flex: 1; font-size: 1.1rem; padding: 0.5rem; font-weight: 800; }
-.grid-helper { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; background: var(--bg-main); padding: 0.8rem; border-radius: var(--radius); border: 2px solid var(--border-color); }
-.grid-helper input { width: 64px; text-align: center; padding: 0.5rem; }
-.grid-helper .btn { flex: 1; padding: 0.6rem; }
 .acoes-buttons { display: flex; flex-direction: column; gap: 0.8rem; }
 .btn { padding: 0.9rem 1.5rem; border: none; border-radius: var(--radius); cursor: pointer; font-size: 0.95rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -125,7 +118,6 @@ form { padding: 1.5rem; }
 .setting-item label { font-size: 0.95rem; font-weight: 600; }
 .setting-item input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--weg-blue); }
 .setting-item input, .setting-item select { width: 200px; padding: 0.6rem 0.9rem; }
-.setting-item input[type="file"] { width: 220px; font-size: 0.8rem; }
 .toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 3000; display: flex; flex-direction: column; gap: 0.8rem; }
 .toast { background: white; padding: 1.2rem 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow-lg); border-left: 4px solid var(--weg-blue); min-width: 280px; animation: slideInRight 0.3s ease; font-weight: 500; }
 .toast.success { border-left-color: var(--weg-green); }
@@ -197,7 +189,7 @@ form { padding: 1.5rem; }
                         </div>
                     </div>
                     <div class="contagem-panel">
-                        <div class="modo-ia basica" id="modo-ia">&#9881; Detector b&#225;sico</div>
+                        <div class="modo-ia basica" id="modo-ia">&#9881; Verificando...</div>
                         <div class="material-info-box">
                             <div class="titulo">Material Selecionado</div>
                             <div class="nome" id="conf-material-nome">-</div>
@@ -216,17 +208,12 @@ form { padding: 1.5rem; }
                             <button class="btn btn-secondary" onclick="Vision.nudge(-1)">&#8722;</button>
                             <button class="btn btn-secondary" onclick="Vision.nudge(1)">+</button>
                         </div>
-                        <div class="grid-helper">
-                            <input id="grid-rows" type="number" min="1" value="5"> &#215;
-                            <input id="grid-cols" type="number" min="1" value="6">
-                            <button class="btn btn-primary" onclick="Vision.applyGrid()">Grade</button>
-                        </div>
                         <div class="acoes-buttons">
                             <button class="btn btn-success" id="btn-confirmar" onclick="Conference.save()" disabled>&#9989; Confirmar Contagem</button>
                             <button class="btn btn-warning" onclick="Vision.restart()">&#128260; Reanalisar</button>
                             <button class="btn btn-danger" onclick="Conference.backToTipo()">&#8592; Voltar</button>
                         </div>
-                        <p class="hint">Modelo RF-DETR Nano (segmenta&#231;&#227;o) ativo.<br>Ajuste manual: toque, +/&#8722; ou grade.</p>
+                        <p class="hint">IA RF-DETR conta sozinha e salva no Google Sheets.<br>Ajuste fino: toque na imagem ou use +/&#8722;.</p>
                     </div>
                 </div>
             </div>
@@ -258,27 +245,19 @@ form { padding: 1.5rem; }
             </div>
             <div class="settings-container">
                 <div class="setting-group">
-                    <h3>&#127760; Roboflow RF-DETR (Segmenta&#231;&#227;o)</h3>
-                    <div class="setting-item">
-                        <label>API Key</label>
-                        <input type="text" id="config-rf-key" placeholder="Sua API key do Roboflow">
-                    </div>
-                    <div class="setting-item">
-                        <label>Modelo</label>
-                        <input type="text" id="config-rf-model" placeholder="projeto/vers&#227;o">
-                    </div>
-                    <div class="setting-item">
-                        <label>URL Inference (local, opcional)</label>
-                        <input type="text" id="config-rf-url" placeholder="ex: http://192.168.0.10:9001">
+                    <h3>&#127760; Google Apps Script (proxy + Sheets)</h3>
+                    <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:0.5rem;">
+                        <label>URL do Web App</label>
+                        <input type="text" id="config-api-url" readonly style="font-size:0.72rem;">
+                        <span style="font-size:0.8rem;color:var(--text-secondary);">Para alterar, edite <code>APP_CONFIG.api</code> no index.html e fa&#231;a commit no GitHub.</span>
                     </div>
                     <div class="setting-item">
                         <button class="btn btn-primary" onclick="App.testarRoboflow()">&#128268; Testar conex&#227;o</button>
                         <span id="rf-status" style="font-size:0.8rem;color:var(--text-secondary);"></span>
                     </div>
                     <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.5rem;">
-                        Endpoints tentados automaticamente:<br>
-                        <code>serverless.roboflow.com</code> &#8594; <code>segment.roboflow.com</code> &#8594; <code>detect.roboflow.com</code>.<br>
-                        <strong style="color:var(--danger);">&#9888; N&#227;o publique este HTML na web:</strong> a API key fica vis&#237;vel no c&#243;digo.
+                        &#9989; API key protegida no servidor (n&#227;o aparece no GitHub).<br>
+                        &#128202; Materiais e Confer&#234;ncias s&#227;o salvos no Google Sheets.
                     </p>
                 </div>
                 <div class="setting-group">
@@ -298,17 +277,6 @@ form { padding: 1.5rem; }
                     <div class="setting-item">
                         <label>Estabiliza&#231;&#227;o (seg)</label>
                         <input type="number" id="config-estabilizacao" min="1" max="10" value="3">
-                    </div>
-                </div>
-                <div class="setting-group">
-                    <h3>&#9881; Detector b&#225;sico (sem IA)</h3>
-                    <div class="setting-item">
-                        <label>Tamanho m&#237;nimo (px)</label>
-                        <input type="number" id="config-minarea" min="5" max="500" value="25">
-                    </div>
-                    <div class="setting-item">
-                        <label>Separa&#231;&#227;o entre barras</label>
-                        <select id="config-erosao"><option value="1">Leve</option><option value="2" selected>M&#233;dia</option><option value="3">Forte</option></select>
                     </div>
                 </div>
                 <div class="setting-group">
@@ -376,83 +344,20 @@ form { padding: 1.5rem; }
 </div>
 
 <script>
-const MATERIAIS_DATABASE = {
-    cobre: [
-        { codigo: '10049704', descricao: 'BARRA RET COBRE C11000 10X80X4.000mm', dimensoes: '80x10' },
-        { codigo: '10049707', descricao: 'BARRA RET COBRE C11000 5X60X4.000mm', dimensoes: '60x5' },
-        { codigo: '10049703', descricao: 'BARRA RET COBRE C11000 10X60X4.000mm', dimensoes: '60x10' },
-        { codigo: '10049716', descricao: 'BARRA RET COBRE C11000 10X160X4.000mm', dimensoes: '160x10' },
-        { codigo: '10049709', descricao: 'BARRA RET COBRE C11000 10X25X4.000mm', dimensoes: '25x10' },
-        { codigo: '10049702', descricao: 'BARRA RET COBRE C11000 5X40X4.000mm', dimensoes: '40x5' },
-        { codigo: '10049711', descricao: 'BARRA RET COBRE C11000 5X30X4.000mm', dimensoes: '30x5' },
-        { codigo: '10049710', descricao: 'BARRA RET COBRE C11000 5X80X4.000mm', dimensoes: '80x5' },
-        { codigo: '10049705', descricao: 'BARRA RET COBRE C11000 10X40X4.000mm', dimensoes: '40x10' },
-        { codigo: '10049712', descricao: 'BARRA RET COBRE C11000 10X120X4.000mm', dimensoes: '120x10' },
-        { codigo: '10049715', descricao: 'BARRA RET COBRE C11000 10X30X4.000mm', dimensoes: '30x10' },
-        { codigo: '10054322', descricao: 'BARRA RET COBRE C11000 10X100X4.000mm', dimensoes: '100x10' },
-        { codigo: '10049714', descricao: 'BARRA RET COBRE C11000 10X60X4.000mm ML', dimensoes: '60x10 M.L' },
-        { codigo: '12693252', descricao: 'BARRA RET COBRE C11000 10X200X4.000mm', dimensoes: '200x10' },
-        { codigo: '10049713', descricao: 'BARRA RET COBRE C11000 10X50X4.000mm', dimensoes: '50x10' },
-        { codigo: '11467273', descricao: 'BARRA RET COBRE C11000 10X30X4.000mm ML', dimensoes: '30x10 M.L' },
-        { codigo: '10049706', descricao: 'BARRA RET COBRE C11000 5X25X4.000mm', dimensoes: '25x5' },
-        { codigo: '14455127', descricao: 'BARRA RET COBRE C11000 5X71,7X4.050mm', dimensoes: '71,7x5' }
-    ],
-    aluminio: [
-        { codigo: '14839644', descricao: 'BARRA RET Al 6101 T6 6X20X4.000mm', dimensoes: '20x6' },
-        { codigo: '13884916', descricao: 'BARRA RET Al 6101 T6 6X20X2.970,5mm', dimensoes: '20x6' },
-        { codigo: '18221166', descricao: 'BARRA RET Al 6101 T6 6X25X2.965,5mm', dimensoes: '25X6' },
-        { codigo: '14844028', descricao: 'BARRA RET Al 6101 T6 6,35X25,4X4.000mm', dimensoes: '25,4x6,35' },
-        { codigo: '13884915', descricao: 'BARRA RET Al 6101 T6 6,35X25,4X2.970,5mm', dimensoes: '25,4x6,35' },
-        { codigo: '16676511', descricao: 'BARRA RET Al 6101 T6 9,53X25,4X4.000mm', dimensoes: '25,4X9,53' },
-        { codigo: '16945520', descricao: 'BARRA RET Al 6101 T6 9,52X38,1X3.000mm', dimensoes: '38,1X9,52' },
-        { codigo: '14844030', descricao: 'BARRA RET Al 6101 T6 6X40X4.000mm', dimensoes: '40x6' },
-        { codigo: '12837416', descricao: 'BARRA RET Al 6101 T6 6X40X2.970,5mm', dimensoes: '40x6' },
-        { codigo: '16657869', descricao: 'BARRA RET Al 6101 T6 10X50X6.000mm', dimensoes: '50X10' },
-        { codigo: '14844033', descricao: 'BARRA RET Al 6101 T6 6X50X4.000mm', dimensoes: '50x6' },
-        { codigo: '13830939', descricao: 'BARRA RET Al 6101 T6 6X50X2.970,5mm', dimensoes: '50x6' },
-        { codigo: '16758885', descricao: 'BARRA RET Al 6101 T6 10X60X4.000mm', dimensoes: '60x10' },
-        { codigo: '14867800', descricao: 'BARRA RET Al 6101 T6 6X60X4.050mm', dimensoes: '60x6' },
-        { codigo: '16021427', descricao: 'BARRA RET Al 6101 T6 6X60X3.050mm', dimensoes: '60x6' },
-        { codigo: '14844034', descricao: 'BARRA RET Al 6101 T6 6X65X4.000mm', dimensoes: '65x6' },
-        { codigo: '13826649', descricao: 'BARRA RET Al 6101 T6 6X65X2.970,5mm', dimensoes: '65x6' },
-        { codigo: '14844036', descricao: 'BARRA RET Al 6101 T6 6X70X4.000mm', dimensoes: '70x6' },
-        { codigo: '13370304', descricao: 'BARRA RET Al 6101 T6 6X70X2.965,5mm', dimensoes: '70x6' },
-        { codigo: '14844038', descricao: 'BARRA RET Al 6101 T6 6X80X4.050mm', dimensoes: '80x6' },
-        { codigo: '12474688', descricao: 'BARRA RET Al 6101 T6 6X80X2.965,5mm', dimensoes: '80x6' },
-        { codigo: '14309862', descricao: 'BARRA RET Al 6101 T61 10X100X6.000mm', dimensoes: '100x10' },
-        { codigo: '14867804', descricao: 'BARRA RET Al 6101 T6 6X100X4.050mm', dimensoes: '100X6' },
-        { codigo: '16021748', descricao: 'BARRA RET Al 6101 T6 6X100X3.050mm', dimensoes: '100x6' },
-        { codigo: '14844040', descricao: 'BARRA RET Al 6101 T6 6X110X4.000mm', dimensoes: '110x6' },
-        { codigo: '13370303', descricao: 'BARRA RET Al 6101 T6 6X110X2.965,5mm', dimensoes: '110x6' },
-        { codigo: '14309863', descricao: 'BARRA RET Al 6101 T61 10X120X6.000mm', dimensoes: '120x10' },
-        { codigo: '12358707', descricao: 'BARRA RET ALUMINIO 1050/1350 9,52X127X6.000', dimensoes: '127x9,52' },
-        { codigo: '14844043', descricao: 'BARRA RET Al 6101 T6 6,35X152,4X4.050mm', dimensoes: '152,4x6,35' },
-        { codigo: '12474627', descricao: 'BARRA RET Al 6101 T6 6,35X152,4X2.965,5m', dimensoes: '152,4x6,35' },
-        { codigo: '15938256', descricao: 'BARRA RET Al 6101 T61 10X160X4.320mm', dimensoes: '160x10' },
-        { codigo: '15938273', descricao: 'BARRA RET Al 6101 T61 10X160X3.850mm', dimensoes: '160x10' },
-        { codigo: '14548551', descricao: 'BARRA RET Al 6101 T61 10X160X6.000mm', dimensoes: '160X10' },
-        { codigo: '14912412', descricao: 'BARRA RET Al 6101 T6 6X160X4.000mm', dimensoes: '160x6' },
-        { codigo: '16021749', descricao: 'BARRA RET Al 6101 T6 6X160X3.050mm', dimensoes: '160x6' },
-        { codigo: '14488067', descricao: 'BARRA RET Al 6101 T6 6X200X4.050mm', dimensoes: '200x6' },
-        { codigo: '16021750', descricao: 'BARRA RET Al 6101 T6 6X200X3.050mm', dimensoes: '200x6' }
-    ]
-};
-const CONFIG_SENHA = '10032001';
-
 /* =====================================================================
-   CREDENCIAIS DO MODELO TREINADO (pré-configuradas)
-   Modelo: controle-de-estoque-de-barras-me/2 (Instance Segmentation / RF-DETR Nano)
+   CONFIGURAÇÃO DO APP — cole aqui a URL do Web App do Apps Script
    ===================================================================== */
-const RF_DEFAULTS = {
-    key: 'U7LIVjFcRppUcPzLv9rC',
-    model: 'controle-de-estoque-de-barras-me/2'
+var APP_CONFIG = {
+    api: 'COLE_AQUI_SUA_URL_DO_WEB_APP',
+    token: ''
 };
+var CONFIG_SENHA = '10032001';
 
-const Utils = {
+var Utils = {
     uuid: function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0; return (c === 'x') ? r : (r & 0x3 | 0x8); }); },
     now: function() { var d = new Date(); return { date: d.toISOString().split('T')[0], full: d.toLocaleString('pt-BR') }; }
 };
-const Toast = {
+var Toast = {
     show: function(m, t) {
         t = t || 'info';
         var el = document.createElement('div');
@@ -465,43 +370,37 @@ const Toast = {
     warning: function(m) { this.show(m, 'warning'); }
 };
 
-const SheetsAPI = {
-    getMateriais: function() {
-        var data = localStorage.getItem('materiais');
-        if (!data) {
-            data = [];
-            ['cobre', 'aluminio'].forEach(function(tipo) {
-                MATERIAIS_DATABASE[tipo].forEach(function(m) {
-                    data.push({ id: Utils.uuid(), codigo: m.codigo, descricao: m.descricao, dimensoes: m.dimensoes, tipo: 'barra', material: tipo, quantidade: 0, minimo: 20, dataCadastro: Utils.now().full, status: 'ativo' });
-                });
-            });
-            localStorage.setItem('materiais', JSON.stringify(data));
+/* =====================================================================
+   SHEETS API — chama o Google Apps Script
+   ===================================================================== */
+var SheetsAPI = {
+    configured: function() { return APP_CONFIG.api && APP_CONFIG.api.indexOf('script.google.com') >= 0; },
+    call: function(action, body) {
+        if (!this.configured()) return Promise.reject(new Error('API n\u00e3o configurada (APP_CONFIG.api)'));
+        var url = APP_CONFIG.api + '?action=' + encodeURIComponent(action);
+        if (APP_CONFIG.token) url += '&token=' + encodeURIComponent(APP_CONFIG.token);
+        var opts = { method: body ? 'POST' : 'GET' };
+        if (body) {
+            opts.headers = { 'Content-Type': 'text/plain;charset=utf-8' };
+            opts.body = JSON.stringify(body);
         }
-        return Promise.resolve(JSON.parse(data));
+        return fetch(url, opts).then(function(r) { return r.json(); }).then(function(j) {
+            if (j && j.ok === false) throw new Error(j.error || 'Erro no servidor');
+            return j;
+        });
     },
+    getMateriais: function() { return this.call('getMateriais').then(function(j) { return j.data || []; }); },
     save: function(item, type) {
-        var key = type === 'conferencia' ? 'conferencias' : 'materiais';
-        var data = JSON.parse(localStorage.getItem(key) || '[]');
-        var idx = -1;
-        for (var i = 0; i < data.length; i++) if (data[i].id === item.id) { idx = i; break; }
-        if (idx >= 0) data[idx] = item; else data.unshift(item);
-        localStorage.setItem(key, JSON.stringify(data));
-        return Promise.resolve({ success: true });
+        if (type === 'conferencia') return this.call('saveConferencia', { data: item });
+        return this.call('saveMaterial', { data: item });
     },
-    delete: function(id) {
-        var data = JSON.parse(localStorage.getItem('materiais') || '[]').filter(function(m) { return m.id !== id; });
-        localStorage.setItem('materiais', JSON.stringify(data));
-        return Promise.resolve({ success: true });
-    },
-    zerarQuantidades: function() {
-        var data = JSON.parse(localStorage.getItem('materiais') || '[]');
-        data.forEach(function(m) { m.quantidade = 0; });
-        localStorage.setItem('materiais', JSON.stringify(data));
-        return Promise.resolve({ success: true, count: data.length });
-    }
+    delete: function(id) { return this.call('deleteMaterial', { id: id }); },
+    zerarQuantidades: function() { return this.call('zerarQuantidades'); },
+    testConnection: function() { return this.call('testConnection'); },
+    inferIA: function(base64, confidence) { return this.call('inferIA', { image: base64, confidence: confidence }); }
 };
 
-const Camera = {
+var Camera = {
     video: null, stream: null, track: null, zoom: 1,
     init: function() { this.video = document.getElementById('video'); },
     start: function() {
@@ -543,9 +442,7 @@ const Camera = {
 };
 
 /* =====================================================================
-   ROBOFLOW — RF-DETR Instance Segmentation (Nano)
-   Usa a mesma API REST que o InferenceHTTPClient do Python usa internamente.
-   Endpoints tentados em ordem: serverless → segment → detect (ou URL local).
+   ROBOFLOW — via proxy no Apps Script (sem CORS / sem HTTP 400)
    ===================================================================== */
 function polyArea(pts) {
     var a = 0;
@@ -557,30 +454,14 @@ function polyArea(pts) {
 }
 function normPoints(raw) {
     if (!raw || !raw.length) return null;
-    if (Array.isArray(raw[0])) return raw.map(function(q) { return { x: q[0], y: q[1] }; });
+    if (Object.prototype.toString.call(raw[0]) === '[object Array]') return raw.map(function(q) { return { x: q[0], y: q[1] }; });
     if (raw[0].x !== undefined) return raw;
     return null;
 }
 
-const ROBOFLOW = {
-    cap: null, base: null,
-    key: function() {
-        var k = (localStorage.getItem('rf_key') || '').trim();
-        return k || RF_DEFAULTS.key;
-    },
-    model: function() {
-        var m = (localStorage.getItem('rf_model') || '').trim();
-        return m || RF_DEFAULTS.model;
-    },
-    url: function() { return (localStorage.getItem('rf_url') || '').trim().replace(/\/+$/, ''); },
-    enabled: function() { return !!(this.key() && this.model()); },
-
-    endpoints: function() {
-        var u = this.url();
-        if (u) return [u];
-        /* Ordem: serverless (mais rápido p/ modelos Nano/DETR) → segment → detect */
-        return ['https://serverless.roboflow.com', 'https://segment.roboflow.com', 'https://detect.roboflow.com'];
-    },
+var ROBOFLOW = {
+    cap: null,
+    enabled: function() { return SheetsAPI.configured(); },
 
     classOk: function(cls, tipo) {
         if (!cls) return true;
@@ -600,7 +481,8 @@ const ROBOFLOW = {
         this.cap.width = Math.round(vw * sc);
         this.cap.height = Math.round(vh * sc);
         this.cap.getContext('2d').drawImage(video, 0, 0, this.cap.width, this.cap.height);
-        return { b64: this.cap.toDataURL('image/jpeg', 0.85).split(',')[1], sx: vw / this.cap.width };
+        var b64 = this.cap.toDataURL('image/jpeg', 0.85).split(',')[1].replace(/\r?\n/g, '');
+        return { b64: b64, sx: vw / this.cap.width };
     },
 
     detect: function(video, tipo) {
@@ -608,34 +490,15 @@ const ROBOFLOW = {
         var self = this;
         var g = this.grab(video);
         var conf = ((parseInt(document.getElementById('config-confianca-ia').value) || 35) / 100);
-        var eps = this.endpoints();
-        var attempt = function(i) {
-            if (i >= eps.length) return Promise.resolve(null);
-            /* Mesma URL que o InferenceHTTPClient Python usa internamente */
-            var url = eps[i] + '/' + self.model() +
-                      '?api_key=' + encodeURIComponent(self.key()) +
-                      '&confidence=' + conf;
-            return fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'image=' + encodeURIComponent(g.b64)
-            }).then(function(r) {
-                if (!r.ok) throw new Error('HTTP ' + r.status);
-                return r.json();
-            }).then(function(json) {
-                self.base = eps[i];
-                return self.parse(json, tipo, g.sx);
-            }).catch(function(e) {
-                console.warn('Roboflow [' + eps[i] + ']:', e.message);
-                return attempt(i + 1);
-            });
-        };
-        return attempt(0);
+        return SheetsAPI.inferIA(g.b64, conf).then(function(res) {
+            return self.parse(res.predictions || [], tipo, g.sx);
+        }).catch(function(e) {
+            console.warn('[Roboflow proxy]:', e.message);
+            return null;
+        });
     },
 
-    /* Parse da resposta — suporta máscaras (pontos/polígonos) e caixas */
-    parse: function(json, tipo, sx) {
-        var preds = json.predictions || [];
+    parse: function(preds, tipo, sx) {
         var items = [];
         for (var i = 0; i < preds.length; i++) {
             var p = preds[i];
@@ -663,7 +526,6 @@ const ROBOFLOW = {
             });
         }
         if (!items.length) return [];
-        /* Detecta máscaras "fundidas" (duas barras em uma máscara) pela área */
         var areas = items.map(function(o) { return o.area; }).sort(function(a, b) { return a - b; });
         var med = areas[Math.floor(areas.length / 2)];
         var cands = items.filter(function(o) { return o.area <= 1.7 * med; })
@@ -677,13 +539,13 @@ const ROBOFLOW = {
     }
 };
 
-const Vision = {
+/* =====================================================================
+   VISÃO — loop de detecção + estabilização + ajustes manuais
+   ===================================================================== */
+var Vision = {
     isRunning: false, materialType: null, markers: [], fail: 0,
     manualAdds: [], removedPts: [], manualOffset: 0,
-    counts: [], roi: null, roiMode: false, wc: null, dragStart: null, bound: false,
-
-    trainedMode: function() { return ROBOFLOW.enabled(); },
-    engine: function() { return ROBOFLOW.enabled() ? 'rf' : 'classic'; },
+    counts: [], roi: null, roiMode: false, dragStart: null, bound: false,
 
     start: function(tipo) {
         this.materialType = tipo;
@@ -700,13 +562,8 @@ const Vision = {
 
     updateModeBadge: function() {
         var el = document.getElementById('modo-ia');
-        if (ROBOFLOW.enabled()) {
-            el.className = 'modo-ia treinada';
-            el.innerHTML = '&#127760; RF-DETR ROBOFLOW &#8212; 100% AUTOM\u00c1TICO';
-        } else {
-            el.className = 'modo-ia basica';
-            el.innerHTML = '&#9881; Detector b\u00e1sico (sem IA configurada)';
-        }
+        if (ROBOFLOW.enabled()) { el.className = 'modo-ia treinada'; el.innerHTML = '&#127760; RF-DETR ROBOFLOW &#8212; 100% AUTOM\u00c1TICO'; }
+        else { el.className = 'modo-ia basica'; el.innerHTML = '&#9888; Configure a URL do Apps Script'; }
     },
     setStatus: function(mode) {
         var el = document.getElementById('status-detectando');
@@ -723,22 +580,26 @@ const Vision = {
     loop: function() {
         if (!this.isRunning) return;
         var self = this;
-        var interval = 900;
         ROBOFLOW.detect(Camera.video, this.materialType).then(function(boxes) {
             if (!self.isRunning) return;
             if (boxes) {
                 self.fail = 0;
-                self.markers = boxes.map(function(b) {
-                    return { x: (b.x1 + b.x2) / 2, y: (b.y1 + b.y2) / 2, box: b, poly: b.poly || null, n: b.n || 1 };
-                });
+                var ms = boxes.map(function(b) { return { x: (b.x1 + b.x2) / 2, y: (b.y1 + b.y2) / 2, box: b, poly: b.poly || null, n: b.n || 1 }; });
+                if (self.roi) {
+                    ms = ms.filter(function(m) {
+                        return m.x >= self.roi.x && m.x <= self.roi.x + self.roi.w &&
+                               m.y >= self.roi.y && m.y <= self.roi.y + self.roi.h;
+                    });
+                }
+                self.markers = ms;
             } else {
                 self.fail++;
-                if (self.fail === 3) Toast.warning('IA indispon\u00edvel. Verifique internet ou configura\u00e7\u00e3o.');
+                if (self.fail === 3) Toast.warning('IA indispon\u00edvel. Verifique internet/proxy.');
             }
             self.draw();
             self.updateUI();
-            self.checkAuto(interval);
-            setTimeout(function() { self.loop(); }, interval);
+            self.checkAuto(900);
+            setTimeout(function() { self.loop(); }, 900);
         });
     },
 
@@ -820,13 +681,8 @@ const Vision = {
             for (var i = 0; i < this.counts.length; i++) if (this.counts[i] !== c) { allSame = false; break; }
             if (allSame) {
                 this.stop();
-                if (this.trainedMode() && document.getElementById('config-autosave').checked) {
-                    this.beep();
-                    Conference.save();
-                } else {
-                    this.setStatus('stable');
-                    Toast.success('Contagem estabilizada em ' + c + '. Confira e confirme.');
-                }
+                if (document.getElementById('config-autosave').checked) { this.beep(); Conference.save(); }
+                else { this.setStatus('stable'); Toast.success('Contagem estabilizada em ' + c + '. Confira e confirme.'); }
             }
         }
     },
@@ -843,16 +699,6 @@ const Vision = {
     },
 
     nudge: function(d) { this.manualOffset = Math.max(-999, this.manualOffset + d); this.updateUI(); },
-    applyGrid: function() {
-        var r = parseInt(document.getElementById('grid-rows').value) || 0;
-        var c = parseInt(document.getElementById('grid-cols').value) || 0;
-        if (r * c <= 0) { Toast.warning('Grade inv\u00e1lida'); return; }
-        var auto = 0;
-        for (var i = 0; i < this.markers.length; i++) auto += (this.markers[i].n || 1);
-        this.manualOffset = r * c - auto - this.manualAdds.length;
-        this.updateUI();
-        Toast.success('Contagem pela grade: ' + (r * c));
-    },
     toggleROI: function() {
         this.roiMode = !this.roiMode;
         document.getElementById('btn-roi').classList.toggle('active', this.roiMode);
@@ -908,16 +754,29 @@ const Vision = {
     }
 };
 
-const Conference = {
-    selectedTipo: null, selectedMaterial: null,
+/* =====================================================================
+   CONFERÊNCIA
+   ===================================================================== */
+var Conference = {
+    selectedTipo: null, selectedMaterial: null, matsCache: [],
+
     selectTipo: function(tipo) {
         this.selectedTipo = tipo;
+        var self = this;
         document.getElementById('tipo-selector').style.display = 'none';
         document.getElementById('materiais-lista').classList.add('active');
         document.getElementById('titulo-lista').textContent = tipo === 'cobre' ? 'Barras de Cobre' : 'Barras de Alum\u00ednio';
         document.getElementById('material-search').value = '';
-        this.renderMateriais('');
+        SheetsAPI.getMateriais().then(function(mats) {
+            self.matsCache = mats;
+            self.renderMateriais('');
+        }).catch(function(e) {
+            Toast.error('Falha ao carregar materiais: ' + e.message);
+            self.matsCache = [];
+            self.renderMateriais('');
+        });
     },
+
     backToTipo: function() {
         Vision.stop(); Vision.resetAdjust(); Camera.stop();
         document.getElementById('tipo-selector').style.display = 'block';
@@ -926,27 +785,32 @@ const Conference = {
         document.getElementById('status-detectando').style.display = 'none';
         this.selectedTipo = null; this.selectedMaterial = null;
     },
+
     renderMateriais: function(search) {
         var grid = document.getElementById('materiais-grid');
-        var mats = MATERIAIS_DATABASE[this.selectedTipo], filt = [];
-        for (var i = 0; i < mats.length; i++) {
-            var m = mats[i];
-            if (!search || m.codigo.indexOf(search) >= 0 || m.descricao.toLowerCase().indexOf(search.toLowerCase()) >= 0 || m.dimensoes.toLowerCase().indexOf(search.toLowerCase()) >= 0) filt.push(m);
+        var s = (search || '').toLowerCase();
+        var filt = [];
+        for (var i = 0; i < this.matsCache.length; i++) {
+            var m = this.matsCache[i];
+            if (m.material !== this.selectedTipo) continue;
+            if (s && (String(m.codigo).toLowerCase().indexOf(s) < 0 && String(m.descricao).toLowerCase().indexOf(s) < 0 && String(m.dimensoes).toLowerCase().indexOf(s) < 0)) continue;
+            filt.push(m);
         }
         var html = '';
         for (var j = 0; j < filt.length; j++) {
             var f = filt[j];
-            html += '<div class="material-item" onclick="Conference.selectMaterial(\'' + f.codigo + '\')"><div class="codigo">' + f.codigo + '</div><div><div class="descricao">' + f.descricao + '</div><div class="dimensoes">\uD83D\uDCCF ' + f.dimensoes + '</div></div><div class="arrow">\u203A</div></div>';
+            html += '<div class="material-item" onclick="Conference.selectMaterial(\'' + f.codigo + '\')"><div class="codigo">' + f.codigo + '</div><div><div class="descricao">' + f.descricao + '</div><div class="dimensoes">\uD83D\uDCCF ' + (f.dimensoes || '') + '</div></div><div class="arrow">\u203A</div></div>';
         }
         grid.innerHTML = html || '<div style="text-align:center;padding:3rem;color:#6c757d">Nenhum material</div>';
     },
+
     selectMaterial: function(codigo) {
-        var mat = null, lista = MATERIAIS_DATABASE[this.selectedTipo];
-        for (var i = 0; i < lista.length; i++) if (lista[i].codigo === codigo) { mat = lista[i]; break; }
+        var mat = null;
+        for (var i = 0; i < this.matsCache.length; i++) if (String(this.matsCache[i].codigo) === String(codigo)) { mat = this.matsCache[i]; break; }
         if (!mat) return;
-        this.selectedMaterial = { codigo: mat.codigo, descricao: mat.descricao, dimensoes: mat.dimensoes, material: this.selectedTipo };
+        this.selectedMaterial = mat;
         document.getElementById('conf-material-nome').textContent = mat.descricao;
-        document.getElementById('conf-material-dim').textContent = mat.codigo + ' | ' + mat.dimensoes;
+        document.getElementById('conf-material-dim').textContent = mat.codigo + ' | ' + (mat.dimensoes || '');
         document.getElementById('materiais-lista').classList.remove('active');
         document.getElementById('camera-view').classList.add('active');
         Vision.bindPointer();
@@ -955,46 +819,64 @@ const Conference = {
             if (!ok) return;
             Vision.updateModeBadge();
             Vision.start(Conference.selectedTipo);
-            if (ROBOFLOW.enabled()) Toast.success('\uD83C\uDF10 RF-DETR Roboflow ativo: contagem 100% autom\u00e1tica.');
-            else Toast.warning('Sem IA configurada.');
+            if (ROBOFLOW.enabled()) Toast.success('\uD83C\uDF10 RF-DETR Roboflow ativo: contagem autom\u00e1tica.');
         });
     },
+
     save: function() {
         var det = Vision.finalCount();
         if (det <= 0) { Toast.warning('Nenhuma barra detectada!'); return; }
         var self = this;
-        SheetsAPI.getMateriais().then(function(mats) {
-            var md = null;
-            for (var i = 0; i < mats.length; i++) if (mats[i].codigo === self.selectedMaterial.codigo) { md = mats[i]; break; }
-            var reg = md ? md.quantidade : 0;
-            var nova = reg + det;
-            if (md) { md.quantidade = nova; SheetsAPI.save(md, 'material'); }
-            SheetsAPI.save({ id: Utils.uuid(), data: Utils.now().date, material: self.selectedMaterial.codigo, descricao: self.selectedMaterial.descricao, detectada: det, antes: reg, depois: nova, adicionado: det }, 'conferencia');
+        var md = this.selectedMaterial;
+        var reg = parseInt(md.quantidade) || 0;
+        var nova = reg + det;
+        var item = {
+            id: md.id, codigo: md.codigo, descricao: md.descricao, dimensoes: md.dimensoes,
+            tipo: md.tipo || 'barra', material: md.material, quantidade: nova,
+            minimo: md.minimo || 20, status: md.status || 'ativo', dataCadastro: md.dataCadastro
+        };
+        SheetsAPI.save(item, 'material').then(function() {
+            return SheetsAPI.save({
+                id: Utils.uuid(), material: md.codigo, descricao: md.descricao,
+                detectada: det, antes: reg, depois: nova, adicionado: det
+            }, 'conferencia');
+        }).then(function() {
+            md.quantidade = nova;
             Toast.success('\u2705 ' + det + ' barras lan\u00e7adas! Total: ' + nova);
             self.backToTipo();
+        }).catch(function(e) {
+            Toast.error('Falha ao salvar no Sheets: ' + e.message);
         });
     }
 };
 
-const Materials = {
+/* =====================================================================
+   MATERIAIS (página de cadastro)
+   ===================================================================== */
+var Materials = {
     data: [],
-    load: function() { var self = this; SheetsAPI.getMateriais().then(function(d) { self.data = d; self.render(); }); },
+    load: function() {
+        var self = this;
+        SheetsAPI.getMateriais().then(function(d) { self.data = d; self.render(); })
+            .catch(function(e) { Toast.error('Falha ao carregar: ' + e.message); });
+    },
     render: function() {
         var s = document.getElementById('search-material').value.toLowerCase();
         var f = document.getElementById('filter-tipo').value;
         var html = '';
         for (var i = 0; i < this.data.length; i++) {
             var m = this.data[i];
-            if (s && (m.codigo + m.descricao).toLowerCase().indexOf(s) < 0) continue;
+            if (s && (String(m.codigo) + String(m.descricao)).toLowerCase().indexOf(s) < 0) continue;
             if (f && m.material !== f) continue;
-            var st = (m.quantidade || 0) > 0 ? 'success' : 'danger';
-            html += '<tr><td><strong>' + m.codigo + '</strong></td><td>' + m.descricao + '</td><td>' + (m.dimensoes || '-') + '</td><td><span class="badge ' + (m.material === 'cobre' ? 'badge-cobre' : 'badge-aluminio') + '">' + m.material + '</span></td><td><strong>' + (m.quantidade || 0) + '</strong></td><td><span class="badge badge-' + st + '">' + ((m.quantidade || 0) > 0 ? '\u2713 OK' : 'Zerado') + '</span></td><td><button class="btn-icon" onclick="Materials.edit(\'' + m.id + '\')">\u270F\uFE0F</button><button class="btn-icon" onclick="Materials.del(\'' + m.id + '\')">\uD83D\uDDD1\uFE0F</button></td></tr>';
+            var st = (parseInt(m.quantidade) || 0) > 0 ? 'success' : 'danger';
+            html += '<tr><td><strong>' + m.codigo + '</strong></td><td>' + m.descricao + '</td><td>' + (m.dimensoes || '-') + '</td><td><span class="badge ' + (m.material === 'cobre' ? 'badge-cobre' : 'badge-aluminio') + '">' + m.material + '</span></td><td><strong>' + (parseInt(m.quantidade) || 0) + '</strong></td><td><span class="badge badge-' + st + '">' + ((parseInt(m.quantidade) || 0) > 0 ? '\u2713 OK' : 'Zerado') + '</span></td><td><button class="btn-icon" onclick="Materials.edit(\'' + m.id + '\')">\u270F\uFE0F</button><button class="btn-icon" onclick="Materials.del(\'' + m.id + '\')">\uD83D\uDDD1\uFE0F</button></td></tr>';
         }
         document.querySelector('#table-materiais tbody').innerHTML = html || '<tr><td colspan="7" style="text-align:center;padding:3rem">Nenhum material</td></tr>';
     },
     openModal: function() { document.getElementById('modal-title').textContent = 'Novo Material'; document.getElementById('form-material').reset(); document.getElementById('input-id').value = ''; document.getElementById('modal-material').classList.add('active'); },
     edit: function(id) {
-        var m = this.data.find(function(x) { return x.id === id; });
+        var m = null;
+        for (var i = 0; i < this.data.length; i++) if (this.data[i].id === id) { m = this.data[i]; break; }
         if (!m) return;
         document.getElementById('modal-title').textContent = 'Editar Material';
         document.getElementById('input-id').value = m.id;
@@ -1002,14 +884,26 @@ const Materials = {
         document.getElementById('input-descricao').value = m.descricao || '';
         document.getElementById('input-dimensoes').value = m.dimensoes || '';
         document.getElementById('input-material').value = m.material || 'cobre';
-        document.getElementById('input-quantidade').value = m.quantidade || 0;
+        document.getElementById('input-quantidade').value = parseInt(m.quantidade) || 0;
         document.getElementById('modal-material').classList.add('active');
     },
     save: function(e) {
         e.preventDefault();
         var self = this;
-        var data = { id: document.getElementById('input-id').value || Utils.uuid(), codigo: document.getElementById('input-codigo').value, descricao: document.getElementById('input-descricao').value, dimensoes: document.getElementById('input-dimensoes').value, material: document.getElementById('input-material').value, quantidade: parseInt(document.getElementById('input-quantidade').value) || 0, tipo: 'barra', minimo: 20, dataCadastro: Utils.now().full, status: 'ativo' };
-        SheetsAPI.save(data, 'material').then(function() { Toast.success('Material salvo!'); App.closeModal('modal-material'); self.load(); });
+        var data = {
+            id: document.getElementById('input-id').value || Utils.uuid(),
+            codigo: document.getElementById('input-codigo').value,
+            descricao: document.getElementById('input-descricao').value,
+            dimensoes: document.getElementById('input-dimensoes').value,
+            material: document.getElementById('input-material').value,
+            quantidade: parseInt(document.getElementById('input-quantidade').value) || 0,
+            tipo: 'barra', minimo: 20, status: 'ativo'
+        };
+        SheetsAPI.save(data, 'material').then(function() {
+            Toast.success('Material salvo no Sheets!');
+            App.closeModal('modal-material');
+            self.load();
+        }).catch(function(err) { Toast.error('Falha: ' + err.message); });
     },
     del: function(id) {
         if (!confirm('Excluir este material?')) return;
@@ -1018,23 +912,27 @@ const Materials = {
     }
 };
 
-const App = {
+/* =====================================================================
+   APP
+   ===================================================================== */
+var App = {
     init: function() {
-        document.getElementById('count-cobre').textContent = MATERIAIS_DATABASE.cobre.length + ' itens';
-        document.getElementById('count-aluminio').textContent = MATERIAIS_DATABASE.aluminio.length + ' itens';
-        /* Carrega credenciais: preferindo valores salvos, senão usa os defaults do modelo treinado */
-        document.getElementById('config-rf-key').value = localStorage.getItem('rf_key') || RF_DEFAULTS.key;
-        document.getElementById('config-rf-model').value = localStorage.getItem('rf_model') || RF_DEFAULTS.model;
-        document.getElementById('config-rf-url').value = localStorage.getItem('rf_url') || '';
-        if (localStorage.getItem('minArea')) document.getElementById('config-minarea').value = localStorage.getItem('minArea');
-        if (localStorage.getItem('erosion')) document.getElementById('config-erosao').value = localStorage.getItem('erosion');
+        document.getElementById('config-api-url').value = APP_CONFIG.api;
         if (localStorage.getItem('resolution')) document.getElementById('config-resolucao').value = localStorage.getItem('resolution');
         if (localStorage.getItem('estabilizacao')) document.getElementById('config-estabilizacao').value = localStorage.getItem('estabilizacao');
         if (localStorage.getItem('confiancaIA')) document.getElementById('config-confianca-ia').value = localStorage.getItem('confiancaIA');
         document.getElementById('config-auto-stop').checked = localStorage.getItem('autoStop') !== 'false';
         document.getElementById('config-autosave').checked = localStorage.getItem('autosave') !== 'false';
-        /* Auto-teste da conexão ao iniciar (silencioso) */
-        if (ROBOFLOW.enabled()) this.testarRoboflowSilencioso();
+
+        SheetsAPI.getMateriais().then(function(mats) {
+            var c = 0, a = 0;
+            for (var i = 0; i < mats.length; i++) { if (mats[i].material === 'cobre') c++; else a++; }
+            document.getElementById('count-cobre').textContent = c + ' itens';
+            document.getElementById('count-aluminio').textContent = a + ' itens';
+        }).catch(function() {
+            document.getElementById('count-cobre').textContent = 'offline';
+            document.getElementById('count-aluminio').textContent = 'offline';
+        });
     },
     navegar: function(page) {
         document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -1060,76 +958,30 @@ const App = {
     closeModal: function(id) { document.getElementById(id).classList.remove('active'); },
 
     testarRoboflow: function() {
-        var key = document.getElementById('config-rf-key').value.trim() || RF_DEFAULTS.key;
-        var model = document.getElementById('config-rf-model').value.trim() || RF_DEFAULTS.model;
-        var url = document.getElementById('config-rf-url').value.trim().replace(/\/+$/, '');
         var st = document.getElementById('rf-status');
-        if (!key || !model) { Toast.warning('Preencha API Key e Modelo'); return; }
-        st.textContent = 'Testando...';
-        var eps = url ? [url] : ['https://serverless.roboflow.com', 'https://segment.roboflow.com', 'https://detect.roboflow.com'];
-        var c = document.createElement('canvas');
-        c.width = 64; c.height = 64;
-        var x = c.getContext('2d');
-        x.fillStyle = '#b87333'; x.fillRect(0, 0, 64, 64);
-        var b64 = c.toDataURL('image/jpeg', 0.7).split(',')[1];
-        var attempt = function(i) {
-            if (i >= eps.length) { st.textContent = '\u274C Nenhum endpoint respondeu'; return; }
-            fetch(eps[i] + '/' + model + '?api_key=' + encodeURIComponent(key), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'image=' + encodeURIComponent(b64)
-            }).then(function(r) {
-                if (r.status === 401) { st.textContent = '\u274C API Key inv\u00e1lida'; Toast.error('API Key inv\u00e1lida (401)'); }
-                else if (r.status === 404 && i + 1 < eps.length) { attempt(i + 1); }
-                else if (r.status === 404) { st.textContent = '\u274C Modelo n\u00e3o encontrado'; Toast.error('Modelo n\u00e3o encontrado (404).'); }
-                else if (r.ok) { st.textContent = '\u2705 OK via ' + eps[i].replace('https://', ''); Toast.success('Conex\u00e3o Roboflow OK!'); }
-                else { st.textContent = '\u26A0 HTTP ' + r.status; Toast.warning('HTTP ' + r.status); }
-            }).catch(function(e) {
-                if (i + 1 < eps.length) attempt(i + 1);
-                else { st.textContent = '\u274C Sem conex\u00e3o'; Toast.error('Falha de rede: ' + e.message); }
-            });
-        };
-        attempt(0);
-    },
-
-    testarRoboflowSilencioso: function() {
-        var key = ROBOFLOW.key(), model = ROBOFLOW.model();
-        var eps = ROBOFLOW.endpoints();
-        var c = document.createElement('canvas');
-        c.width = 64; c.height = 64;
-        c.getContext('2d').fillStyle = '#b87333'; c.getContext('2d').fillRect(0, 0, 64, 64);
-        var b64 = c.toDataURL('image/jpeg', 0.7).split(',')[1];
-        var attempt = function(i) {
-            if (i >= eps.length) { console.warn('Roboflow: todos os endpoints falharam'); return; }
-            fetch(eps[i] + '/' + model + '?api_key=' + encodeURIComponent(key), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'image=' + encodeURIComponent(b64)
-            }).then(function(r) {
-                if (r.ok) console.log('Roboflow OK via', eps[i]);
-                else if (r.status === 404 && i + 1 < eps.length) attempt(i + 1);
-                else console.warn('Roboflow [' + eps[i] + ']: HTTP', r.status);
-            }).catch(function() { if (i + 1 < eps.length) attempt(i + 1); });
-        };
-        attempt(0);
+        st.textContent = 'Testando via proxy...';
+        SheetsAPI.testConnection().then(function(res) {
+            if (res.ok) { st.textContent = '\u2705 OK via ' + (res.endpoint || 'proxy'); Toast.success('Conex\u00e3o Roboflow OK pelo proxy!'); }
+            else { st.textContent = '\u274C ' + (res.message || 'Falha'); Toast.error('Falha: ' + (res.message || '')); }
+        }).catch(function(e) {
+            st.textContent = '\u274C ' + e.message;
+            Toast.error('Falha: ' + e.message);
+        });
     },
 
     zerarQuantidades: function() {
-        if (confirm('ZERAR todas as quantidades? Os itens ser\u00e3o mantidos.')) {
-            SheetsAPI.zerarQuantidades().then(function(r) { Toast.success('Quantidades zeradas (' + r.count + ' itens)'); });
+        if (confirm('ZERAR todas as quantidades no Google Sheets? Os itens ser\u00e3o mantidos.')) {
+            SheetsAPI.zerarQuantidades().then(function(r) { Toast.success('Quantidades zeradas (' + r.count + ' itens)'); })
+                .catch(function(e) { Toast.error('Falha: ' + e.message); });
         }
     },
+
     salvarConfig: function() {
-        localStorage.setItem('minArea', document.getElementById('config-minarea').value);
-        localStorage.setItem('erosion', document.getElementById('config-erosao').value);
         localStorage.setItem('resolution', document.getElementById('config-resolucao').value);
         localStorage.setItem('autoStop', document.getElementById('config-auto-stop').checked);
         localStorage.setItem('autosave', document.getElementById('config-autosave').checked);
         localStorage.setItem('estabilizacao', document.getElementById('config-estabilizacao').value);
         localStorage.setItem('confiancaIA', document.getElementById('config-confianca-ia').value);
-        localStorage.setItem('rf_key', document.getElementById('config-rf-key').value.trim());
-        localStorage.setItem('rf_model', document.getElementById('config-rf-model').value.trim());
-        localStorage.setItem('rf_url', document.getElementById('config-rf-url').value.trim());
         Toast.success('Configura\u00e7\u00f5es salvas!');
     }
 };
