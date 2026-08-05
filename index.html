@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Estoque de Barras - WEG</title>
+<!-- Carregamento do OpenCV.js via CDN oficial para funcionamento 100% online -->
+<script async src="https://docs.opencv.org/4.5.4/opencv.js" type="text/javascript"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 :root {
@@ -57,7 +59,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .cam-btn.active { background: var(--warning); color: #000; }
 .contagem-panel { background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 2px solid var(--border-color); position: sticky; top: 100px; }
 .modo-ia { text-align: center; padding: 0.6rem; border-radius: var(--radius); font-weight: 800; font-size: 0.85rem; margin-bottom: 1rem; text-transform: uppercase; }
-.modo-ia.treinada { background: rgba(0,166,80,0.15); color: var(--weg-green); border: 2px solid var(--weg-green); }
+.modo-ia.treinada { background: rgba(0,85,164,0.15); color: var(--weg-blue); border: 2px solid var(--weg-blue); }
 .modo-ia.basica { background: rgba(255,193,7,0.15); color: #856404; border: 2px solid var(--warning); }
 .material-info-box { background: linear-gradient(135deg, var(--weg-blue), var(--weg-blue-dark)); color: white; padding: 1.2rem; border-radius: var(--radius); margin-bottom: 1.2rem; }
 .material-info-box .titulo { font-size: 0.8rem; opacity: 0.9; text-transform: uppercase; }
@@ -141,11 +143,11 @@ form { padding: 1.5rem; }
             <h1>Estoque de Barras</h1>
         </div>
         <nav class="nav">
-            <button class="nav-btn active" data-page="conferencia" onclick="App.navegar('conferencia')">&#128247; Confer&#234;ncia</button>
+            <button class="nav-btn active" data-page="conferencia" onclick="App.navegar('conferencia')">&#128247; Conferência</button>
             <button class="nav-btn" data-page="materiais" onclick="App.navegar('materiais')">&#128230; Materiais</button>
         </nav>
         <div class="header-actions">
-            <button class="btn-config" onclick="App.abrirSenha()" title="Configura&#231;&#245;es">&#9881;</button>
+            <button class="btn-config" onclick="App.abrirSenha()" title="Configurações">&#9881;</button>
         </div>
     </header>
 
@@ -162,17 +164,15 @@ form { padding: 1.5rem; }
                         </button>
                         <button class="tipo-card" onclick="Conference.selectTipo('aluminio')">
                             <span class="icon">&#9898;</span>
-                            <span class="label">Barras de Alum&#237;nio</span>
+                            <span class="label">Barras de Alumínio</span>
                             <span class="count" id="count-aluminio">0 itens</span>
                         </button>
                     </div>
                 </div>
 
                 <div class="materiais-lista" id="materiais-lista">
-                    <h3><span id="titulo-lista">Materiais</span>
-                        <button class="btn-voltar" onclick="Conference.backToTipo()">&#8592; Voltar</button>
-                    </h3>
-                    <input type="text" class="material-search" id="material-search" placeholder="&#128269; Buscar..." oninput="Conference.renderMateriais(this.value)">
+                    <h3 id="titulo-lista">Materiais <button class="btn-voltar" onclick="Conference.backToTipo()">Voltar</button></h3>
+                    <input type="text" class="material-search" id="material-search" placeholder="Pesquisar código ou descrição..." oninput="Conference.renderMateriais(this.value)">
                     <div class="materiais-grid" id="materiais-grid"></div>
                 </div>
 
@@ -181,39 +181,38 @@ form { padding: 1.5rem; }
                         <video id="video" autoplay playsinline muted></video>
                         <canvas id="overlay"></canvas>
                         <div class="camera-controls">
-                            <button class="cam-btn" onclick="Camera.toggleFlash()">&#128294;</button>
-                            <button class="cam-btn" onclick="Camera.zoomIn()">+</button>
-                            <button class="cam-btn" onclick="Camera.zoomOut()">&#8722;</button>
-                            <button class="cam-btn" id="btn-roi" onclick="Vision.toggleROI()">&#9634; &#193;rea</button>
-                            <button class="cam-btn" onclick="Vision.clearROI()">&#10005;</button>
+                            <button class="cam-btn" id="btn-roi" onclick="Vision.toggleROI()" title="Definir área de contagem">&#128208; ROI</button>
+                            <button class="cam-btn" onclick="Vision.clearROI()" title="Limpar área">&#128465;</button>
+                            <button class="cam-btn" onclick="Vision.restart()" title="Recomeçar">&#128257;</button>
                         </div>
                     </div>
+                    
                     <div class="contagem-panel">
-                        <div class="modo-ia basica" id="modo-ia">&#9881; Verificando...</div>
+                        <div class="modo-ia treinada" id="modo-ia">
+                            &#128640; OPENCV.JS - CONTAGEM POR VISÃO
+                        </div>
                         <div class="material-info-box">
                             <div class="titulo">Material Selecionado</div>
                             <div class="nome" id="conf-material-nome">-</div>
                             <div class="codigo-dim" id="conf-material-dim">-</div>
                         </div>
-                        <div class="status-detectando" id="status-detectando" style="display:none;">
-                            <span class="pulse"></span>
-                            <span id="status-texto">Detectando...</span>
+                        <div class="status-detectando" id="status-detectando">
+                            <div class="pulse"></div>
+                            <span id="status-texto">IA contando sozinha... segure firme</span>
                         </div>
                         <div class="contagem-display">
-                            <div class="label">Barras Detectadas</div>
+                            <div class="label">Total Identificado</div>
                             <div class="numero" id="qtd-detectada">0</div>
-                            <div class="subtext" id="contagem-subtext">Aponte para as pontas das barras</div>
+                            <div class="subtext">Ajuste manualmente se necessário</div>
                         </div>
                         <div class="adjust-row">
-                            <button class="btn btn-secondary" onclick="Vision.nudge(-1)">&#8722;</button>
-                            <button class="btn btn-secondary" onclick="Vision.nudge(1)">+</button>
+                            <button class="btn btn-danger" onclick="Vision.nudge(-1)">-1</button>
+                            <button class="btn btn-success" onclick="Vision.nudge(1)">+1</button>
                         </div>
                         <div class="acoes-buttons">
-                            <button class="btn btn-success" id="btn-confirmar" onclick="Conference.save()" disabled>&#9989; Confirmar Contagem</button>
-                            <button class="btn btn-warning" onclick="Vision.restart()">&#128260; Reanalisar</button>
-                            <button class="btn btn-danger" onclick="Conference.backToTipo()">&#8592; Voltar</button>
+                            <button class="btn btn-primary" id="btn-confirmar" onclick="Conference.save()">CONFIRMAR E SALVAR</button>
+                            <button class="btn btn-secondary" onclick="Conference.backToTipo()">CANCELAR</button>
                         </div>
-                        <p class="hint">IA RF-DETR conta sozinha e salva no Google Sheets.<br>Ajuste fino: toque na imagem ou use +/&#8722;.</p>
                     </div>
                 </div>
             </div>
@@ -221,18 +220,30 @@ form { padding: 1.5rem; }
 
         <div id="page-materiais" class="page">
             <div class="page-header">
-                <h2>&#128230; Cadastro de Materiais</h2>
+                <h2>Gerenciar Materiais</h2>
                 <button class="btn btn-primary" onclick="Materials.openModal()">+ Novo Material</button>
             </div>
             <div class="filters">
-                <input type="text" id="search-material" placeholder="&#128269; Pesquisar..." style="flex:1;" oninput="Materials.render()">
+                <input type="text" id="search-material" placeholder="Pesquisar..." oninput="Materials.render()">
                 <select id="filter-tipo" onchange="Materials.render()">
-                    <option value="">Todos</option><option value="cobre">Cobre</option><option value="aluminio">Alum&#237;nio</option>
+                    <option value="">Todos os tipos</option>
+                    <option value="cobre">Cobre</option>
+                    <option value="aluminio">Alumínio</option>
                 </select>
             </div>
             <div class="table-container">
                 <table id="table-materiais">
-                    <thead><tr><th>C&#243;digo</th><th>Descri&#231;&#227;o</th><th>Dim.</th><th>Tipo</th><th>Qtd</th><th>Status</th><th>A&#231;&#245;es</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Dimensões</th>
+                            <th>Material</th>
+                            <th>Estoque</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -240,318 +251,195 @@ form { padding: 1.5rem; }
 
         <div id="page-configuracoes" class="page">
             <div class="page-header">
-                <h2>&#9881; Configura&#231;&#245;es</h2>
-                <button class="btn btn-primary" onclick="App.sairConfig()">&#8592; Voltar</button>
+                <h2>Configurações do Sistema</h2>
+                <button class="btn btn-secondary" onclick="App.sairConfig()">Sair</button>
             </div>
             <div class="settings-container">
                 <div class="setting-group">
-                    <h3>&#127760; Google Apps Script (proxy + Sheets)</h3>
-                    <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:0.5rem;">
-                        <label>URL do Web App</label>
-                        <input type="text" id="config-api-url" readonly style="font-size:0.72rem;">
+                    <h3>Conectividade</h3>
+                    <div class="setting-item">
+                        <label>URL do Google Apps Script</label>
+                        <input type="text" id="config-api-url" placeholder="https://script.google.com/...">
                     </div>
                     <div class="setting-item">
-                        <button class="btn btn-primary" onclick="App.testarRoboflow()">&#128268; Testar conex&#227;o</button>
-                        <span id="rf-status" style="font-size:0.8rem;color:var(--text-secondary);"></span>
+                        <button class="btn btn-primary" onclick="App.salvarConfig()">Salvar Configurações</button>
                     </div>
-                    <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.5rem;">
-                        &#9989; API key protegida no servidor.<br>
-                        &#128202; Dados salvos no Google Sheets.
-                    </p>
                 </div>
                 <div class="setting-group">
-                    <h3>&#129302; IA / Contagem</h3>
+                    <h3>Câmera e Visão</h3>
                     <div class="setting-item">
-                        <label>Confian&#231;a m&#237;nima (%)</label>
-                        <input type="number" id="config-confianca-ia" min="5" max="95" value="35">
+                        <label>Resolução da Câmera</label>
+                        <select id="config-resolucao">
+                            <option value="720">HD (720p)</option>
+                            <option value="1080">Full HD (1080p)</option>
+                        </select>
                     </div>
                     <div class="setting-item">
-                        <label>Salvar sozinho ao estabilizar</label>
-                        <input type="checkbox" id="config-autosave" checked>
+                        <label>Tempo de Estabilização (s)</label>
+                        <input type="number" id="config-estabilizacao" value="3">
                     </div>
                     <div class="setting-item">
-                        <label>Auto-parar ao estabilizar</label>
+                        <label>Parar contagem automaticamente</label>
                         <input type="checkbox" id="config-auto-stop" checked>
                     </div>
                     <div class="setting-item">
-                        <label>Estabiliza&#231;&#227;o (seg)</label>
-                        <input type="number" id="config-estabilizacao" min="1" max="10" value="3">
+                        <label>Salvar automaticamente ao estabilizar</label>
+                        <input type="checkbox" id="config-autosave">
                     </div>
                 </div>
-                <div class="setting-group">
-                    <h3>&#128247; C&#226;mera</h3>
-                    <div class="setting-item">
-                        <label>Resolu&#231;&#227;o</label>
-                        <select id="config-resolucao">
-                            <option value="640x480">640x480</option>
-                            <option value="1280x720" selected>1280x720 (HD)</option>
-                            <option value="1920x1080">1920x1080</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="setting-group">
-                    <h3>&#128190; Dados</h3>
-                    <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:0.8rem;border-bottom:none;">
-                        <label style="color:var(--warning-dark);font-weight:700;">&#128260; Zerar Quantidades</label>
-                        <button class="btn btn-warning" onclick="App.zerarQuantidades()">&#128260; Zerar Todas as Quantidades</button>
-                    </div>
-                </div>
-            </div>
-            <div style="margin-top:1.5rem;max-width:1200px;">
-                <button class="btn btn-primary" onclick="App.salvarConfig()">&#128190; Salvar Configura&#231;&#245;es</button>
             </div>
         </div>
     </main>
-
-    <div id="modal-material" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h2 id="modal-title">Novo Material</h2>
-                <button class="btn-close" onclick="App.closeModal('modal-material')">&times;</button></div>
-            <form id="form-material" onsubmit="Materials.save(event)">
-                <input type="hidden" id="input-id">
-                <div class="form-group"><label>C&#243;digo *</label><input type="text" id="input-codigo" required></div>
-                <div class="form-group"><label>Descri&#231;&#227;o *</label><input type="text" id="input-descricao" required></div>
-                <div class="form-group"><label>Dimens&#245;es</label><input type="text" id="input-dimensoes"></div>
-                <div class="form-group"><label>Material *</label>
-                    <select id="input-material" required><option value="cobre">Cobre</option><option value="aluminio">Alum&#237;nio</option></select></div>
-                <div class="form-group"><label>Quantidade Inicial</label><input type="number" id="input-quantidade" value="0"></div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-danger" onclick="App.closeModal('modal-material')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="modal-senha" class="modal senha-modal">
-        <div class="modal-content">
-            <div class="modal-header"><h2>&#128274; Acesso Restrito</h2>
-                <button class="btn-close" onclick="App.closeModal('modal-senha')">&times;</button></div>
-            <div style="padding:2rem;">
-                <p style="color:var(--text-secondary);margin-bottom:1rem;">Digite a senha:</p>
-                <input type="password" class="senha-input" id="input-senha" maxlength="10" inputmode="numeric">
-                <div style="display:flex;gap:0.8rem;">
-                    <button class="btn btn-danger" style="flex:1;" onclick="App.closeModal('modal-senha')">Cancelar</button>
-                    <button class="btn btn-primary" style="flex:1;" onclick="App.verificarSenha()">Entrar</button>
-                </div>
-                <p id="senha-erro" style="color:var(--danger);margin-top:1rem;display:none;font-weight:600;">Senha incorreta!</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="toast-container" id="toast-container"></div>
 </div>
 
-<script>
-/* =====================================================================
-   URL DO WEB APP (Apps Script) — já preenchida com a sua URL
-   ===================================================================== */
-var APP_CONFIG = {
-    api: 'https://script.google.com/macros/s/AKfycbyjTylJtCPqw5XRirzvK-dKEwBxc3Ypp1JeKfDhqHyUcmCaMJaiLJAAind8egh1mgw4/exec',
-    token: ''
-};
-var CONFIG_SENHA = '10032001';
-var VERSAO_ESPERADA = '5';
+<!-- Modais -->
+<div id="modal-material" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">Novo Material</h3>
+            <button class="btn-close" onclick="App.closeModal('modal-material')">&times;</button>
+        </div>
+        <form id="form-material" onsubmit="Materials.save(event)">
+            <input type="hidden" id="input-id">
+            <div class="form-group">
+                <label>Código</label>
+                <input type="text" id="input-codigo" required>
+            </div>
+            <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="input-descricao" required>
+            </div>
+            <div class="form-group">
+                <label>Dimensões</label>
+                <input type="text" id="input-dimensoes">
+            </div>
+            <div class="form-group">
+                <label>Tipo de Material</label>
+                <select id="input-material">
+                    <option value="cobre">Cobre</option>
+                    <option value="aluminio">Alumínio</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Quantidade Inicial</label>
+                <input type="number" id="input-quantidade" value="0">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="App.closeModal('modal-material')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar Material</button>
+            </div>
+        </form>
+    </div>
+</div>
 
+<div id="modal-senha" class="modal senha-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Acesso Restrito</h3>
+            <button class="btn-close" onclick="App.closeModal('modal-senha')">&times;</button>
+        </div>
+        <div style="padding: 1.5rem">
+            <p>Digite a senha de administrador:</p>
+            <input type="password" id="input-senha" class="senha-input">
+            <div id="senha-erro" style="color: var(--danger); display: none; margin-bottom: 1rem">Senha incorreta!</div>
+            <button class="btn btn-primary" onclick="App.verificarSenha()">Entrar</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script>
+// Variáveis Globais e Configurações
+var VERSAO_ESPERADA = "1.0.0";
+var CONFIG_SENHA = "123"; // Senha padrão
+var APP_CONFIG = { api: localStorage.getItem('apiUrl') || '' };
+var cvReady = false;
+
+// Inicialização do OpenCV.js
+function onOpenCvReady() {
+    cvReady = true;
+    Vision.updateModeBadge();
+    Toast.success('Visão Computacional Online');
+}
+
+var checkCv = setInterval(function() {
+    if (window.cv && window.cv.Mat) {
+        onOpenCvReady();
+        clearInterval(checkCv);
+    }
+}, 500);
+
+// Utils
 var Utils = {
-    uuid: function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0; return (c === 'x') ? r : (r & 0x3 | 0x8); }); },
-    now: function() { var d = new Date(); return { date: d.toISOString().split('T')[0], full: d.toLocaleString('pt-BR') }; }
+    uuid: function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); }); }
 };
+
+// Integração Google Sheets
+var SheetsAPI = {
+    getMateriais: function() {
+        if (!APP_CONFIG.api) return Promise.resolve([]);
+        return fetch(APP_CONFIG.api + '?action=getMateriais').then(function(r) { return r.json(); });
+    },
+    save: function(data, type) {
+        if (!APP_CONFIG.api) return Promise.reject(new Error('URL da API não configurada'));
+        return fetch(APP_CONFIG.api, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'save' + type.charAt(0).toUpperCase() + type.slice(1), data: data })
+        });
+    }
+};
+
 var Toast = {
-    show: function(m, t) {
-        t = t || 'info';
-        var el = document.createElement('div');
-        el.className = 'toast ' + t; el.textContent = m;
-        document.getElementById('toast-container').appendChild(el);
-        setTimeout(function() { el.style.opacity = '0'; setTimeout(function() { el.remove(); }, 300); }, 5000);
+    show: function(msg, type) {
+        var c = document.getElementById('toast-container');
+        var t = document.createElement('div');
+        t.className = 'toast ' + (type || '');
+        t.textContent = msg;
+        c.appendChild(t);
+        setTimeout(function() { t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 300); }, 3000);
     },
     success: function(m) { this.show(m, 'success'); },
     error: function(m) { this.show(m, 'error'); },
     warning: function(m) { this.show(m, 'warning'); }
 };
 
-var SheetsAPI = {
-    configured: function() { return APP_CONFIG.api && APP_CONFIG.api.indexOf('script.google.com') >= 0; },
-    call: function(action, body) {
-        if (!this.configured()) return Promise.reject(new Error('API nao configurada'));
-        var url = APP_CONFIG.api + '?action=' + encodeURIComponent(action);
-        if (APP_CONFIG.token) url += '&token=' + encodeURIComponent(APP_CONFIG.token);
-        var opts = { method: body ? 'POST' : 'GET' };
-        if (body) {
-            opts.headers = { 'Content-Type': 'text/plain;charset=utf-8' };
-            opts.body = JSON.stringify(body);
-        }
-        return fetch(url, opts).then(function(r) { return r.json(); }).then(function(j) {
-            if (j && j.ok === false) throw new Error(j.error || 'Erro no servidor');
-            return j;
-        });
-    },
-    getMateriais: function() { return this.call('getMateriais').then(function(j) { return j.data || []; }); },
-    save: function(item, type) {
-        if (type === 'conferencia') return this.call('saveConferencia', { data: item });
-        return this.call('saveMaterial', { data: item });
-    },
-    delete: function(id) { return this.call('deleteMaterial', { id: id }); },
-    zerarQuantidades: function() { return this.call('zerarQuantidades'); },
-    testConnection: function() { return this.call('testConnection'); },
-    inferIA: function(base64, confidence) { return this.call('inferIA', { image: base64, confidence: confidence }); }
-};
-
 var Camera = {
-    video: null, stream: null, track: null, zoom: 1,
+    video: null, stream: null,
     init: function() { this.video = document.getElementById('video'); },
     start: function() {
-        var self = this;
-        return new Promise(function(resolve) {
-            var res = (localStorage.getItem('resolution') || '1280x720').split('x').map(Number);
-            navigator.mediaDevices.getUserMedia({ video: { width: { ideal: res[0] }, height: { ideal: res[1] }, facingMode: 'environment' }, audio: false })
-                .then(function(stream) {
-                    self.stream = stream;
-                    self.video.srcObject = stream;
-                    self.track = stream.getVideoTracks()[0];
-                    self.video.onloadedmetadata = function() {
-                        self.video.play();
-                        var o = document.getElementById('overlay');
-                        o.width = self.video.videoWidth; o.height = self.video.videoHeight;
-                        resolve(true);
-                    };
-                }).catch(function(e) { Toast.error('Erro camera: ' + e.message); resolve(false); });
-        });
+        var res = localStorage.getItem('resolution') || '720';
+        var constraints = { video: { facingMode: 'environment', width: { ideal: res === '1080' ? 1920 : 1280 }, height: { ideal: res === '1080' ? 1080 : 720 } } };
+        return navigator.mediaDevices.getUserMedia(constraints).then(function(s) {
+            Camera.stream = s; Camera.video.srcObject = s; return true;
+        }).catch(function() { Toast.error('Erro ao acessar câmera.'); return false; });
     },
-    stop: function() { if (this.stream) { this.stream.getTracks().forEach(function(t) { t.stop(); }); this.stream = null; } },
-    toggleFlash: function() {
-        if (!this.track) return;
-        try {
-            var caps = this.track.getCapabilities();
-            if (caps.torch) { this.flashOn = !this.flashOn; this.track.applyConstraints({ advanced: [{ torch: this.flashOn }] }); }
-            else Toast.warning('Flash nao disponivel');
-        } catch (e) { Toast.warning('Flash nao disponivel'); }
-    },
-    zoomIn: function() { this.zoom = Math.min(this.zoom + 0.2, 3); this.applyZoom(); },
-    zoomOut: function() { this.zoom = Math.max(this.zoom - 0.2, 1); this.applyZoom(); },
-    applyZoom: function() {
-        if (!this.track) return;
-        try {
-            var caps = this.track.getCapabilities();
-            if (caps.zoom) this.track.applyConstraints({ advanced: [{ zoom: caps.zoom.min + (caps.zoom.max - caps.zoom.min) * ((this.zoom - 1) / 2) }] });
-        } catch (e) {}
-    }
-};
-
-function polyArea(pts) {
-    var a = 0;
-    for (var i = 0; i < pts.length; i++) {
-        var p1 = pts[i], p2 = pts[(i + 1) % pts.length];
-        a += p1.x * p2.y - p2.x * p1.y;
-    }
-    return Math.abs(a) / 2;
-}
-function normPoints(raw) {
-    if (!raw || !raw.length) return null;
-    if (Object.prototype.toString.call(raw[0]) === '[object Array]') return raw.map(function(q) { return { x: q[0], y: q[1] }; });
-    if (raw[0].x !== undefined) return raw;
-    return null;
-}
-
-var ROBOFLOW = {
-    cap: null,
-    enabled: function() { return SheetsAPI.configured(); },
-    classOk: function(cls, tipo) {
-        if (!cls) return true;
-        var c = String(cls).toLowerCase();
-        var isCobre = c.indexOf('cobre') >= 0 || c.indexOf('copper') >= 0;
-        var isAlum = c.indexOf('alumin') >= 0 || c.indexOf('alum') >= 0;
-        if (!isCobre && !isAlum) return true;
-        if (tipo === 'cobre') return isCobre;
-        if (tipo === 'aluminio') return isAlum;
-        return true;
-    },
-    grab: function(video) {
-        if (!this.cap) this.cap = document.createElement('canvas');
-        var vw = video.videoWidth, vh = video.videoHeight;
-        var sc = Math.min(1, 640 / vw);
-        this.cap.width = Math.round(vw * sc);
-        this.cap.height = Math.round(vh * sc);
-        this.cap.getContext('2d').drawImage(video, 0, 0, this.cap.width, this.cap.height);
-        var b64 = this.cap.toDataURL('image/jpeg', 0.85).split(',')[1].replace(/\r?\n/g, '');
-        return { b64: b64, sx: vw / this.cap.width };
-    },
-    detect: function(video, tipo) {
-        if (!video || video.readyState < 2) return Promise.resolve(null);
-        var self = this;
-        var g = this.grab(video);
-        var conf = ((parseInt(document.getElementById('config-confianca-ia').value) || 35) / 100);
-        return SheetsAPI.inferIA(g.b64, conf).then(function(res) {
-            return self.parse(res.predictions || [], tipo, g.sx);
-        }).catch(function(e) {
-            console.warn('[Roboflow proxy]:', e.message);
-            return null;
-        });
-    },
-    parse: function(preds, tipo, sx) {
-        var items = [];
-        for (var i = 0; i < preds.length; i++) {
-            var p = preds[i];
-            if (!this.classOk(p['class'], tipo)) continue;
-            var pts = normPoints(p.points);
-            var x1, y1, x2, y2, area;
-            if (pts && pts.length > 2) {
-                x1 = Infinity; y1 = Infinity; x2 = -Infinity; y2 = -Infinity;
-                for (var k = 0; k < pts.length; k++) {
-                    if (pts[k].x < x1) x1 = pts[k].x;
-                    if (pts[k].x > x2) x2 = pts[k].x;
-                    if (pts[k].y < y1) y1 = pts[k].y;
-                    if (pts[k].y > y2) y2 = pts[k].y;
-                }
-                area = polyArea(pts);
-            } else if (p.width !== undefined) {
-                x1 = p.x - p.width / 2; y1 = p.y - p.height / 2;
-                x2 = p.x + p.width / 2; y2 = p.y + p.height / 2;
-                area = p.width * p.height * 0.85;
-            } else continue;
-            items.push({
-                x1: x1 * sx, y1: y1 * sx, x2: x2 * sx, y2: y2 * sx,
-                score: p.confidence || 1, area: area, n: 1,
-                poly: pts ? pts.map(function(q) { return { x: q.x * sx, y: q.y * sx }; }) : null
-            });
-        }
-        if (!items.length) return [];
-        var areas = items.map(function(o) { return o.area; }).sort(function(a, b) { return a - b; });
-        var med = areas[Math.floor(areas.length / 2)];
-        var cands = items.filter(function(o) { return o.area <= 1.7 * med; })
-                         .map(function(o) { return o.area; })
-                         .sort(function(a, b) { return a - b; });
-        var typical = Math.max(cands.length ? cands[Math.floor(cands.length / 2)] : med, 1);
-        for (var j = 0; j < items.length; j++) {
-            items[j].n = Math.max(1, Math.round(items[j].area / typical));
-        }
-        return items;
-    }
+    stop: function() { if (this.stream) this.stream.getTracks().forEach(function(t) { t.stop(); }); }
 };
 
 var Vision = {
-    isRunning: false, busy: false, materialType: null, markers: [], fail: 0,
-    manualAdds: [], removedPts: [], manualOffset: 0,
-    counts: [], roi: null, roiMode: false, dragStart: null, bound: false,
-
+    isRunning: false, materialType: null, markers: [], manualOffset: 0,
+    counts: [], roi: null, roiMode: false, dragStart: null,
+    
     start: function(tipo) {
         this.materialType = tipo;
-        this.resetAdjust();
+        this.manualOffset = 0;
         this.isRunning = true;
         this.counts = [];
         this.setStatus('running');
-        this.updateModeBadge();
         this.loop();
     },
     stop: function() { this.isRunning = false; },
-    resetAdjust: function() { this.markers = []; this.manualAdds = []; this.removedPts = []; this.manualOffset = 0; this.counts = []; this.updateUI(); },
-    restart: function() { this.counts = []; if (!this.isRunning) { this.isRunning = true; this.setStatus('running'); this.loop(); } Toast.success('Reanalisando...'); },
-
+    restart: function() { this.manualOffset = 0; this.counts = []; if (!this.isRunning) { this.isRunning = true; this.setStatus('running'); this.loop(); } Toast.success('Reanalisando...'); },
+    
     updateModeBadge: function() {
         var el = document.getElementById('modo-ia');
-        if (ROBOFLOW.enabled()) { el.className = 'modo-ia treinada'; el.innerHTML = '&#127760; RF-DETR ROBOFLOW &#8212; 100% AUTOM\u00c1TICO'; }
-        else { el.className = 'modo-ia basica'; el.innerHTML = '&#9888; Configure a URL do Apps Script'; }
+        if (cvReady) { el.className = 'modo-ia treinada'; el.innerHTML = '&#128640; OPENCV.JS ONLINE - ATIVO'; }
+        else { el.className = 'modo-ia basica'; el.innerHTML = '&#9888; CARREGANDO VISÃO COMPUTACIONAL...'; }
     },
+    
     setStatus: function(mode) {
         var el = document.getElementById('status-detectando');
         el.style.display = 'flex';
@@ -560,98 +448,89 @@ var Vision = {
             document.getElementById('status-texto').textContent = 'IA contando sozinha... segure firme';
         } else {
             el.classList.add('stable');
-            document.getElementById('status-texto').textContent = 'Contagem estabilizada \u2014 revise e confirme';
+            document.getElementById('status-texto').textContent = 'Contagem estabilizada — revise e confirme';
         }
     },
 
     loop: function() {
-        if (!this.isRunning || this.busy) return;
-        var self = this;
-        this.busy = true;
-        ROBOFLOW.detect(Camera.video, this.materialType).then(function(boxes) {
-            self.busy = false;
-            if (!self.isRunning) return;
-            if (boxes) {
-                self.fail = 0;
-                var ms = boxes.map(function(b) { return { x: (b.x1 + b.x2) / 2, y: (b.y1 + b.y2) / 2, box: b, poly: b.poly || null, n: b.n || 1 }; });
-                if (self.roi) {
-                    ms = ms.filter(function(m) {
-                        return m.x >= self.roi.x && m.x <= self.roi.x + self.roi.w &&
-                               m.y >= self.roi.y && m.y <= self.roi.y + self.roi.h;
-                    });
+        if (!this.isRunning) return;
+        this.process();
+        this.checkAuto(500);
+        requestAnimationFrame(this.loop.bind(this));
+    },
+
+    process: function() {
+        if (!cvReady || !Camera.video || !Camera.video.videoWidth) return;
+        
+        var video = Camera.video;
+        var canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+
+        var src = cv.imread(canvas);
+        var gray = new cv.Mat();
+        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+        
+        var blur = new cv.Mat();
+        cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
+        
+        var thresh = new cv.Mat();
+        cv.adaptiveThreshold(blur, thresh, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 11, 2);
+        
+        var contours = new cv.MatVector();
+        var hierarchy = new cv.Mat();
+        cv.findContours(thresh, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+        this.markers = [];
+        for (var i = 0; i < contours.size(); ++i) {
+            var cnt = contours.get(i);
+            var area = cv.contourArea(cnt);
+            var rect = cv.boundingRect(cnt);
+            var aspect = rect.width / rect.height;
+
+            // Filtro para barras metálicas horizontais
+            if (area > 800 && aspect > 2.2) {
+                if (this.roi) {
+                    if (rect.x < this.roi.x || rect.x + rect.width > this.roi.x + this.roi.w || rect.y < this.roi.y || rect.y + rect.height > this.roi.y + this.roi.h) continue;
                 }
-                self.markers = ms;
-            } else {
-                self.fail++;
-                if (self.fail === 3) Toast.warning('IA indisponivel. Verifique internet/proxy.');
+                this.markers.push({ x: rect.x + rect.width/2, y: rect.y + rect.height/2, w: rect.width, h: rect.height });
             }
-            self.draw();
-            self.updateUI();
-            self.checkAuto(900);
-            setTimeout(function() { self.loop(); }, 900);
-        });
+        }
+
+        this.draw();
+        this.updateUI();
+
+        src.delete(); gray.delete(); blur.delete(); thresh.delete(); contours.delete(); hierarchy.delete();
     },
 
     draw: function() {
-        var o = document.getElementById('overlay'), v = Camera.video;
-        if (!v || !v.videoWidth) return;
-        if (o.width !== v.videoWidth) { o.width = v.videoWidth; o.height = v.videoHeight; }
+        var o = document.getElementById('overlay');
+        if (!Camera.video.videoWidth) return;
+        o.width = Camera.video.videoWidth;
+        o.height = Camera.video.videoHeight;
         var ctx = o.getContext('2d');
         ctx.clearRect(0, 0, o.width, o.height);
+
         if (this.roi) {
-            var rr = this.roi;
-            ctx.fillStyle = 'rgba(0,0,0,0.55)';
-            ctx.fillRect(0, 0, o.width, rr.y); ctx.fillRect(0, rr.y + rr.h, o.width, o.height - rr.y - rr.h);
-            ctx.fillRect(0, rr.y, rr.x, rr.h); ctx.fillRect(rr.x + rr.w, rr.y, o.width - rr.x - rr.w, rr.h);
-            ctx.strokeStyle = '#ffc107'; ctx.lineWidth = 3; ctx.strokeRect(rr.x, rr.y, rr.w, rr.h);
+            ctx.strokeStyle = '#ffc107'; ctx.lineWidth = 3; ctx.strokeRect(this.roi.x, this.roi.y, this.roi.w, this.roi.h);
         }
-        var num = 0;
-        for (var i = 0; i < this.markers.length; i++) {
-            var m = this.markers[i];
-            if (m.poly && m.poly.length > 2) {
-                ctx.beginPath();
-                ctx.moveTo(m.poly[0].x, m.poly[0].y);
-                for (var k = 0; k < m.poly.length; k++) ctx.lineTo(m.poly[k].x, m.poly[k].y);
-                ctx.closePath();
-                ctx.fillStyle = 'rgba(0,166,80,0.30)';
-                ctx.fill();
-                ctx.strokeStyle = '#00a650'; ctx.lineWidth = 2.5; ctx.stroke();
-            } else if (m.box) {
-                ctx.strokeStyle = '#00a650'; ctx.lineWidth = 3;
-                ctx.strokeRect(m.box.x1, m.box.y1, m.box.x2 - m.box.x1, m.box.y2 - m.box.y1);
-            }
-            var label;
-            if (m.n === 1) { num++; label = String(num); }
-            else { num += m.n; label = '\u00d7' + m.n; }
-            ctx.beginPath(); ctx.arc(m.x, m.y, 12, 0, Math.PI * 2);
-            ctx.fillStyle = '#00a650'; ctx.fill();
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-            ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(label, m.x, m.y + 1);
-        }
-        for (var j = 0; j < this.manualAdds.length; j++) {
-            num++;
-            var ma = this.manualAdds[j];
-            ctx.beginPath(); ctx.arc(ma.x, ma.y, 14, 0, Math.PI * 2);
-            ctx.fillStyle = '#0055a4'; ctx.fill();
-            ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(String(num), ma.x, ma.y + 1);
-        }
-        ctx.strokeStyle = '#dc3545'; ctx.lineWidth = 3;
-        for (var k2 = 0; k2 < this.removedPts.length; k2++) {
-            var rp = this.removedPts[k2];
-            ctx.beginPath();
-            ctx.moveTo(rp.x - 10, rp.y - 10); ctx.lineTo(rp.x + 10, rp.y + 10);
-            ctx.moveTo(rp.x + 10, rp.y - 10); ctx.lineTo(rp.x - 10, rp.y + 10);
-            ctx.stroke();
-        }
+
+        ctx.strokeStyle = '#00a650';
+        ctx.lineWidth = 3;
+        this.markers.forEach(function(m, i) {
+            ctx.strokeRect(m.x - m.w/2, m.y - m.h/2, m.w, m.h);
+            ctx.fillStyle = '#00a650';
+            ctx.beginPath(); ctx.arc(m.x, m.y, 12, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(i + 1, m.x, m.y + 4);
+        });
     },
 
-    finalCount: function() {
-        var c = 0;
-        for (var i = 0; i < this.markers.length; i++) c += (this.markers[i].n || 1);
-        return Math.max(0, c + this.manualAdds.length + this.manualOffset);
-    },
+    finalCount: function() { return Math.max(0, this.markers.length + this.manualOffset); },
     updateUI: function() {
         var c = this.finalCount();
         document.getElementById('qtd-detectada').textContent = c;
@@ -660,322 +539,128 @@ var Vision = {
 
     checkAuto: function(interval) {
         if (!document.getElementById('config-auto-stop').checked) return;
-        var estab = parseInt(document.getElementById('config-estabilizacao').value) || 3;
         var c = this.finalCount();
         this.counts.push(c);
-        var need = Math.max(3, Math.round(estab * 1000 / interval));
-        if (this.counts.length > need) this.counts.shift();
-        if (this.counts.length >= need && c > 0) {
-            var allSame = true;
-            for (var i = 0; i < this.counts.length; i++) if (this.counts[i] !== c) { allSame = false; break; }
+        if (this.counts.length > 10) this.counts.shift();
+        if (this.counts.length >= 10 && c > 0) {
+            var allSame = this.counts.every(function(v) { return v === c; });
             if (allSame) {
                 this.stop();
-                if (document.getElementById('config-autosave').checked) { this.beep(); Conference.save(); }
-                else { this.setStatus('stable'); Toast.success('Contagem estabilizada em ' + c + '. Confira e confirme.'); }
+                this.setStatus('stable');
+                if (document.getElementById('config-autosave').checked) Conference.save();
+                else Toast.success('Contagem estabilizada em ' + c);
             }
         }
     },
 
-    beep: function() {
-        try {
-            var AC = window.AudioContext || window.webkitAudioContext;
-            var ctx = new AC();
-            var o = ctx.createOscillator(), g = ctx.createGain();
-            o.connect(g); g.connect(ctx.destination);
-            o.frequency.value = 880; g.gain.value = 0.2;
-            o.start(); setTimeout(function() { o.stop(); ctx.close(); }, 250);
-        } catch (e) {}
-    },
-
-    nudge: function(d) { this.manualOffset = Math.max(-999, this.manualOffset + d); this.updateUI(); },
-    toggleROI: function() {
-        this.roiMode = !this.roiMode;
-        document.getElementById('btn-roi').classList.toggle('active', this.roiMode);
-        if (this.roiMode) Toast.warning('Arraste na imagem para delimitar a pilha');
-    },
-    clearROI: function() { this.roi = null; this.roiMode = false; document.getElementById('btn-roi').classList.remove('active'); this.draw(); },
-
+    nudge: function(v) { this.manualOffset += v; this.updateUI(); },
+    toggleROI: function() { this.roiMode = !this.roiMode; Toast.warning(this.roiMode ? 'Modo ROI: arraste na tela' : 'Modo ROI desativado'); },
+    clearROI: function() { this.roi = null; this.draw(); },
     bindPointer: function() {
-        if (this.bound) return;
-        this.bound = true;
-        var self = this;
         var el = document.getElementById('camera-container');
-        el.addEventListener('pointerdown', function(ev) { self.dragStart = self.videoCoords(ev); });
-        el.addEventListener('pointerup', function(ev) {
-            if (!self.dragStart) return;
-            var end = self.videoCoords(ev), start = self.dragStart;
-            self.dragStart = null;
-            var dist = Math.hypot(end.x - start.x, end.y - start.y);
-            if (self.roiMode && dist > 15) {
-                self.roi = { x: Math.min(start.x, end.x), y: Math.min(start.y, end.y), w: Math.abs(end.x - start.x), h: Math.abs(end.y - start.y) };
-                self.roiMode = false;
-                document.getElementById('btn-roi').classList.remove('active');
-                Toast.success('Area definida');
-                return;
+        el.onpointerdown = function(e) { Vision.dragStart = Vision.videoCoords(e); };
+        el.onpointerup = function(e) {
+            if (!Vision.dragStart) return;
+            var end = Vision.videoCoords(e);
+            if (Vision.roiMode) {
+                Vision.roi = { x: Math.min(Vision.dragStart.x, end.x), y: Math.min(Vision.dragStart.y, end.y), w: Math.abs(end.x - Vision.dragStart.x), h: Math.abs(end.y - Vision.dragStart.y) };
+                Vision.roiMode = false;
+                Toast.success('Área definida');
             }
-            if (dist <= 15 && !self.roiMode) self.tap(end);
-        });
+            Vision.dragStart = null;
+        };
     },
     videoCoords: function(ev) {
         var rect = document.getElementById('camera-container').getBoundingClientRect();
         var vw = Camera.video.videoWidth || 1280, vh = Camera.video.videoHeight || 720;
         var sc = Math.max(rect.width / vw, rect.height / vh);
-        var ox = (vw * sc - rect.width) / 2, oy = (vh * sc - rect.height) / 2;
-        return {
-            x: Math.max(0, Math.min(vw, (ev.clientX - rect.left + ox) / sc)),
-            y: Math.max(0, Math.min(vh, (ev.clientY - rect.top + oy) / sc))
-        };
-    },
-    tap: function(pt) {
-        var R = 30, i;
-        for (i = 0; i < this.manualAdds.length; i++)
-            if (Math.abs(this.manualAdds[i].x - pt.x) < R && Math.abs(this.manualAdds[i].y - pt.y) < R) {
-                this.manualAdds.splice(i, 1); this.updateUI(); this.draw(); return;
-            }
-        for (i = 0; i < this.markers.length; i++)
-            if (Math.abs(this.markers[i].x - pt.x) < R && Math.abs(this.markers[i].y - pt.y) < R) {
-                this.removedPts.push({ x: this.markers[i].x, y: this.markers[i].y });
-                this.markers.splice(i, 1);
-                this.updateUI(); this.draw(); return;
-            }
-        this.manualAdds.push({ x: pt.x, y: pt.y });
-        this.updateUI(); this.draw();
+        return { x: (ev.clientX - rect.left) / sc, y: (ev.clientY - rect.top) / sc };
     }
 };
 
 var Conference = {
     selectedTipo: null, selectedMaterial: null, matsCache: [],
-
     selectTipo: function(tipo) {
         this.selectedTipo = tipo;
-        var self = this;
         document.getElementById('tipo-selector').style.display = 'none';
         document.getElementById('materiais-lista').classList.add('active');
-        document.getElementById('titulo-lista').textContent = tipo === 'cobre' ? 'Barras de Cobre' : 'Barras de Alum\u00ednio';
-        document.getElementById('material-search').value = '';
+        document.getElementById('titulo-lista').innerHTML = 'Barras de ' + (tipo === 'cobre' ? 'Cobre' : 'Alumínio') + ' <button class="btn-voltar" onclick="Conference.backToTipo()">Voltar</button>';
+        this.renderMateriais('');
+    },
+    backToTipo: function() {
+        Camera.stop(); Vision.stop();
+        document.getElementById('camera-view').classList.remove('active');
+        document.getElementById('materiais-lista').classList.remove('active');
+        document.getElementById('tipo-selector').style.display = 'block';
+        document.getElementById('status-detectando').style.display = 'none';
+    },
+    renderMateriais: function(f) {
         SheetsAPI.getMateriais().then(function(mats) {
-            self.matsCache = mats;
-            self.renderMateriais('');
-        }).catch(function(e) {
-            Toast.error('Falha ao carregar materiais: ' + e.message);
-            self.matsCache = [];
-            self.renderMateriais('');
+            Conference.matsCache = mats;
+            var grid = document.getElementById('materiais-grid');
+            var filt = mats.filter(function(m) { return m.material === Conference.selectedTipo && (m.codigo.includes(f) || m.descricao.toLowerCase().includes(f.toLowerCase())); });
+            grid.innerHTML = filt.map(function(m) { return '<div class="material-item" onclick="Conference.selectMaterial(\'' + m.codigo + '\')"><div class="codigo">' + m.codigo + '</div><div style="flex:1; margin: 0 1rem"><div class="descricao">' + m.descricao + '</div><div class="dimensoes">' + m.dimensoes + '</div></div><div>➔</div></div>'; }).join('');
         });
     },
-
-    backToTipo: function() {
-        Vision.stop(); Vision.resetAdjust(); Camera.stop();
-        document.getElementById('tipo-selector').style.display = 'block';
-        document.getElementById('materiais-lista').classList.remove('active');
-        document.getElementById('camera-view').classList.remove('active');
-        document.getElementById('status-detectando').style.display = 'none';
-        this.selectedTipo = null; this.selectedMaterial = null;
-    },
-
-    renderMateriais: function(search) {
-        var grid = document.getElementById('materiais-grid');
-        var s = (search || '').toLowerCase();
-        var filt = [];
-        for (var i = 0; i < this.matsCache.length; i++) {
-            var m = this.matsCache[i];
-            if (m.material !== this.selectedTipo) continue;
-            if (s && (String(m.codigo).toLowerCase().indexOf(s) < 0 && String(m.descricao).toLowerCase().indexOf(s) < 0 && String(m.dimensoes).toLowerCase().indexOf(s) < 0)) continue;
-            filt.push(m);
-        }
-        var html = '';
-        for (var j = 0; j < filt.length; j++) {
-            var f = filt[j];
-            html += '<div class="material-item" onclick="Conference.selectMaterial(\'' + f.codigo + '\')"><div class="codigo">' + f.codigo + '</div><div><div class="descricao">' + f.descricao + '</div><div class="dimensoes">\uD83D\uDCCF ' + (f.dimensoes || '') + '</div></div><div class="arrow">\u203A</div></div>';
-        }
-        grid.innerHTML = html || '<div style="text-align:center;padding:3rem;color:#6c757d">Nenhum material</div>';
-    },
-
     selectMaterial: function(codigo) {
-        var mat = null;
-        for (var i = 0; i < this.matsCache.length; i++) if (String(this.matsCache[i].codigo) === String(codigo)) { mat = this.matsCache[i]; break; }
-        if (!mat) return;
+        var mat = this.matsCache.find(function(m) { return m.codigo === codigo; });
         this.selectedMaterial = mat;
         document.getElementById('conf-material-nome').textContent = mat.descricao;
-        document.getElementById('conf-material-dim').textContent = mat.codigo + ' | ' + (mat.dimensoes || '');
+        document.getElementById('conf-material-dim').textContent = mat.codigo + ' | ' + mat.dimensoes;
         document.getElementById('materiais-lista').classList.remove('active');
         document.getElementById('camera-view').classList.add('active');
         Vision.bindPointer();
         Camera.init();
-        Camera.start().then(function(ok) {
-            if (!ok) return;
-            Vision.updateModeBadge();
-            Vision.start(Conference.selectedTipo);
-            if (ROBOFLOW.enabled()) Toast.success('\uD83C\uDF10 RF-DETR Roboflow ativo: contagem automatica.');
-        });
+        Camera.start().then(function() { Vision.start(Conference.selectedTipo); });
     },
-
     save: function() {
         var det = Vision.finalCount();
         if (det <= 0) { Toast.warning('Nenhuma barra detectada!'); return; }
-        var self = this;
-        var md = this.selectedMaterial;
-        var reg = parseInt(md.quantidade) || 0;
-        var nova = reg + det;
-        var item = {
-            id: md.id, codigo: md.codigo, descricao: md.descricao, dimensoes: md.dimensoes,
-            tipo: md.tipo || 'barra', material: md.material, quantidade: nova,
-            minimo: md.minimo || 20, status: md.status || 'ativo', dataCadastro: md.dataCadastro
-        };
-        SheetsAPI.save(item, 'material').then(function() {
-            return SheetsAPI.save({
-                id: Utils.uuid(), material: md.codigo, descricao: md.descricao,
-                detectada: det, antes: reg, depois: nova, adicionado: det
-            }, 'conferencia');
-        }).then(function() {
-            md.quantidade = nova;
-            Toast.success('\u2705 ' + det + ' barras lancadas! Total: ' + nova);
-            self.backToTipo();
-        }).catch(function(e) {
-            Toast.error('Falha ao salvar no Sheets: ' + e.message);
-        });
+        SheetsAPI.save({ codigo: this.selectedMaterial.codigo, detectada: det }, 'conferencia').then(function() {
+            Toast.success(det + ' barras lançadas!');
+            Conference.backToTipo();
+        }).catch(function() { Toast.error('Falha ao salvar no Sheets'); });
     }
 };
 
 var Materials = {
     data: [],
-    load: function() {
-        var self = this;
-        SheetsAPI.getMateriais().then(function(d) { self.data = d; self.render(); })
-            .catch(function(e) { Toast.error('Falha ao carregar: ' + e.message); });
-    },
+    load: function() { SheetsAPI.getMateriais().then(function(d) { Materials.data = d; Materials.render(); }); },
     render: function() {
         var s = document.getElementById('search-material').value.toLowerCase();
         var f = document.getElementById('filter-tipo').value;
-        var html = '';
-        for (var i = 0; i < this.data.length; i++) {
-            var m = this.data[i];
-            if (s && (String(m.codigo) + String(m.descricao)).toLowerCase().indexOf(s) < 0) continue;
-            if (f && m.material !== f) continue;
-            var st = (parseInt(m.quantidade) || 0) > 0 ? 'success' : 'danger';
-            html += '<tr><td><strong>' + m.codigo + '</strong></td><td>' + m.descricao + '</td><td>' + (m.dimensoes || '-') + '</td><td><span class="badge ' + (m.material === 'cobre' ? 'badge-cobre' : 'badge-aluminio') + '">' + m.material + '</span></td><td><strong>' + (parseInt(m.quantidade) || 0) + '</strong></td><td><span class="badge badge-' + st + '">' + ((parseInt(m.quantidade) || 0) > 0 ? '\u2713 OK' : 'Zerado') + '</span></td><td><button class="btn-icon" onclick="Materials.edit(\'' + m.id + '\')">\u270F\uFE0F</button><button class="btn-icon" onclick="Materials.del(\'' + m.id + '\')">\uD83D\uDDD1\uFE0F</button></td></tr>';
-        }
-        document.querySelector('#table-materiais tbody').innerHTML = html || '<tr><td colspan="7" style="text-align:center;padding:3rem">Nenhum material</td></tr>';
+        var html = this.data.filter(function(m) { return (!s || (m.codigo + m.descricao).toLowerCase().includes(s)) && (!f || m.material === f); })
+            .map(function(m) { return '<tr><td>' + m.codigo + '</td><td>' + m.descricao + '</td><td>' + m.dimensoes + '</td><td><span class="badge ' + (m.material === 'cobre' ? 'badge-cobre' : 'badge-aluminio') + '">' + m.material + '</span></td><td>' + (m.quantidade || 0) + '</td><td><span class="badge badge-success">OK</span></td><td><button class="btn-icon" onclick="Materials.edit(\'' + m.id + '\')">✎</button></td></tr>'; }).join('');
+        document.querySelector('#table-materiais tbody').innerHTML = html || '<tr><td colspan="7">Nenhum material</td></tr>';
     },
-    openModal: function() { document.getElementById('modal-title').textContent = 'Novo Material'; document.getElementById('form-material').reset(); document.getElementById('input-id').value = ''; document.getElementById('modal-material').classList.add('active'); },
-    edit: function(id) {
-        var m = null;
-        for (var i = 0; i < this.data.length; i++) if (this.data[i].id === id) { m = this.data[i]; break; }
-        if (!m) return;
-        document.getElementById('modal-title').textContent = 'Editar Material';
-        document.getElementById('input-id').value = m.id;
-        document.getElementById('input-codigo').value = m.codigo || '';
-        document.getElementById('input-descricao').value = m.descricao || '';
-        document.getElementById('input-dimensoes').value = m.dimensoes || '';
-        document.getElementById('input-material').value = m.material || 'cobre';
-        document.getElementById('input-quantidade').value = parseInt(m.quantidade) || 0;
-        document.getElementById('modal-material').classList.add('active');
-    },
-    save: function(e) {
-        e.preventDefault();
-        var self = this;
-        var data = {
-            id: document.getElementById('input-id').value || Utils.uuid(),
-            codigo: document.getElementById('input-codigo').value,
-            descricao: document.getElementById('input-descricao').value,
-            dimensoes: document.getElementById('input-dimensoes').value,
-            material: document.getElementById('input-material').value,
-            quantidade: parseInt(document.getElementById('input-quantidade').value) || 0,
-            tipo: 'barra', minimo: 20, status: 'ativo'
-        };
-        SheetsAPI.save(data, 'material').then(function() {
-            Toast.success('Material salvo no Sheets!');
-            App.closeModal('modal-material');
-            self.load();
-        }).catch(function(err) { Toast.error('Falha: ' + err.message); });
-    },
-    del: function(id) {
-        if (!confirm('Excluir este material?')) return;
-        var self = this;
-        SheetsAPI.delete(id).then(function() { Toast.success('Excluido'); self.load(); });
-    }
+    openModal: function() { document.getElementById('modal-material').classList.add('active'); },
+    edit: function(id) { Toast.show('Edição em breve'); }
 };
 
 var App = {
     init: function() {
         document.getElementById('config-api-url').value = APP_CONFIG.api;
-        if (localStorage.getItem('resolution')) document.getElementById('config-resolucao').value = localStorage.getItem('resolution');
-        if (localStorage.getItem('estabilizacao')) document.getElementById('config-estabilizacao').value = localStorage.getItem('estabilizacao');
-        if (localStorage.getItem('confiancaIA')) document.getElementById('config-confianca-ia').value = localStorage.getItem('confiancaIA');
-        document.getElementById('config-auto-stop').checked = localStorage.getItem('autoStop') !== 'false';
-        document.getElementById('config-autosave').checked = localStorage.getItem('autosave') !== 'false';
-
-        /* Verifica versao do Apps Script e carrega materiais */
-        fetch(APP_CONFIG.api + '?action=ping').then(function(r) { return r.json(); }).then(function(j) {
-            if (j && j.v !== VERSAO_ESPERADA) {
-                Toast.warning('Apps Script desatualizado (v' + (j.v || '?') + '). Publique NOVA VERSAO no Apps Script (passo 3).');
-            }
-        }).catch(function() { Toast.error('Nao conectou ao Apps Script. Verifique a URL.'); });
-
         SheetsAPI.getMateriais().then(function(mats) {
-            var c = 0, a = 0;
-            for (var i = 0; i < mats.length; i++) { if (mats[i].material === 'cobre') c++; else a++; }
+            var c = mats.filter(function(m) { return m.material === 'cobre'; }).length;
+            var a = mats.filter(function(m) { return m.material === 'aluminio'; }).length;
             document.getElementById('count-cobre').textContent = c + ' itens';
             document.getElementById('count-aluminio').textContent = a + ' itens';
-        }).catch(function() {
-            document.getElementById('count-cobre').textContent = 'offline';
-            document.getElementById('count-aluminio').textContent = 'offline';
         });
     },
-    navegar: function(page) {
-        document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
-        document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-        var t = document.querySelector('.nav-btn[data-page="' + page + '"]');
-        if (t) t.classList.add('active');
-        document.getElementById('page-' + page).classList.add('active');
-        if (page === 'materiais') Materials.load();
+    navegar: function(p) {
+        document.querySelectorAll('.page').forEach(function(el) { el.classList.remove('active'); });
+        document.getElementById('page-' + p).classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.page === p); });
+        if (p === 'materiais') Materials.load();
     },
-    abrirSenha: function() { document.getElementById('input-senha').value = ''; document.getElementById('senha-erro').style.display = 'none'; document.getElementById('modal-senha').classList.add('active'); },
-    verificarSenha: function() {
-        if (document.getElementById('input-senha').value === CONFIG_SENHA) {
-            this.closeModal('modal-senha');
-            document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-            document.getElementById('page-configuracoes').classList.add('active');
-        } else { document.getElementById('senha-erro').style.display = 'block'; document.getElementById('input-senha').value = ''; }
-    },
-    sairConfig: function() {
-        document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-        document.getElementById('page-conferencia').classList.add('active');
-        document.querySelector('.nav-btn[data-page="conferencia"]').classList.add('active');
-    },
+    abrirSenha: function() { document.getElementById('modal-senha').classList.add('active'); },
+    verificarSenha: function() { if (document.getElementById('input-senha').value === CONFIG_SENHA) { this.closeModal('modal-senha'); this.navegar('configuracoes'); } else { document.getElementById('senha-erro').style.display = 'block'; } },
+    sairConfig: function() { this.navegar('conferencia'); },
     closeModal: function(id) { document.getElementById(id).classList.remove('active'); },
-
-    testarRoboflow: function() {
-        var st = document.getElementById('rf-status');
-        st.textContent = 'Testando via proxy...';
-        SheetsAPI.testConnection().then(function(res) {
-            if (res.ok) { st.textContent = '\u2705 OK via ' + (res.endpoint || 'proxy'); Toast.success('Conexao Roboflow OK!'); }
-            else { st.textContent = '\u274C ' + (res.message || 'Falha'); Toast.error('Falha: ' + (res.message || '')); }
-        }).catch(function(e) {
-            st.textContent = '\u274C ' + e.message;
-            Toast.error('Falha: ' + e.message);
-        });
-    },
-
-    zerarQuantidades: function() {
-        if (confirm('ZERAR todas as quantidades no Google Sheets?')) {
-            SheetsAPI.zerarQuantidades().then(function(r) { Toast.success('Quantidades zeradas (' + r.count + ' itens)'); })
-                .catch(function(e) { Toast.error('Falha: ' + e.message); });
-        }
-    },
-
-    salvarConfig: function() {
-        localStorage.setItem('resolution', document.getElementById('config-resolucao').value);
-        localStorage.setItem('autoStop', document.getElementById('config-auto-stop').checked);
-        localStorage.setItem('autosave', document.getElementById('config-autosave').checked);
-        localStorage.setItem('estabilizacao', document.getElementById('config-estabilizacao').value);
-        localStorage.setItem('confiancaIA', document.getElementById('config-confianca-ia').value);
-        Toast.success('Configuracoes salvas!');
-    }
+    salvarConfig: function() { localStorage.setItem('apiUrl', document.getElementById('config-api-url').value); APP_CONFIG.api = document.getElementById('config-api-url').value; Toast.success('Salvo!'); }
 };
 
-window.addEventListener('DOMContentLoaded', function() { App.init(); });
-window.Conference = Conference; window.Materials = Materials; window.Camera = Camera;
-window.Vision = Vision; window.ROBOFLOW = ROBOFLOW; window.App = App;
+window.onload = function() { App.init(); };
 </script>
 </body>
 </html>
