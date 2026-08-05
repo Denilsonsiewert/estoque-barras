@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Estoque de Barras - WEG</title>
-<!-- Carregamento do OpenCV.js via CDN oficial para funcionamento 100% online -->
+<!-- axios via CDN (mesma biblioteca do seu snippet Node, adaptada ao navegador) -->
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.2/dist/axios.min.js"></script>
+<!-- OpenCV.js como fallback offline -->
 <script async src="https://docs.opencv.org/4.5.4/opencv.js" type="text/javascript"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -52,13 +54,13 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .camera-view { display: none; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start; }
 .camera-view.active { display: grid; }
 .camera-container { position: relative; background: #000; border-radius: var(--radius-lg); overflow: hidden; aspect-ratio: 16/9; box-shadow: var(--shadow-xl); touch-action: none; cursor: crosshair; }
-#video { width: 100%; height: 100%; object-fit: cover; display: block; }
+#video, #photoCanvas { width: 100%; height: 100%; object-fit: fill; display: block; }
 #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-.camera-controls { position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.5rem; background: rgba(0,0,0,0.7); padding: 0.5rem; border-radius: var(--radius); z-index: 5; }
-.cam-btn { background: rgba(255,255,255,0.2); border: none; color: white; min-width: 45px; height: 45px; border-radius: var(--radius); cursor: pointer; font-size: 0.85rem; font-weight: 700; padding: 0 0.6rem; }
+.camera-controls { position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.4rem; background: rgba(0,0,0,0.7); padding: 0.5rem; border-radius: var(--radius); z-index: 5; flex-wrap: wrap; justify-content: center; }
+.cam-btn { background: rgba(255,255,255,0.2); border: none; color: white; min-width: 45px; height: 45px; border-radius: var(--radius); cursor: pointer; font-size: 0.8rem; font-weight: 700; padding: 0 0.6rem; }
 .cam-btn.active { background: var(--warning); color: #000; }
 .contagem-panel { background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 2px solid var(--border-color); position: sticky; top: 100px; }
-.modo-ia { text-align: center; padding: 0.6rem; border-radius: var(--radius); font-weight: 800; font-size: 0.85rem; margin-bottom: 1rem; text-transform: uppercase; }
+.modo-ia { text-align: center; padding: 0.6rem; border-radius: var(--radius); font-weight: 800; font-size: 0.8rem; margin-bottom: 1rem; text-transform: uppercase; }
 .modo-ia.treinada { background: rgba(0,85,164,0.15); color: var(--weg-blue); border: 2px solid var(--weg-blue); }
 .modo-ia.basica { background: rgba(255,193,7,0.15); color: #856404; border: 2px solid var(--warning); }
 .material-info-box { background: linear-gradient(135deg, var(--weg-blue), var(--weg-blue-dark)); color: white; padding: 1.2rem; border-radius: var(--radius); margin-bottom: 1.2rem; }
@@ -112,7 +114,7 @@ form { padding: 1.5rem; }
 .form-actions { display: flex; gap: 0.8rem; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--border-color); }
 .senha-modal .modal-content { max-width: 400px; text-align: center; }
 .senha-input { width: 100%; padding: 1.2rem; font-size: 1.8rem; text-align: center; letter-spacing: 0.8rem; border: 2px solid var(--border-color); border-radius: var(--radius); background: var(--bg-main); margin: 1.5rem 0; font-weight: 700; }
-.settings-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; max-width: 1200px; }
+.settings-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; max-width: 1400px; }
 .setting-group { background: var(--bg-card); padding: 1.8rem; border-radius: var(--radius-lg); border: 2px solid var(--border-color); box-shadow: var(--shadow-lg); }
 .setting-group h3 { margin-bottom: 1.2rem; color: var(--weg-blue); font-size: 1.1rem; }
 .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 0; border-bottom: 1px solid var(--border-color); gap: 1rem; flex-wrap: wrap; }
@@ -120,6 +122,7 @@ form { padding: 1.5rem; }
 .setting-item label { font-size: 0.95rem; font-weight: 600; }
 .setting-item input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--weg-blue); }
 .setting-item input, .setting-item select { width: 200px; padding: 0.6rem 0.9rem; }
+.setting-item input.wide { width: 100%; }
 .toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 3000; display: flex; flex-direction: column; gap: 0.8rem; }
 .toast { background: white; padding: 1.2rem 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow-lg); border-left: 4px solid var(--weg-blue); min-width: 280px; animation: slideInRight 0.3s ease; font-weight: 500; }
 .toast.success { border-left-color: var(--weg-green); }
@@ -179,18 +182,21 @@ form { padding: 1.5rem; }
                 <div class="camera-view" id="camera-view">
                     <div class="camera-container" id="camera-container">
                         <video id="video" autoplay playsinline muted></video>
+                        <canvas id="photoCanvas" style="display:none"></canvas>
                         <canvas id="overlay"></canvas>
                         <div class="camera-controls">
-                            <button class="cam-btn" id="btn-roi" onclick="Vision.toggleROI()" title="Definir área de contagem">&#128208; ROI</button>
-                            <button class="cam-btn" onclick="Vision.clearROI()" title="Limpar área">&#128465;</button>
-                            <button class="cam-btn" onclick="Vision.restart()" title="Recomeçar">&#128257;</button>
+                            <button class="cam-btn" onclick="Vision.snap()" title="Analisar agora com a IA treinada">&#128248; Analisar</button>
+                            <button class="cam-btn" id="btn-roi" onclick="Vision.toggleROI()" title="ROI (usado pelo motor local de fallback)">&#128208; ROI</button>
+                            <button class="cam-btn" id="btn-calib" onclick="Vision.toggleCalib()" title="Calibrar 1 barra (motor local)">&#128207; 1 Barra</button>
+                            <button class="cam-btn" onclick="document.getElementById('file-input').click()" title="Analisar foto da galeria">&#128193; Foto</button>
+                            <button class="cam-btn" onclick="Vision.clearROI()" title="Limpar área/calibração">&#128465;</button>
+                            <button class="cam-btn" onclick="Vision.restart()" title="Recomeçar / voltar à câmera">&#128257;</button>
                         </div>
+                        <input type="file" id="file-input" accept="image/*" style="display:none" onchange="Vision.loadPhoto(this)">
                     </div>
-                    
+
                     <div class="contagem-panel">
-                        <div class="modo-ia treinada" id="modo-ia">
-                            &#128640; OPENCV.JS ONLINE - ATIVO
-                        </div>
+                        <div class="modo-ia treinada" id="modo-ia">&#129302; IA TREINADA (ROBOFLOW) — ATIVA</div>
                         <div class="material-info-box">
                             <div class="titulo">Material Selecionado</div>
                             <div class="nome" id="conf-material-nome">-</div>
@@ -198,7 +204,7 @@ form { padding: 1.5rem; }
                         </div>
                         <div class="status-detectando" id="status-detectando">
                             <div class="pulse"></div>
-                            <span id="status-texto">IA contando sozinha... segure firme</span>
+                            <span id="status-texto">IA treinada contando... segure firme</span>
                         </div>
                         <div class="contagem-display">
                             <div class="label">Total Identificado</div>
@@ -213,6 +219,7 @@ form { padding: 1.5rem; }
                             <button class="btn btn-primary" id="btn-confirmar" onclick="Conference.save()">CONFIRMAR E SALVAR</button>
                             <button class="btn btn-secondary" onclick="Conference.backToTipo()">CANCELAR</button>
                         </div>
+                        <div class="hint">A foto/frame é enviada à <b>IA treinada no Roboflow</b> e as barras detectadas são marcadas em verde. Use <b>📸 Analisar</b> p/ contagem imediata. Sem internet ou se a nuvem falhar, o <b>motor local OpenCV</b> assume (use ROI + 📏 1 Barra nele).</div>
                     </div>
                 </div>
             </div>
@@ -235,13 +242,7 @@ form { padding: 1.5rem; }
                 <table id="table-materiais">
                     <thead>
                         <tr>
-                            <th>Código</th>
-                            <th>Descrição</th>
-                            <th>Dimensões</th>
-                            <th>Material</th>
-                            <th>Estoque</th>
-                            <th>Status</th>
-                            <th>Ações</th>
+                            <th>Código</th><th>Descrição</th><th>Dimensões</th><th>Material</th><th>Estoque</th><th>Status</th><th>Ações</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -256,10 +257,33 @@ form { padding: 1.5rem; }
             </div>
             <div class="settings-container">
                 <div class="setting-group">
+                    <h3>IA na Nuvem (Roboflow)</h3>
+                    <div class="setting-item">
+                        <label>Usar IA treinada (Roboflow)</label>
+                        <input type="checkbox" id="config-cloud-enabled" checked>
+                    </div>
+                    <div class="setting-item">
+                        <label>URL do modelo</label>
+                        <input type="text" id="config-roboflow-url" class="wide">
+                    </div>
+                    <div class="setting-item">
+                        <label>API Key</label>
+                        <input type="text" id="config-roboflow-key" class="wide">
+                    </div>
+                    <div class="setting-item">
+                        <label>Confiança mínima (0–1)</label>
+                        <input type="number" id="config-roboflow-conf" step="0.05" min="0" max="1">
+                    </div>
+                    <div class="setting-item">
+                        <label>Intervalo auto na câmera (s)</label>
+                        <input type="number" id="config-roboflow-interval" min="2" value="5">
+                    </div>
+                </div>
+                <div class="setting-group">
                     <h3>Conectividade</h3>
                     <div class="setting-item">
                         <label>URL do Google Apps Script</label>
-                        <input type="text" id="config-api-url" placeholder="https://script.google.com/...">
+                        <input type="text" id="config-api-url" class="wide" placeholder="https://script.google.com/...">
                     </div>
                     <div class="setting-item">
                         <button class="btn btn-primary" onclick="App.salvarConfig()">Salvar Configurações</button>
@@ -273,10 +297,6 @@ form { padding: 1.5rem; }
                             <option value="720">HD (720p)</option>
                             <option value="1080">Full HD (1080p)</option>
                         </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>Tempo de Estabilização (s)</label>
-                        <input type="number" id="config-estabilizacao" value="3">
                     </div>
                     <div class="setting-item">
                         <label>Parar contagem automaticamente</label>
@@ -301,29 +321,14 @@ form { padding: 1.5rem; }
         </div>
         <form id="form-material" onsubmit="Materials.save(event)">
             <input type="hidden" id="input-id">
-            <div class="form-group">
-                <label>Código</label>
-                <input type="text" id="input-codigo" required>
-            </div>
-            <div class="form-group">
-                <label>Descrição</label>
-                <input type="text" id="input-descricao" required>
-            </div>
-            <div class="form-group">
-                <label>Dimensões</label>
-                <input type="text" id="input-dimensoes">
-            </div>
+            <div class="form-group"><label>Código</label><input type="text" id="input-codigo" required></div>
+            <div class="form-group"><label>Descrição</label><input type="text" id="input-descricao" required></div>
+            <div class="form-group"><label>Dimensões</label><input type="text" id="input-dimensoes"></div>
             <div class="form-group">
                 <label>Tipo de Material</label>
-                <select id="input-material">
-                    <option value="cobre">Cobre</option>
-                    <option value="aluminio">Alumínio</option>
-                </select>
+                <select id="input-material"><option value="cobre">Cobre</option><option value="aluminio">Alumínio</option></select>
             </div>
-            <div class="form-group">
-                <label>Quantidade Inicial</label>
-                <input type="number" id="input-quantidade" value="0">
-            </div>
+            <div class="form-group"><label>Quantidade Inicial</label><input type="number" id="input-quantidade" value="0"></div>
             <div class="form-actions">
                 <button type="button" class="btn btn-secondary" onclick="App.closeModal('modal-material')">Cancelar</button>
                 <button type="submit" class="btn btn-primary">Salvar Material</button>
@@ -350,54 +355,43 @@ form { padding: 1.5rem; }
 <div id="toast-container" class="toast-container"></div>
 
 <script>
-// Variáveis Globais e Configurações
-var VERSAO_ESPERADA = "1.0.0";
-var CONFIG_SENHA = "123"; 
+// ================= CONFIG GERAL =================
+var VERSAO_ESPERADA = "3.0.0";
+var CONFIG_SENHA = "123";
 var DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbyjTylJtCPqw5XRirzvK-dKEwBxc3Ypp1JeKfDhqHyUcmCaMJaiLJAAind8egh1mgw4/exec";
 var APP_CONFIG = { api: localStorage.getItem('apiUrl') || DEFAULT_API_URL };
+
+// ===== IA TREINADA (ROBOFLOW) — adaptado do seu snippet Node.js =====
+var CLOUD = {
+    url: localStorage.getItem('roboflowUrl') || 'https://serverless.roboflow.com/controle-de-estoque-de-barras-me/2',
+    key: localStorage.getItem('roboflowKey') || 'U7LIVjFcRppUcPzLv9rC',
+    conf: parseFloat(localStorage.getItem('roboflowConf') || '0.5'),
+    interval: parseFloat(localStorage.getItem('roboflowInterval') || '5')
+};
+
 var cvReady = false;
-
-// Inicialização do OpenCV.js
-function onOpenCvReady() {
-    cvReady = true;
-    Vision.updateModeBadge();
-    Toast.success('Visão Computacional Online');
-}
-
+function onOpenCvReady() { cvReady = true; Vision.updateModeBadge(); }
 var checkCv = setInterval(function() {
-    if (window.cv && window.cv.Mat) {
-        onOpenCvReady();
-        clearInterval(checkCv);
-    }
+    if (window.cv && window.cv.Mat) { onOpenCvReady(); clearInterval(checkCv); }
 }, 500);
 
-// Utils
 var Utils = {
     uuid: function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); }); }
 };
 
-// Integração Google Sheets - AJUSTADO PARA O FORMATO DO SEU SCRIPT
 var SheetsAPI = {
     getMateriais: function() {
         if (!APP_CONFIG.api) return Promise.resolve([]);
         return fetch(APP_CONFIG.api + '?action=getMateriais')
             .then(function(r) { return r.json(); })
-            .then(function(res) { 
-                if (res.ok && res.data) return res.data;
-                return [];
-            })
-            .catch(function(err) {
-                console.error('Erro ao carregar materiais:', err);
-                return [];
-            });
+            .then(function(res) { if (res.ok && res.data) return res.data; return []; })
+            .catch(function(err) { console.error('Erro ao carregar materiais:', err); return []; });
     },
     save: function(data, type) {
         if (!APP_CONFIG.api) return Promise.reject(new Error('URL da API não configurada'));
-        // Usando o formato de ação que o seu script espera no doPost
         var action = 'save' + type.charAt(0).toUpperCase() + type.slice(1);
         return fetch(APP_CONFIG.api + '?action=' + action, {
-            method: 'POST',
-            mode: 'no-cors',
+            method: 'POST', mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
@@ -425,136 +419,344 @@ var Camera = {
         var res = localStorage.getItem('resolution') || '720';
         var constraints = { video: { facingMode: 'environment', width: { ideal: res === '1080' ? 1920 : 1280 }, height: { ideal: res === '1080' ? 1080 : 720 } } };
         return navigator.mediaDevices.getUserMedia(constraints).then(function(s) {
-            Camera.stream = s; Camera.video.srcObject = s; return true;
+            Camera.stream = s; Camera.video.srcObject = s;
+            Camera.video.onloadedmetadata = function() {
+                if (Camera.video.videoWidth) {
+                    document.getElementById('camera-container').style.aspectRatio = Camera.video.videoWidth + '/' + Camera.video.videoHeight;
+                }
+            };
+            return true;
         }).catch(function() { Toast.error('Erro ao acessar câmera.'); return false; });
     },
-    stop: function() { if (this.stream) this.stream.getTracks().forEach(function(t) { t.stop(); }); }
+    stop: function() { if (this.stream) this.stream.getTracks().forEach(function(t) { t.stop(); }); this.stream = null; }
 };
 
+// ================= VISÃO (NUVEM + LOCAL) =================
 var Vision = {
-    isRunning: false, materialType: null, markers: [], manualOffset: 0,
-    counts: [], roi: null, roiMode: false, dragStart: null,
-    
+    isRunning: false, materialType: 'cobre', markers: [], manualOffset: 0,
+    counts: [], roi: null, roiMode: false, calibMode: false, dragStart: null,
+    photoMode: false, photoMat: null, srcW: 0, srcH: 0,
+    calibArea: 0, lastProcess: 0, totalDetected: 0,
+    inFlight: false, cloudFail: false,
+
+    cloudEnabled: function() {
+        return document.getElementById('config-cloud-enabled').checked && CLOUD.url && CLOUD.key && window.axios;
+    },
+
     start: function(tipo) {
         this.materialType = tipo;
         this.manualOffset = 0;
-        this.isRunning = true;
         this.counts = [];
+        this.isRunning = true;
+        this.cloudFail = false;
         this.setStatus('running');
-        this.loop();
+        this.updateModeBadge();
+        requestAnimationFrame(this.loop.bind(this));
     },
     stop: function() { this.isRunning = false; },
-    restart: function() { this.manualOffset = 0; this.counts = []; if (!this.isRunning) { this.isRunning = true; this.setStatus('running'); this.loop(); } Toast.success('Reanalisando...'); },
-    
+
+    restart: function() {
+        if (this.photoMode) { this.exitPhoto(); return; }
+        this.manualOffset = 0; this.counts = []; this.cloudFail = false;
+        if (!this.isRunning) { this.isRunning = true; this.setStatus('running'); requestAnimationFrame(this.loop.bind(this)); }
+        Toast.success('Reanalisando...');
+    },
+
     updateModeBadge: function() {
         var el = document.getElementById('modo-ia');
-        if (cvReady) { el.className = 'modo-ia treinada'; el.innerHTML = '&#128640; OPENCV.JS ONLINE - ATIVO'; }
-        else { el.className = 'modo-ia basica'; el.innerHTML = '&#9888; CARREGANDO VISÃO COMPUTACIONAL...'; }
+        if (this.cloudEnabled() && !this.cloudFail) {
+            el.className = 'modo-ia treinada';
+            el.innerHTML = '&#129302; IA TREINADA (ROBOFLOW) — ATIVA';
+        } else if (this.cloudFail) {
+            el.className = 'modo-ia basica';
+            el.innerHTML = '&#9888; NUVEM INDISPONÍVEL — MOTOR LOCAL ATIVO';
+        } else {
+            el.className = 'modo-ia basica';
+            el.innerHTML = '&#9881; MOTOR LOCAL OPENCV.JS (IA NUVEM DESATIVADA)';
+        }
     },
-    
+
     setStatus: function(mode) {
         var el = document.getElementById('status-detectando');
         el.style.display = 'flex';
         if (mode === 'running') {
             el.classList.remove('stable');
-            document.getElementById('status-texto').textContent = 'IA contando sozinha... segure firme';
+            document.getElementById('status-texto').textContent = this.cloudEnabled() ? 'IA treinada contando... segure firme' : 'Motor local contando... segure firme';
         } else {
             el.classList.add('stable');
             document.getElementById('status-texto').textContent = 'Contagem estabilizada — revise e confirme';
         }
     },
 
-    loop: function() {
+    sourceDims: function() {
+        if (this.photoMode) return { w: this.srcW, h: this.srcH };
+        var v = Camera.video;
+        return { w: v.videoWidth || 1280, h: v.videoHeight || 720 };
+    },
+
+    loop: function(ts) {
         if (!this.isRunning) return;
-        this.process();
-        this.checkAuto(500);
+        if (!this.photoMode && !this.inFlight) {
+            var intervalMs = this.cloudEnabled() ? Math.max(2, CLOUD.interval || 5) * 1000 : 400;
+            if (ts - this.lastProcess > intervalMs) {
+                this.lastProcess = ts;
+                if (this.cloudEnabled()) this.cloudAnalyze();
+                else { this.processLocal(); this.checkAuto(); }
+            }
+        }
         requestAnimationFrame(this.loop.bind(this));
     },
 
-    process: function() {
-        if (!cvReady || !Camera.video || !Camera.video.videoWidth) return;
-        
-        var video = Camera.video;
-        var canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0);
+    snap: function() {
+        if (this.cloudEnabled()) this.cloudAnalyze();
+        else { this.processLocal(); this.updateUI(); }
+    },
 
-        var src = cv.imread(canvas);
-        var gray = new cv.Mat();
-        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-        
-        var blur = new cv.Mat();
-        cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
-        
-        var thresh = new cv.Mat();
-        cv.adaptiveThreshold(blur, thresh, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 11, 2);
-        
-        var contours = new cv.MatVector();
-        var hierarchy = new cv.Mat();
-        cv.findContours(thresh, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-
-        this.markers = [];
-        for (var i = 0; i < contours.size(); ++i) {
-            var cnt = contours.get(i);
-            var area = cv.contourArea(cnt);
-            var rect = cv.boundingRect(cnt);
-            var aspect = rect.width / rect.height;
-
-            // Filtro para barras metálicas horizontais
-            if (area > 800 && aspect > 2.2) {
-                if (this.roi) {
-                    if (rect.x < this.roi.x || rect.x + rect.width > this.roi.x + this.roi.w || rect.y < this.roi.y || rect.y + rect.height > this.roi.y + this.roi.h) continue;
-                }
-                this.markers.push({ x: rect.x + rect.width/2, y: rect.y + rect.height/2, w: rect.width, h: rect.height });
-            }
+    // ---------- Captura base64 (substitui fs.readFileSync do snippet Node) ----------
+    captureBase64: function() {
+        var d = this.sourceDims();
+        var cap = document.createElement('canvas');
+        var sc = Math.min(1, 1280 / d.w);
+        cap.width = Math.round(d.w * sc); cap.height = Math.round(d.h * sc);
+        var ctx = cap.getContext('2d');
+        if (this.photoMode) {
+            ctx.drawImage(document.getElementById('photoCanvas'), 0, 0, cap.width, cap.height);
+        } else {
+            if (!Camera.video || !Camera.video.videoWidth) return null;
+            ctx.drawImage(Camera.video, 0, 0, cap.width, cap.height);
         }
+        return cap.toDataURL('image/jpeg', 0.9).split(',')[1];
+    },
 
+    // ---------- Chamada Roboflow (idêntica ao seu snippet, via axios) ----------
+    cloudAnalyze: function() {
+        var self = this;
+        var image = this.captureBase64();   // <- equivale ao fs.readFileSync(..., 'base64')
+        if (!image) return;
+        this.inFlight = true;
+        axios({
+            method: "POST",
+            url: CLOUD.url,
+            params: { api_key: CLOUD.key },
+            data: image,
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            timeout: 20000
+        }).then(function(response) {
+            self.inFlight = false;
+            self.cloudFail = false;
+            self.applyCloud(response.data);
+            self.checkAuto();
+        }).catch(function(error) {
+            self.inFlight = false;
+            console.error('Roboflow:', error.message);
+            if (!self.cloudFail) {
+                self.cloudFail = true;
+                Toast.error('IA Roboflow falhou — motor local assumiu');
+                self.updateModeBadge();
+            }
+            self.processLocal();
+            self.checkAuto();
+        });
+    },
+
+    applyCloud: function(data) {
+        var preds = (data && data.predictions) ? data.predictions : [];
+        var iw = (data.image && data.image.width) ? data.image.width : 1;
+        var d = this.sourceDims();
+        var f = d.w / iw;
+        this.markers = [];
+        var seq = 1;
+        for (var i = 0; i < preds.length; ++i) {
+            var p = preds[i];
+            if ((p.confidence || 0) < CLOUD.conf) continue;
+            this.markers.push({
+                x: (p.x - p.width / 2) * f, y: (p.y - p.height / 2) * f,
+                w: p.width * f, h: p.height * f,
+                n: 1, seq: seq++, conf: p.confidence, cls: p.class || ''
+            });
+        }
+        this.totalDetected = this.markers.length;
         this.draw();
         this.updateUI();
+        if (this.photoMode) this.setStatus('stable');
+    },
 
-        src.delete(); gray.delete(); blur.delete(); thresh.delete(); contours.delete(); hierarchy.delete();
+    // ---------- FOTO ----------
+    loadPhoto: function(input) {
+        var file = input.files && input.files[0];
+        input.value = '';
+        if (!file) return;
+        var self = this;
+        var img = new Image();
+        img.onload = function() {
+            try {
+                Camera.stop();
+                var pc = document.getElementById('photoCanvas');
+                var sc = Math.min(1, 1600 / img.width);
+                pc.width = Math.round(img.width * sc);
+                pc.height = Math.round(img.height * sc);
+                pc.getContext('2d').drawImage(img, 0, 0, pc.width, pc.height);
+                pc.style.display = 'block';
+                document.getElementById('video').style.display = 'none';
+                document.getElementById('camera-container').style.aspectRatio = pc.width + '/' + pc.height;
+                if (cvReady && self.photoMat) { self.photoMat.delete(); self.photoMat = null; }
+                self.photoMode = true;
+                self.srcW = pc.width; self.srcH = pc.height;
+                self.manualOffset = 0;
+                if (self.cloudEnabled()) {
+                    self.setStatus('running');
+                    self.cloudAnalyze();
+                } else if (cvReady) {
+                    self.processLocal();
+                    self.setStatus('stable');
+                } else {
+                    Toast.warning('OpenCV ainda carregando...');
+                }
+                Toast.success('Foto carregada — analisando com IA treinada');
+            } catch (e) { console.error(e); Toast.error('Erro ao processar foto'); }
+        };
+        img.src = URL.createObjectURL(file);
+    },
+
+    exitPhoto: function() {
+        this.photoMode = false;
+        if (this.photoMat && cvReady) { this.photoMat.delete(); this.photoMat = null; }
+        document.getElementById('photoCanvas').style.display = 'none';
+        document.getElementById('video').style.display = 'block';
+        var self = this;
+        Camera.start().then(function(ok) { if (ok) { self.isRunning = true; self.setStatus('running'); requestAnimationFrame(self.loop.bind(self)); } });
+    },
+
+    // ---------- MOTOR LOCAL (fallback offline — OpenCV.js) ----------
+    processLocal: function() {
+        if (!cvReady) return;
+        var src = null, ownSrc = false;
+        try {
+            if (this.photoMode) {
+                if (!this.photoMat) { this.photoMat = cv.imread(document.getElementById('photoCanvas')); }
+                src = this.photoMat;
+            } else {
+                if (!Camera.video || !Camera.video.videoWidth) return;
+                src = cv.imread(Camera.video); ownSrc = true;
+            }
+            var scale = Math.min(1, 900 / src.cols);
+            var small = new cv.Mat();
+            cv.resize(src, small, new cv.Size(Math.round(src.cols * scale), Math.round(src.rows * scale)), 0, 0, cv.INTER_AREA);
+
+            var work = small, roiOff = { x: 0, y: 0 };
+            if (this.roi) {
+                var rx = Math.max(0, Math.round(this.roi.x * scale)), ry = Math.max(0, Math.round(this.roi.y * scale));
+                var rw = Math.min(small.cols - rx, Math.round(this.roi.w * scale)), rh = Math.min(small.rows - ry, Math.round(this.roi.h * scale));
+                if (rw > 20 && rh > 20) {
+                    work = small.rowRange(ry, ry + rh).colRange(rx, rx + rw).clone();
+                    roiOff = { x: rx, y: ry };
+                }
+            }
+
+            var mask = new cv.Mat();
+            if (this.materialType === 'cobre') {
+                var rgb = new cv.Mat(), hsv = new cv.Mat(), m1 = new cv.Mat(), m2 = new cv.Mat();
+                cv.cvtColor(work, rgb, cv.COLOR_RGBA2RGB);
+                cv.cvtColor(rgb, hsv, cv.COLOR_RGB2HSV);
+                cv.inRange(hsv, new cv.Scalar(0, 45, 45, 0), new cv.Scalar(25, 255, 255, 0), m1);
+                cv.inRange(hsv, new cv.Scalar(160, 45, 45, 0), new cv.Scalar(179, 255, 255, 0), m2);
+                cv.bitwise_or(m1, m2, mask);
+                rgb.delete(); hsv.delete(); m1.delete(); m2.delete();
+            } else {
+                var gray = new cv.Mat();
+                cv.cvtColor(work, gray, cv.COLOR_RGBA2GRAY);
+                cv.equalizeHist(gray, gray);
+                cv.threshold(gray, mask, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+                gray.delete();
+            }
+
+            var k3 = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(3, 3));
+            var tmp = new cv.Mat();
+            cv.morphologyEx(mask, tmp, cv.MORPH_OPEN, k3);
+            cv.morphologyEx(tmp, mask, cv.MORPH_CLOSE, k3);
+            cv.erode(mask, tmp, k3);
+            tmp.copyTo(mask);
+            k3.delete(); tmp.delete();
+
+            var contours = new cv.MatVector(), hierarchy = new cv.Mat();
+            cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+            var smallArea = work.cols * work.rows;
+            var U = this.calibArea ? this.calibArea * scale * scale : 0;
+            var minA = U > 0 ? U * 0.35 : Math.max(50, smallArea * 0.0007);
+
+            var comps = [];
+            for (var i = 0; i < contours.size(); ++i) {
+                var a = cv.contourArea(contours.get(i));
+                if (a >= minA) comps.push({ a: a, r: cv.boundingRect(contours.get(i)) });
+            }
+            if (!U) {
+                if (comps.length === 0) U = 1;
+                else {
+                    var sorted = comps.map(function(c) { return c.a; }).sort(function(x, y) { return x - y; });
+                    U = sorted[Math.max(0, Math.floor((sorted.length - 1) * 0.25))];
+                }
+            }
+
+            this.markers = [];
+            var total = 0, seq = 1;
+            for (var j = 0; j < comps.length; ++j) {
+                var c = comps[j];
+                var n = Math.max(1, Math.min(500, Math.round(c.a / U)));
+                total += n;
+                this.markers.push({ x: (roiOff.x + c.r.x) / scale, y: (roiOff.y + c.r.y) / scale, w: c.r.width / scale, h: c.r.height / scale, n: n, seq: seq });
+                seq += n;
+            }
+            this.totalDetected = total;
+            this.draw();
+            this.updateUI();
+
+            mask.delete(); contours.delete(); hierarchy.delete();
+            if (work !== small) work.delete();
+            small.delete();
+            if (ownSrc) src.delete();
+        } catch (e) {
+            console.error('Erro no processamento local:', e);
+            if (ownSrc && src) { try { src.delete(); } catch (e2) {} }
+        }
     },
 
     draw: function() {
         var o = document.getElementById('overlay');
-        if (!Camera.video.videoWidth) return;
-        o.width = Camera.video.videoWidth;
-        o.height = Camera.video.videoHeight;
+        var d = this.sourceDims();
+        if (o.width !== d.w || o.height !== d.h) { o.width = d.w; o.height = d.h; }
         var ctx = o.getContext('2d');
         ctx.clearRect(0, 0, o.width, o.height);
 
-        if (this.roi) {
-            ctx.strokeStyle = '#ffc107'; ctx.lineWidth = 3; ctx.strokeRect(this.roi.x, this.roi.y, this.roi.w, this.roi.h);
-        }
+        if (this.roi) { ctx.strokeStyle = '#ffc107'; ctx.lineWidth = 3; ctx.strokeRect(this.roi.x, this.roi.y, this.roi.w, this.roi.h); }
 
-        ctx.strokeStyle = '#00a650';
-        ctx.lineWidth = 3;
-        this.markers.forEach(function(m, i) {
-            ctx.strokeRect(m.x - m.w/2, m.y - m.h/2, m.w, m.h);
+        this.markers.forEach(function(m) {
+            ctx.strokeStyle = '#00a650'; ctx.lineWidth = 3;
+            ctx.strokeRect(m.x, m.y, m.w, m.h);
             ctx.fillStyle = '#00a650';
-            ctx.beginPath(); ctx.arc(m.x, m.y, 12, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(m.x + m.w / 2, m.y + m.h / 2, 13, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 11px Arial';
+            ctx.font = 'bold 12px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(i + 1, m.x, m.y + 4);
+            ctx.textBaseline = 'middle';
+            var label = m.n > 1 ? ('x' + m.n) : String(m.seq);
+            ctx.fillText(label, m.x + m.w / 2, m.y + m.h / 2 + 1);
         });
     },
 
-    finalCount: function() { return Math.max(0, this.markers.length + this.manualOffset); },
+    finalCount: function() { return Math.max(0, this.totalDetected + this.manualOffset); },
     updateUI: function() {
         var c = this.finalCount();
         document.getElementById('qtd-detectada').textContent = c;
         document.getElementById('btn-confirmar').disabled = (c <= 0);
     },
 
-    checkAuto: function(interval) {
+    checkAuto: function() {
         if (!document.getElementById('config-auto-stop').checked) return;
         var c = this.finalCount();
         this.counts.push(c);
-        if (this.counts.length > 10) this.counts.shift();
-        if (this.counts.length >= 10 && c > 0) {
+        if (this.counts.length > 6) this.counts.shift();
+        if (this.counts.length >= 6 && c > 0) {
             var allSame = this.counts.every(function(v) { return v === c; });
             if (allSame) {
                 this.stop();
@@ -566,30 +768,57 @@ var Vision = {
     },
 
     nudge: function(v) { this.manualOffset += v; this.updateUI(); },
-    toggleROI: function() { this.roiMode = !this.roiMode; Toast.warning(this.roiMode ? 'Modo ROI: arraste na tela' : 'Modo ROI desativado'); },
-    clearROI: function() { this.roi = null; this.draw(); },
+
+    toggleROI: function() { this.roiMode = !this.roiMode; this.calibMode = false; this.syncBtns(); Toast.warning(this.roiMode ? 'ROI: arraste na tela p/ isolar a pilha' : 'Modo ROI desativado'); },
+    toggleCalib: function() { this.calibMode = !this.calibMode; this.roiMode = false; this.syncBtns(); Toast.warning(this.calibMode ? 'Arraste sobre UMA face de barra p/ calibrar' : 'Calibração desativada'); },
+    syncBtns: function() {
+        document.getElementById('btn-roi').classList.toggle('active', this.roiMode);
+        document.getElementById('btn-calib').classList.toggle('active', this.calibMode);
+    },
+    clearROI: function() { this.roi = null; this.calibArea = 0; this.draw(); if (this.photoMode && !this.cloudEnabled()) this.processLocal(); Toast.success('Área e calibração limpas'); },
+
     bindPointer: function() {
         var el = document.getElementById('camera-container');
         el.onpointerdown = function(e) { Vision.dragStart = Vision.videoCoords(e); };
         el.onpointerup = function(e) {
             if (!Vision.dragStart) return;
             var end = Vision.videoCoords(e);
-            if (Vision.roiMode) {
-                Vision.roi = { x: Math.min(Vision.dragStart.x, end.x), y: Math.min(Vision.dragStart.y, end.y), w: Math.abs(end.x - Vision.dragStart.x), h: Math.abs(end.y - Vision.dragStart.y) };
-                Vision.roiMode = false;
-                Toast.success('Área definida');
+            var x = Math.min(Vision.dragStart.x, end.x), y = Math.min(Vision.dragStart.y, end.y);
+            var w = Math.abs(end.x - Vision.dragStart.x), h = Math.abs(end.y - Vision.dragStart.y);
+            if (w > 10 && h > 10) {
+                if (Vision.calibMode) {
+                    Vision.calibArea = w * h;
+                    Vision.calibMode = Vision.roiMode = false; Vision.syncBtns();
+                    Toast.success('Barra calibrada');
+                    if (Vision.photoMode && !Vision.cloudEnabled()) Vision.processLocal();
+                } else if (Vision.roiMode) {
+                    Vision.roi = { x: x, y: y, w: w, h: h };
+                    Vision.roiMode = false; Vision.syncBtns();
+                    Toast.success('Área definida');
+                    if (Vision.photoMode && !Vision.cloudEnabled()) Vision.processLocal();
+                }
             }
             Vision.dragStart = null;
         };
     },
+
     videoCoords: function(ev) {
         var rect = document.getElementById('camera-container').getBoundingClientRect();
-        var vw = Camera.video.videoWidth || 1280, vh = Camera.video.videoHeight || 720;
-        var sc = Math.max(rect.width / vw, rect.height / vh);
-        return { x: (ev.clientX - rect.left) / sc, y: (ev.clientY - rect.top) / sc };
+        var d = this.sourceDims();
+        return { x: (ev.clientX - rect.left) * (d.w / rect.width), y: (ev.clientY - rect.top) * (d.h / rect.height) };
+    },
+
+    cleanup: function() {
+        this.stop();
+        if (this.photoMat && cvReady) { this.photoMat.delete(); this.photoMat = null; }
+        this.photoMode = false;
+        document.getElementById('photoCanvas').style.display = 'none';
+        document.getElementById('video').style.display = 'block';
+        this.roi = null; this.calibArea = 0; this.markers = []; this.totalDetected = 0;
     }
 };
 
+// ================= CONFERÊNCIA =================
 var Conference = {
     selectedTipo: null, selectedMaterial: null, matsCache: [],
     selectTipo: function(tipo) {
@@ -600,12 +829,12 @@ var Conference = {
         this.renderMateriais('');
     },
     backToTipo: function() {
-        Camera.stop(); Vision.stop();
+        Camera.stop(); Vision.cleanup();
         document.getElementById('camera-view').classList.remove('active');
         document.getElementById('materiais-lista').classList.remove('active');
         document.getElementById('tipo-selector').style.display = 'block';
         document.getElementById('status-detectando').style.display = 'none';
-        App.init(); // Atualiza contadores
+        App.init();
     },
     renderMateriais: function(f) {
         SheetsAPI.getMateriais().then(function(mats) {
@@ -629,17 +858,14 @@ var Conference = {
     save: function() {
         var det = Vision.finalCount();
         if (det <= 0) { Toast.warning('Nenhuma barra detectada!'); return; }
-        
         var md = this.selectedMaterial;
         var reg = parseInt(md.quantidade) || 0;
         var nova = reg + det;
-        
         var item = {
             id: md.id, codigo: md.codigo, descricao: md.descricao, dimensoes: md.dimensoes,
             tipo: md.tipo || 'barra', material: md.material, quantidade: nova,
             minimo: md.minimo || 20, status: md.status || 'ativo', dataCadastro: md.dataCadastro
         };
-
         SheetsAPI.save(item, 'material').then(function() {
             return SheetsAPI.save({
                 id: Utils.uuid(), material: md.codigo, descricao: md.descricao,
@@ -648,12 +874,11 @@ var Conference = {
         }).then(function() {
             Toast.success(det + ' barras lançadas! Total: ' + nova);
             Conference.backToTipo();
-        }).catch(function(e) {
-            Toast.error('Falha ao salvar no Sheets');
-        });
+        }).catch(function(e) { Toast.error('Falha ao salvar no Sheets'); });
     }
 };
 
+// ================= MATERIAIS =================
 var Materials = {
     data: [],
     load: function() { SheetsAPI.getMateriais().then(function(d) { Materials.data = d; Materials.render(); }); },
@@ -665,7 +890,7 @@ var Materials = {
         document.querySelector('#table-materiais tbody').innerHTML = html || '<tr><td colspan="7">Nenhum material</td></tr>';
     },
     openModal: function() { document.getElementById('modal-material').classList.add('active'); },
-    edit: function(id) { 
+    edit: function(id) {
         var m = this.data.find(function(x) { return x.id === id; });
         if (!m) return;
         document.getElementById('modal-title').textContent = 'Editar Material';
@@ -695,9 +920,15 @@ var Materials = {
     }
 };
 
+// ================= APP =================
 var App = {
     init: function() {
         document.getElementById('config-api-url').value = APP_CONFIG.api;
+        document.getElementById('config-cloud-enabled').checked = (localStorage.getItem('roboflowEnabled') !== '0');
+        document.getElementById('config-roboflow-url').value = CLOUD.url;
+        document.getElementById('config-roboflow-key').value = CLOUD.key;
+        document.getElementById('config-roboflow-conf').value = CLOUD.conf;
+        document.getElementById('config-roboflow-interval').value = CLOUD.interval;
         SheetsAPI.getMateriais().then(function(mats) {
             if (!mats || mats.length === 0) {
                 document.getElementById('count-cobre').textContent = '0 itens';
@@ -720,7 +951,21 @@ var App = {
     verificarSenha: function() { if (document.getElementById('input-senha').value === CONFIG_SENHA) { this.closeModal('modal-senha'); this.navegar('configuracoes'); } else { document.getElementById('senha-erro').style.display = 'block'; } },
     sairConfig: function() { this.navegar('conferencia'); },
     closeModal: function(id) { document.getElementById(id).classList.remove('active'); },
-    salvarConfig: function() { localStorage.setItem('apiUrl', document.getElementById('config-api-url').value); APP_CONFIG.api = document.getElementById('config-api-url').value; Toast.success('Salvo!'); }
+    salvarConfig: function() {
+        localStorage.setItem('apiUrl', document.getElementById('config-api-url').value);
+        APP_CONFIG.api = document.getElementById('config-api-url').value;
+        localStorage.setItem('roboflowEnabled', document.getElementById('config-cloud-enabled').checked ? '1' : '0');
+        localStorage.setItem('roboflowUrl', document.getElementById('config-roboflow-url').value.trim());
+        localStorage.setItem('roboflowKey', document.getElementById('config-roboflow-key').value.trim());
+        localStorage.setItem('roboflowConf', document.getElementById('config-roboflow-conf').value);
+        localStorage.setItem('roboflowInterval', document.getElementById('config-roboflow-interval').value);
+        CLOUD.url = localStorage.getItem('roboflowUrl');
+        CLOUD.key = localStorage.getItem('roboflowKey');
+        CLOUD.conf = parseFloat(localStorage.getItem('roboflowConf')) || 0.5;
+        CLOUD.interval = parseFloat(localStorage.getItem('roboflowInterval')) || 5;
+        Vision.updateModeBadge();
+        Toast.success('Configurações salvas!');
+    }
 };
 
 window.onload = function() { App.init(); };
